@@ -17,6 +17,18 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import AccountPage from "./pages/AccountPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import NotFound from "./pages/NotFound";
+import AdminLayout from "./components/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminProducts from "./pages/admin/AdminProducts";
+import AdminProductForm from "./pages/admin/AdminProductForm";
+import AdminCategories from "./pages/admin/AdminCategories";
+import AdminOrders from "./pages/admin/AdminOrders";
+import AdminStock from "./pages/admin/AdminStock";
+import AdminCustomers from "./pages/admin/AdminCustomers";
+import AdminBanners from "./pages/admin/AdminBanners";
+import AdminMarketing from "./pages/admin/AdminMarketing";
+import AdminFinancial from "./pages/admin/AdminFinancial";
+import AdminLogs from "./pages/admin/AdminLogs";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +52,19 @@ const App = () => (
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/conta" element={<AccountPage />} />
                 <Route path="/checkout" element={<CheckoutPage />} />
+              </Route>
+              <Route element={<AdminLayout />}>
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin/produtos" element={<AdminProducts />} />
+                <Route path="/admin/produtos/:id" element={<AdminProductForm />} />
+                <Route path="/admin/categorias" element={<AdminCategories />} />
+                <Route path="/admin/pedidos" element={<AdminOrders />} />
+                <Route path="/admin/estoque" element={<AdminStock />} />
+                <Route path="/admin/clientes" element={<AdminCustomers />} />
+                <Route path="/admin/banners" element={<AdminBanners />} />
+                <Route path="/admin/marketing" element={<AdminMarketing />} />
+                <Route path="/admin/financeiro" element={<AdminFinancial />} />
+                <Route path="/admin/logs" element={<AdminLogs />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
