@@ -50,7 +50,7 @@ export default function CartPage() {
           <div className="h-full bg-accent rounded-full transition-all duration-500" style={{ width: `${shippingProgress}%` }} />
         </div>
         <p className="text-[10px] text-muted-foreground mt-1.5">
-          🚚 Frete grátis acima de R$ 130 ou para Pará de Minas - MG
+          🚚 Frete grátis acima de R$ 130
         </p>
       </div>
 
