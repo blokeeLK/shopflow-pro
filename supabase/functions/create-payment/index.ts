@@ -102,20 +102,28 @@ Deno.serve(async (req) => {
     }
 
     if (payment_method === "pix") {
+      // Use a safe payer email — MP forbids payer email = seller email
+      let payerEmail = profile?.email || "cliente@loja.com";
+      // If the payer email is the same as the MP account owner, use a placeholder
+      const SELLER_EMAIL = "alexjunior160@gmail.com";
+      if (payerEmail.toLowerCase() === SELLER_EMAIL.toLowerCase()) {
+        payerEmail = `comprador+${order_id.slice(0, 8)}@loja.com`;
+      }
+
       // Create Pix payment
       const mpResponse = await fetch("https://api.mercadopago.com/v1/payments", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${MP_TOKEN}`,
-          "X-Idempotency-Key": `order-${order_id}-pix`,
+          "X-Idempotency-Key": `order-${order_id}-pix-${Date.now()}`,
         },
         body: JSON.stringify({
           transaction_amount: Number(order.total),
           description: `Pedido #${order_id.slice(0, 8)}`,
           payment_method_id: "pix",
           payer: {
-            email: profile?.email || "cliente@loja.com",
+            email: payerEmail,
             first_name: profile?.name?.split(" ")[0] || "Cliente",
           },
           notification_url: notificationUrl,
