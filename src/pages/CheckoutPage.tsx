@@ -42,8 +42,8 @@ export default function CheckoutPage() {
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
-    if (items.length === 0 && !submitting) navigate("/carrinho");
-  }, [items, navigate, submitting]);
+    if (items.length === 0 && !submitting && step < 3) navigate("/carrinho");
+  }, [items, navigate, submitting, step]);
 
   useEffect(() => {
     if (addresses.length > 0 && !selectedAddressId) {
