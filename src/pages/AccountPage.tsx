@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { formatCPF } from "@/lib/cpf";
 import { formatCurrency } from "@/hooks/useSupabaseData";
-import { User, Package, LogOut, Star, Save } from "lucide-react";
+import { User, Package, LogOut, Star, Save, Truck, ExternalLink, Copy } from "lucide-react";
 
 interface Profile {
   name: string;
@@ -228,18 +228,44 @@ export default function AccountPage() {
                     {statusLabels[order.status] || order.status}
                   </span>
                 </div>
-                <div className="flex items-center justify-between">
+
+                {/* Status timeline */}
+                <OrderTimeline status={order.status} />
+
+                <div className="flex items-center justify-between mt-3">
                   <div>
                     <p className="font-display font-bold text-foreground">{formatCurrency(Number(order.total))}</p>
                     <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleDateString("pt-BR")}</p>
                   </div>
-                  {order.tracking_code && (
-                    <a href={`https://www.linkcorreios.com.br/?id=${encodeURIComponent(order.tracking_code)}`} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-xs text-accent hover:underline">
-                      Rastrear
-                    </a>
-                  )}
                 </div>
+
+                {/* Tracking section */}
+                {order.tracking_code && (
+                  <div className="mt-3 pt-3 border-t">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Truck className="h-4 w-4 text-accent" />
+                      <span className="text-xs font-semibold text-foreground">Rastreamento</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-secondary/50 rounded-lg p-2.5">
+                      <code className="text-xs font-mono text-foreground flex-1">{order.tracking_code}</code>
+                      <button
+                        onClick={() => { navigator.clipboard.writeText(order.tracking_code); }}
+                        className="p-1.5 text-muted-foreground hover:text-foreground transition-colors"
+                        title="Copiar código"
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </button>
+                      <a
+                        href={`https://www.linkcorreios.com.br/?id=${encodeURIComponent(order.tracking_code)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 bg-accent text-accent-foreground text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-accent/90 transition-colors"
+                      >
+                        Rastrear <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </div>
+                  </div>
+                )}
 
                 {/* Review section for delivered orders */}
                 {order.status === "entregue" && order.order_items && order.order_items.length > 0 && (
@@ -272,6 +298,7 @@ export default function AccountPage() {
                                   placeholder="Comentário (opcional)"
                                   className="w-full bg-background border rounded-lg px-3 py-2 text-sm text-foreground resize-none"
                                   rows={2}
+                                  maxLength={500}
                                 />
                                 <div className="flex gap-2">
                                   <button onClick={handleSubmitReview} disabled={savingReview}
@@ -300,6 +327,34 @@ export default function AccountPage() {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+const TIMELINE_STEPS = ["criado", "pago", "separando", "enviado", "entregue"];
+
+function OrderTimeline({ status }: { status: string }) {
+  if (status === "cancelado") {
+    return (
+      <div className="flex items-center gap-1 mt-2">
+        <div className="h-1.5 flex-1 bg-destructive/30 rounded-full" />
+        <span className="text-[10px] text-destructive font-semibold">Cancelado</span>
+      </div>
+    );
+  }
+
+  const currentIdx = TIMELINE_STEPS.indexOf(status);
+
+  return (
+    <div className="flex items-center gap-0.5 mt-2">
+      {TIMELINE_STEPS.map((step, i) => (
+        <div key={step} className="flex-1 flex flex-col items-center gap-0.5">
+          <div className={`h-1.5 w-full rounded-full transition-colors ${i <= currentIdx ? "bg-accent" : "bg-secondary"}`} />
+          <span className={`text-[9px] leading-tight ${i <= currentIdx ? "text-accent font-semibold" : "text-muted-foreground"}`}>
+            {step === "criado" ? "Pedido" : step === "pago" ? "Pago" : step === "separando" ? "Separando" : step === "enviado" ? "Enviado" : "Entregue"}
+          </span>
+        </div>
+      ))}
     </div>
   );
 }
