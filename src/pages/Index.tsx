@@ -42,7 +42,7 @@ const Index = () => {
       <section className="border-b bg-card">
         <div className="container py-4 flex flex-wrap justify-center gap-6 md:gap-12">
           {[
-            { icon: Truck, text: "Frete grátis acima de R$299" },
+            { icon: Truck, text: "Frete grátis acima de R$130" },
             { icon: ShieldCheck, text: "Compra 100% segura" },
             { icon: CreditCard, text: "Parcele em até 3x sem juros" },
           ].map(({ icon: Icon, text }) => (
