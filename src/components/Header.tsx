@@ -87,7 +87,7 @@ export function Header() {
   return (
     <>
       <div className="bg-primary text-primary-foreground text-center text-xs py-2 px-4 font-body">
-        🔥 <span className="font-semibold">FRETE GRÁTIS</span> para Pará de Minas - MG
+        🔥 <span className="font-semibold">FRETE GRÁTIS</span> acima de R$ 130 | Grátis para Pará de Minas - MG
       </div>
 
       <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-md border-b">

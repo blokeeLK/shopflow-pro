@@ -10,15 +10,11 @@ interface ShippingRequest {
   items: { product_id: string; quantity: number }[];
   city?: string;
   state?: string;
+  subtotal?: number;
 }
 
-// Remove accents for comparison
 function normalizeCity(city: string): string {
-  return city
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
+  return city.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 }
 
 function isFreeShippingCity(city?: string, state?: string): boolean {
@@ -32,7 +28,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { cep_destino, items, city, state } = (await req.json()) as ShippingRequest;
+    const { cep_destino, items, city, state, subtotal } = (await req.json()) as ShippingRequest;
 
     if (!cep_destino || !items?.length) {
       return new Response(JSON.stringify({ error: "CEP e itens são obrigatórios" }), {
@@ -81,16 +77,20 @@ Deno.serve(async (req) => {
     totalHeight = Math.min(totalHeight, 100);
 
     const distanceFactor = getDistanceFactor(cleanCep);
-
     const pacPrice = calculateShipping(totalWeight, maxWidth, maxLength, totalHeight, distanceFactor, "PAC");
     const sedexPrice = calculateShipping(totalWeight, maxWidth, maxLength, totalHeight, distanceFactor, "SEDEX");
 
-    // Free shipping ONLY for Pará de Minas - MG
-    const freeShipping = isFreeShippingCity(city, state);
+    // Free shipping: Pará de Minas - MG OR subtotal >= 130
+    const FREE_THRESHOLD = 130;
+    const isCityFree = isFreeShippingCity(city, state);
+    const isValueFree = (subtotal || 0) >= FREE_THRESHOLD;
+    const freeShipping = isCityFree || isValueFree;
 
     const result = {
       cep_destino: cleanCep,
       freeShipping,
+      freeThreshold: FREE_THRESHOLD,
+      freeReason: isCityFree ? "city" : isValueFree ? "value" : null,
       options: [
         {
           service: "PAC",

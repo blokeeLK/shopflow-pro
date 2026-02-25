@@ -67,12 +67,12 @@ export default function CheckoutPage() {
           items: items.map((i) => ({ product_id: i.productId, quantity: i.quantity })),
           city: selectedAddress.city,
           state: selectedAddress.state,
+          subtotal,
         },
       });
 
       if (error) throw error;
 
-      // Free shipping is determined server-side based on city/state
       setShippingOptions(data.options || []);
       setShippingOption(data.options?.[0]?.service || "PAC");
     } catch (err: any) {
@@ -144,27 +144,42 @@ export default function CheckoutPage() {
 
       if (paymentErr) {
         console.error("Payment error:", paymentErr);
-        // Order created but payment failed — still show confirmation
-        clearCart();
-        setStep(3);
-        toast({ title: "Pedido criado! Pagamento será processado em breve." });
+        toast({ 
+          title: "Erro no pagamento", 
+          description: typeof paymentErr === 'object' ? JSON.stringify(paymentErr) : String(paymentErr),
+          variant: "destructive" 
+        });
+        // Don't clear cart — let user retry
+        setSubmitting(false);
+        return;
+      }
+
+      // Check if paymentData has error from edge function
+      if (paymentData?.error) {
+        console.error("Payment API error:", paymentData);
+        toast({ 
+          title: "Erro no pagamento", 
+          description: paymentData.error + (paymentData.details ? `: ${JSON.stringify(paymentData.details)}` : ""),
+          variant: "destructive" 
+        });
+        setSubmitting(false);
         return;
       }
 
       clearCart();
 
-      if (paymentMethod === "pix" && paymentData?.pix_qr_code) {
+      if (paymentMethod === "pix" && (paymentData?.pix_qr_code || paymentData?.pix_qr_code_base64)) {
         setPixData({
           qr_code: paymentData.pix_qr_code,
           qr_code_base64: paymentData.pix_qr_code_base64,
           copy_paste: paymentData.pix_copy_paste,
         });
-        setStep(4); // Pix payment step
+        setStep(4);
         toast({ title: "Pix gerado! Escaneie o QR Code para pagar." });
       } else if (paymentMethod === "card" && paymentData?.checkout_url) {
-        // Redirect to Mercado Pago checkout
         window.location.href = paymentData.checkout_url;
       } else {
+        // Fallback — show confirmation with order ID
         setStep(3);
         toast({ title: "Pedido criado com sucesso! 🎉" });
       }
