@@ -5,8 +5,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { formatCPF } from "@/lib/cpf";
-import { formatCurrency } from "@/data/store";
-import { User, Package, LogOut, Star, MapPin, Save } from "lucide-react";
+import { formatCurrency } from "@/hooks/useSupabaseData";
+import { User, Package, LogOut, Star, Save } from "lucide-react";
 
 interface Profile {
   name: string;
@@ -22,6 +22,7 @@ interface Order {
   tracking_code: string;
   created_at: string;
   shipping_service: string;
+  order_items?: { product_id: string; product_name: string }[];
 }
 
 const statusLabels: Record<string, string> = {
@@ -54,6 +55,15 @@ export default function AccountPage() {
   const [saving, setSaving] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
 
+  // Review state
+  const [reviewOrderId, setReviewOrderId] = useState<string | null>(null);
+  const [reviewProductId, setReviewProductId] = useState<string | null>(null);
+  const [reviewProductName, setReviewProductName] = useState("");
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
+  const [savingReview, setSavingReview] = useState(false);
+  const [existingReviews, setExistingReviews] = useState<Set<string>>(new Set());
+
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/login", { state: { from: "/conta" } });
@@ -64,6 +74,7 @@ export default function AccountPage() {
     if (user) {
       loadProfile();
       loadOrders();
+      loadExistingReviews();
     }
   }, [user]);
 
@@ -84,10 +95,20 @@ export default function AccountPage() {
   async function loadOrders() {
     const { data } = await supabase
       .from("orders")
-      .select("id, status, total, tracking_code, created_at, shipping_service")
+      .select("id, status, total, tracking_code, created_at, shipping_service, order_items(product_id, product_name)")
       .eq("user_id", user!.id)
       .order("created_at", { ascending: false });
-    if (data) setOrders(data as Order[]);
+    if (data) setOrders(data as any[]);
+  }
+
+  async function loadExistingReviews() {
+    const { data } = await supabase
+      .from("reviews")
+      .select("product_id")
+      .eq("user_id", user!.id);
+    if (data) {
+      setExistingReviews(new Set(data.map((r) => r.product_id)));
+    }
   }
 
   async function handleSave(e: React.FormEvent) {
@@ -102,6 +123,28 @@ export default function AccountPage() {
       toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Dados atualizados! ✅" });
+    }
+  }
+
+  async function handleSubmitReview() {
+    if (!user || !reviewProductId) return;
+    setSavingReview(true);
+    const { error } = await supabase.from("reviews").insert({
+      user_id: user.id,
+      product_id: reviewProductId,
+      rating: reviewRating,
+      comment: reviewComment.trim() || null,
+    });
+    setSavingReview(false);
+    if (error) {
+      toast({ title: "Erro ao enviar avaliação", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Avaliação enviada! ⭐" });
+      setReviewOrderId(null);
+      setReviewProductId(null);
+      setReviewComment("");
+      setReviewRating(5);
+      loadExistingReviews();
     }
   }
 
@@ -123,7 +166,6 @@ export default function AccountPage() {
         </button>
       </div>
 
-      {/* Tabs */}
       <div className="flex gap-1 mb-6 bg-secondary rounded-lg p-1">
         <button
           onClick={() => setTab("profile")}
@@ -159,20 +201,11 @@ export default function AccountPage() {
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground mb-1 block">Telefone</label>
-                <Input
-                  value={profile.phone}
-                  onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                  placeholder="(00) 00000-0000"
-                  maxLength={15}
-                />
+                <Input value={profile.phone} onChange={(e) => setProfile({ ...profile, phone: e.target.value })} placeholder="(00) 00000-0000" maxLength={15} />
               </div>
-              <button
-                type="submit"
-                disabled={saving}
-                className="w-full bg-accent text-accent-foreground font-display font-semibold py-3 rounded-lg hover:bg-accent/90 transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-50"
-              >
-                <Save className="h-4 w-4" />
-                {saving ? "Salvando..." : "Salvar alterações"}
+              <button type="submit" disabled={saving}
+                className="w-full bg-accent text-accent-foreground font-display font-semibold py-3 rounded-lg hover:bg-accent/90 transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-50">
+                <Save className="h-4 w-4" /> {saving ? "Salvando..." : "Salvar alterações"}
               </button>
             </form>
           )}
@@ -201,17 +234,67 @@ export default function AccountPage() {
                     <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleDateString("pt-BR")}</p>
                   </div>
                   {order.tracking_code && (
-                    <a
-                      href={`https://www.linkcorreios.com.br/?id=${encodeURIComponent(order.tracking_code)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-xs text-accent hover:underline"
-                    >
-                      <MapPin className="h-3 w-3" />
+                    <a href={`https://www.linkcorreios.com.br/?id=${encodeURIComponent(order.tracking_code)}`} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-xs text-accent hover:underline">
                       Rastrear
                     </a>
                   )}
                 </div>
+
+                {/* Review section for delivered orders */}
+                {order.status === "entregue" && order.order_items && order.order_items.length > 0 && (
+                  <div className="mt-3 pt-3 border-t">
+                    <p className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1">
+                      <Star className="h-3 w-3" /> Avaliar produtos
+                    </p>
+                    <div className="space-y-2">
+                      {order.order_items.map((item) => {
+                        const alreadyReviewed = existingReviews.has(item.product_id);
+                        const isReviewing = reviewOrderId === order.id && reviewProductId === item.product_id;
+
+                        return (
+                          <div key={item.product_id} className="text-sm">
+                            {alreadyReviewed ? (
+                              <span className="text-xs text-muted-foreground">✅ {item.product_name} — já avaliado</span>
+                            ) : isReviewing ? (
+                              <div className="bg-secondary/50 rounded-lg p-3 space-y-2">
+                                <p className="text-xs font-medium text-foreground">{item.product_name}</p>
+                                <div className="flex gap-1">
+                                  {[1, 2, 3, 4, 5].map((s) => (
+                                    <button key={s} onClick={() => setReviewRating(s)}>
+                                      <Star className={`h-5 w-5 ${s <= reviewRating ? "fill-warning text-warning" : "text-border"}`} />
+                                    </button>
+                                  ))}
+                                </div>
+                                <textarea
+                                  value={reviewComment}
+                                  onChange={(e) => setReviewComment(e.target.value)}
+                                  placeholder="Comentário (opcional)"
+                                  className="w-full bg-background border rounded-lg px-3 py-2 text-sm text-foreground resize-none"
+                                  rows={2}
+                                />
+                                <div className="flex gap-2">
+                                  <button onClick={handleSubmitReview} disabled={savingReview}
+                                    className="bg-accent text-accent-foreground text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-accent/90 disabled:opacity-50">
+                                    {savingReview ? "Enviando..." : "Enviar"}
+                                  </button>
+                                  <button onClick={() => { setReviewOrderId(null); setReviewProductId(null); }}
+                                    className="text-xs text-muted-foreground px-3 py-1.5">Cancelar</button>
+                                </div>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => { setReviewOrderId(order.id); setReviewProductId(item.product_id); setReviewProductName(item.product_name); setReviewRating(5); setReviewComment(""); }}
+                                className="text-xs text-accent hover:underline">
+                                ⭐ Avaliar {item.product_name}
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             ))
           )}

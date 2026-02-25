@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, MapPin, Truck, CreditCard, Check, Plus } from "lucide-react";
+import { ArrowLeft, MapPin, Truck, CreditCard, Check, Plus, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { useAddresses, formatCurrency } from "@/hooks/useSupabaseData";
@@ -8,6 +8,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 const STEPS = ["Endereço", "Frete", "Pagamento", "Confirmação"];
+
+interface ShippingOption {
+  service: string;
+  price: number;
+  deadline: string;
+}
 
 export default function CheckoutPage() {
   const { user, loading: authLoading } = useAuth();
@@ -18,7 +24,10 @@ export default function CheckoutPage() {
 
   const [step, setStep] = useState(0);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
-  const [shippingOption, setShippingOption] = useState<"pac" | "sedex">("pac");
+  const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
+  const [shippingOption, setShippingOption] = useState<string>("PAC");
+  const [freeThreshold, setFreeThreshold] = useState(299);
+  const [loadingShipping, setLoadingShipping] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"pix" | "card">("pix");
   const [submitting, setSubmitting] = useState(false);
 
@@ -27,17 +36,14 @@ export default function CheckoutPage() {
   const [addressForm, setAddressForm] = useState({ cep: "", street: "", number: "", complement: "", neighborhood: "", city: "", state: "", label: "Casa" });
   const [savingAddress, setSavingAddress] = useState(false);
 
-  // Redirect if not logged in
   useEffect(() => {
     if (!authLoading && !user) navigate("/login?redirect=/checkout");
   }, [user, authLoading, navigate]);
 
-  // Redirect if cart empty
   useEffect(() => {
     if (items.length === 0 && !submitting) navigate("/carrinho");
   }, [items, navigate, submitting]);
 
-  // Auto-select default address
   useEffect(() => {
     if (addresses.length > 0 && !selectedAddressId) {
       const def = addresses.find((a) => a.is_default) || addresses[0];
@@ -47,10 +53,46 @@ export default function CheckoutPage() {
 
   const selectedAddress = addresses.find((a) => a.id === selectedAddressId);
 
-  // Simulated shipping costs (will be replaced by edge function later)
-  const shippingCosts = { pac: { price: subtotal >= 299 ? 0 : 18.90, days: "8-12 dias úteis" }, sedex: { price: subtotal >= 299 ? 0 : 32.90, days: "3-5 dias úteis" } };
-  const shipping = shippingCosts[shippingOption];
-  const total = subtotal + shipping.price;
+  // Calculate shipping when moving to step 1
+  const handleGoToShipping = async () => {
+    if (!selectedAddress) return;
+    setStep(1);
+    setLoadingShipping(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("calculate-shipping", {
+        body: {
+          cep_destino: selectedAddress.cep,
+          items: items.map((i) => ({ product_id: i.productId, quantity: i.quantity })),
+        },
+      });
+
+      if (error) throw error;
+
+      setFreeThreshold(data.freeThreshold || 299);
+      const isFree = subtotal >= (data.freeThreshold || 299);
+      setShippingOptions(
+        (data.options || []).map((o: ShippingOption) => ({
+          ...o,
+          price: isFree ? 0 : o.price,
+        }))
+      );
+      setShippingOption(data.options?.[0]?.service || "PAC");
+    } catch (err: any) {
+      // Fallback to simulated prices
+      const isFree = subtotal >= 299;
+      setShippingOptions([
+        { service: "PAC", price: isFree ? 0 : 18.9, deadline: "8-12 dias úteis" },
+        { service: "SEDEX", price: isFree ? 0 : 32.9, deadline: "3-5 dias úteis" },
+      ]);
+      setShippingOption("PAC");
+    } finally {
+      setLoadingShipping(false);
+    }
+  };
+
+  const selectedShipping = shippingOptions.find((o) => o.service === shippingOption) || { price: 0, deadline: "" };
+  const total = subtotal + selectedShipping.price;
 
   const handleSaveAddress = async () => {
     if (!user) return;
@@ -61,9 +103,7 @@ export default function CheckoutPage() {
     }
     setSavingAddress(true);
     const { error } = await supabase.from("addresses").insert({
-      user_id: user.id,
-      ...addressForm,
-      is_default: addresses.length === 0,
+      user_id: user.id, ...addressForm, is_default: addresses.length === 0,
     });
     setSavingAddress(false);
     if (error) {
@@ -80,36 +120,28 @@ export default function CheckoutPage() {
     if (!user || !selectedAddress) return;
     setSubmitting(true);
     try {
-      // Create order
       const { data: order, error: orderErr } = await supabase.from("orders").insert({
-        user_id: user.id,
-        status: "criado",
-        subtotal,
-        shipping_cost: shipping.price,
-        total,
-        shipping_service: shippingOption.toUpperCase(),
-        shipping_deadline: shipping.days,
+        user_id: user.id, status: "criado", subtotal,
+        shipping_cost: selectedShipping.price, total,
+        shipping_service: shippingOption,
+        shipping_deadline: selectedShipping.deadline,
         payment_method: paymentMethod,
         address_snapshot: selectedAddress as any,
       }).select().single();
 
       if (orderErr || !order) throw orderErr;
 
-      // Create order items
       const orderItems = items.map((item) => ({
-        order_id: order.id,
-        product_id: item.productId,
-        product_name: item.name,
-        size: item.size,
-        quantity: item.quantity,
-        unit_price: item.price,
+        order_id: order.id, product_id: item.productId,
+        product_name: item.name, size: item.size,
+        quantity: item.quantity, unit_price: item.price,
       }));
 
       const { error: itemsErr } = await supabase.from("order_items").insert(orderItems);
       if (itemsErr) throw itemsErr;
 
       clearCart();
-      setStep(3); // Confirmation step
+      setStep(3);
       toast({ title: "Pedido criado com sucesso! 🎉" });
     } catch (err: any) {
       toast({ title: "Erro ao criar pedido", description: err?.message, variant: "destructive" });
@@ -120,12 +152,11 @@ export default function CheckoutPage() {
 
   if (authLoading) return <div className="container py-20 text-center text-muted-foreground">Carregando...</div>;
 
-  // Confirmation step
   if (step === 3) {
     return (
       <div className="container py-20 text-center max-w-md mx-auto">
-        <div className="bg-success/10 rounded-full h-20 w-20 flex items-center justify-center mx-auto mb-6">
-          <Check className="h-10 w-10 text-success" />
+        <div className="bg-green-100 dark:bg-green-900/20 rounded-full h-20 w-20 flex items-center justify-center mx-auto mb-6">
+          <Check className="h-10 w-10 text-green-600" />
         </div>
         <h1 className="font-display text-2xl font-bold text-foreground mb-2">Pedido Realizado!</h1>
         <p className="text-muted-foreground mb-6">Seu pedido foi criado com sucesso. Acompanhe o status na sua conta.</p>
@@ -145,7 +176,6 @@ export default function CheckoutPage() {
         <ArrowLeft className="h-4 w-4" /> Voltar
       </button>
 
-      {/* Steps */}
       <div className="flex items-center gap-2 mb-8">
         {STEPS.slice(0, 3).map((s, i) => (
           <div key={s} className="flex items-center gap-2">
@@ -160,11 +190,9 @@ export default function CheckoutPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          {/* Step 0: Address */}
           {step === 0 && (
             <div className="space-y-4">
               <h2 className="font-display font-bold text-lg text-foreground flex items-center gap-2"><MapPin className="h-5 w-5" /> Endereço de Entrega</h2>
-              
               {addresses.map((addr) => (
                 <button key={addr.id} onClick={() => setSelectedAddressId(addr.id)}
                   className={`w-full text-left p-4 rounded-lg border transition-all ${selectedAddressId === addr.id ? "border-accent bg-accent/5" : "border-border bg-card"}`}>
@@ -174,7 +202,6 @@ export default function CheckoutPage() {
                   <p className="text-sm text-muted-foreground">CEP: {addr.cep}</p>
                 </button>
               ))}
-
               {showAddressForm ? (
                 <div className="bg-card border rounded-lg p-4 space-y-3">
                   <h3 className="font-display font-semibold text-sm text-foreground">Novo endereço</h3>
@@ -200,44 +227,45 @@ export default function CheckoutPage() {
                   <Plus className="h-4 w-4" /> Adicionar novo endereço
                 </button>
               )}
-
-              <button disabled={!selectedAddressId} onClick={() => setStep(1)}
+              <button disabled={!selectedAddressId} onClick={handleGoToShipping}
                 className="w-full bg-accent text-accent-foreground font-display font-semibold py-3 rounded-lg hover:bg-accent/90 transition-colors disabled:opacity-50 text-sm">
                 Continuar
               </button>
             </div>
           )}
 
-          {/* Step 1: Shipping */}
           {step === 1 && (
             <div className="space-y-4">
               <h2 className="font-display font-bold text-lg text-foreground flex items-center gap-2"><Truck className="h-5 w-5" /> Frete</h2>
-              
-              {(["pac", "sedex"] as const).map((opt) => (
-                <button key={opt} onClick={() => setShippingOption(opt)}
-                  className={`w-full text-left p-4 rounded-lg border transition-all flex justify-between items-center ${shippingOption === opt ? "border-accent bg-accent/5" : "border-border bg-card"}`}>
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">{opt === "pac" ? "PAC" : "SEDEX"}</p>
-                    <p className="text-xs text-muted-foreground">{shippingCosts[opt].days}</p>
-                  </div>
-                  <span className="font-display font-bold text-foreground">
-                    {shippingCosts[opt].price === 0 ? "Grátis" : formatCurrency(shippingCosts[opt].price)}
-                  </span>
-                </button>
-              ))}
-
+              {loadingShipping ? (
+                <div className="flex items-center justify-center py-8 gap-2 text-muted-foreground">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span className="text-sm">Calculando frete...</span>
+                </div>
+              ) : (
+                shippingOptions.map((opt) => (
+                  <button key={opt.service} onClick={() => setShippingOption(opt.service)}
+                    className={`w-full text-left p-4 rounded-lg border transition-all flex justify-between items-center ${shippingOption === opt.service ? "border-accent bg-accent/5" : "border-border bg-card"}`}>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{opt.service}</p>
+                      <p className="text-xs text-muted-foreground">{opt.deadline}</p>
+                    </div>
+                    <span className="font-display font-bold text-foreground">
+                      {opt.price === 0 ? "Grátis" : formatCurrency(opt.price)}
+                    </span>
+                  </button>
+                ))
+              )}
               <div className="flex gap-3">
                 <button onClick={() => setStep(0)} className="flex-1 border rounded-lg py-3 text-sm font-medium text-muted-foreground hover:text-foreground">Voltar</button>
-                <button onClick={() => setStep(2)} className="flex-1 bg-accent text-accent-foreground font-display font-semibold py-3 rounded-lg hover:bg-accent/90 text-sm">Continuar</button>
+                <button onClick={() => setStep(2)} disabled={loadingShipping} className="flex-1 bg-accent text-accent-foreground font-display font-semibold py-3 rounded-lg hover:bg-accent/90 text-sm disabled:opacity-50">Continuar</button>
               </div>
             </div>
           )}
 
-          {/* Step 2: Payment & Confirm */}
           {step === 2 && (
             <div className="space-y-4">
               <h2 className="font-display font-bold text-lg text-foreground flex items-center gap-2"><CreditCard className="h-5 w-5" /> Pagamento</h2>
-              
               {(["pix", "card"] as const).map((opt) => (
                 <button key={opt} onClick={() => setPaymentMethod(opt)}
                   className={`w-full text-left p-4 rounded-lg border transition-all ${paymentMethod === opt ? "border-accent bg-accent/5" : "border-border bg-card"}`}>
@@ -245,7 +273,6 @@ export default function CheckoutPage() {
                   <p className="text-xs text-muted-foreground">{opt === "pix" ? "Aprovação instantânea" : "Parcele em até 3x sem juros"}</p>
                 </button>
               ))}
-
               <div className="flex gap-3">
                 <button onClick={() => setStep(1)} className="flex-1 border rounded-lg py-3 text-sm font-medium text-muted-foreground hover:text-foreground">Voltar</button>
                 <button onClick={handlePlaceOrder} disabled={submitting}
@@ -257,7 +284,6 @@ export default function CheckoutPage() {
           )}
         </div>
 
-        {/* Order Summary Sidebar */}
         <div className="bg-card rounded-lg border p-4 h-fit sticky top-20">
           <h3 className="font-display font-bold text-sm text-foreground mb-3">Resumo do Pedido</h3>
           <div className="space-y-2 mb-3">
@@ -270,7 +296,10 @@ export default function CheckoutPage() {
           </div>
           <div className="border-t pt-2 space-y-1 text-sm">
             <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span>{formatCurrency(subtotal)}</span></div>
-            <div className="flex justify-between text-muted-foreground"><span>Frete ({shippingOption.toUpperCase()})</span><span>{shipping.price === 0 ? "Grátis" : formatCurrency(shipping.price)}</span></div>
+            <div className="flex justify-between text-muted-foreground">
+              <span>Frete ({shippingOption})</span>
+              <span>{selectedShipping.price === 0 ? "Grátis" : formatCurrency(selectedShipping.price)}</span>
+            </div>
             <div className="flex justify-between font-display font-bold text-foreground pt-2 border-t"><span>Total</span><span>{formatCurrency(total)}</span></div>
           </div>
         </div>
