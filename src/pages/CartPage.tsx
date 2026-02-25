@@ -4,10 +4,14 @@ import { useCart } from "@/contexts/CartContext";
 import { formatCurrency } from "@/hooks/useSupabaseData";
 import { useAuth } from "@/contexts/AuthContext";
 
+const FREE_SHIPPING_THRESHOLD = 130;
+
 export default function CartPage() {
   const { items, removeItem, updateQuantity, subtotal } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const shippingProgress = Math.min((subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100);
+  const remainingForFree = Math.max(FREE_SHIPPING_THRESHOLD - subtotal, 0);
 
   if (items.length === 0) {
     return (
@@ -35,8 +39,18 @@ export default function CartPage() {
       <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-6">Carrinho</h1>
 
       <div className="bg-card rounded-lg border p-4 mb-6">
-        <p className="text-xs text-muted-foreground">
-          🚚 <span className="font-semibold text-foreground">Frete grátis</span> para Pará de Minas - MG. Demais localidades, frete calculado no checkout.
+        {remainingForFree > 0 ? (
+          <p className="text-xs text-muted-foreground mb-2">
+            Falta <span className="font-semibold text-foreground">{formatCurrency(remainingForFree)}</span> para frete grátis!
+          </p>
+        ) : (
+          <p className="text-xs font-semibold mb-2" style={{color: 'hsl(var(--accent))'}}>🎉 Você ganhou frete grátis!</p>
+        )}
+        <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
+          <div className="h-full bg-accent rounded-full transition-all duration-500" style={{ width: `${shippingProgress}%` }} />
+        </div>
+        <p className="text-[10px] text-muted-foreground mt-1.5">
+          🚚 Frete grátis acima de R$ 130 ou para Pará de Minas - MG
         </p>
       </div>
 
@@ -79,7 +93,7 @@ export default function CartPage() {
           <h2 className="font-display font-bold text-foreground mb-4">Resumo</h2>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span>{formatCurrency(subtotal)}</span></div>
-            <div className="flex justify-between text-muted-foreground"><span>Frete</span><span>Calcular no checkout</span></div>
+            <div className="flex justify-between text-muted-foreground"><span>Frete</span><span>{remainingForFree <= 0 ? "Grátis*" : "Calcular no checkout"}</span></div>
           </div>
           <div className="border-t mt-4 pt-4 flex justify-between font-display font-bold text-foreground">
             <span>Total</span><span>{formatCurrency(subtotal)}</span>
