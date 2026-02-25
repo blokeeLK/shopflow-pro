@@ -65,19 +65,15 @@ export default function CheckoutPage() {
         body: {
           cep_destino: selectedAddress.cep,
           items: items.map((i) => ({ product_id: i.productId, quantity: i.quantity })),
+          city: selectedAddress.city,
+          state: selectedAddress.state,
         },
       });
 
       if (error) throw error;
 
-      setFreeThreshold(data.freeThreshold || 299);
-      const isFree = subtotal >= (data.freeThreshold || 299);
-      setShippingOptions(
-        (data.options || []).map((o: ShippingOption) => ({
-          ...o,
-          price: isFree ? 0 : o.price,
-        }))
-      );
+      // Free shipping is determined server-side based on city/state
+      setShippingOptions(data.options || []);
       setShippingOption(data.options?.[0]?.service || "PAC");
     } catch (err: any) {
       // Fallback to simulated prices

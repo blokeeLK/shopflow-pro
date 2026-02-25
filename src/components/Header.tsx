@@ -87,7 +87,7 @@ export function Header() {
   return (
     <>
       <div className="bg-primary text-primary-foreground text-center text-xs py-2 px-4 font-body">
-        🔥 <span className="font-semibold">FRETE GRÁTIS</span> em compras acima de R$ 299
+        🔥 <span className="font-semibold">FRETE GRÁTIS</span> para Pará de Minas - MG
       </div>
 
       <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-md border-b">
@@ -169,7 +169,7 @@ export function Header() {
               )}
             </div>
 
-            <Link to="/conta" className="p-2 text-muted-foreground hover:text-foreground transition-colors hidden md:block" aria-label="Conta">
+            <Link to="/conta" className="p-2 text-muted-foreground hover:text-foreground transition-colors" aria-label="Conta">
               <User className="h-5 w-5" />
             </Link>
             <Link to="/carrinho" className="relative p-2 text-muted-foreground hover:text-foreground transition-colors" aria-label="Carrinho">
