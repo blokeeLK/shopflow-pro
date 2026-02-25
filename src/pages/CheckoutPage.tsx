@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, MapPin, Truck, CreditCard, Check, Plus, Loader2 } from "lucide-react";
+import { ArrowLeft, MapPin, Truck, CreditCard, Check, Plus, Loader2, Copy, QrCode } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { useAddresses, formatCurrency } from "@/hooks/useSupabaseData";
@@ -30,6 +30,7 @@ export default function CheckoutPage() {
   const [loadingShipping, setLoadingShipping] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"pix" | "card">("pix");
   const [submitting, setSubmitting] = useState(false);
+  const [pixData, setPixData] = useState<{ qr_code?: string; qr_code_base64?: string; copy_paste?: string } | null>(null);
 
   // New address form
   const [showAddressForm, setShowAddressForm] = useState(false);
@@ -140,9 +141,37 @@ export default function CheckoutPage() {
       const { error: itemsErr } = await supabase.from("order_items").insert(orderItems);
       if (itemsErr) throw itemsErr;
 
+      // Process payment via Mercado Pago
+      const { data: paymentData, error: paymentErr } = await supabase.functions.invoke("create-payment", {
+        body: { order_id: order.id, payment_method: paymentMethod },
+      });
+
+      if (paymentErr) {
+        console.error("Payment error:", paymentErr);
+        // Order created but payment failed — still show confirmation
+        clearCart();
+        setStep(3);
+        toast({ title: "Pedido criado! Pagamento será processado em breve." });
+        return;
+      }
+
       clearCart();
-      setStep(3);
-      toast({ title: "Pedido criado com sucesso! 🎉" });
+
+      if (paymentMethod === "pix" && paymentData?.pix_qr_code) {
+        setPixData({
+          qr_code: paymentData.pix_qr_code,
+          qr_code_base64: paymentData.pix_qr_code_base64,
+          copy_paste: paymentData.pix_copy_paste,
+        });
+        setStep(4); // Pix payment step
+        toast({ title: "Pix gerado! Escaneie o QR Code para pagar." });
+      } else if (paymentMethod === "card" && paymentData?.checkout_url) {
+        // Redirect to Mercado Pago checkout
+        window.location.href = paymentData.checkout_url;
+      } else {
+        setStep(3);
+        toast({ title: "Pedido criado com sucesso! 🎉" });
+      }
     } catch (err: any) {
       toast({ title: "Erro ao criar pedido", description: err?.message, variant: "destructive" });
     } finally {
@@ -151,6 +180,47 @@ export default function CheckoutPage() {
   };
 
   if (authLoading) return <div className="container py-20 text-center text-muted-foreground">Carregando...</div>;
+
+  // Pix QR Code step
+  if (step === 4 && pixData) {
+    return (
+      <div className="container py-12 text-center max-w-md mx-auto">
+        <div className="bg-accent/10 rounded-full h-20 w-20 flex items-center justify-center mx-auto mb-6">
+          <QrCode className="h-10 w-10 text-accent" />
+        </div>
+        <h1 className="font-display text-2xl font-bold text-foreground mb-2">Pague com Pix</h1>
+        <p className="text-muted-foreground mb-6 text-sm">Escaneie o QR Code ou copie o código para pagar.</p>
+
+        {pixData.qr_code_base64 && (
+          <div className="flex justify-center mb-4">
+            <img src={`data:image/png;base64,${pixData.qr_code_base64}`} alt="QR Code Pix" className="w-48 h-48 rounded-lg border" />
+          </div>
+        )}
+
+        {pixData.copy_paste && (
+          <div className="bg-secondary rounded-lg p-3 mb-6">
+            <p className="text-xs text-muted-foreground mb-2">Código Pix (copiar e colar)</p>
+            <div className="flex gap-2 items-center">
+              <input value={pixData.copy_paste} readOnly className="flex-1 bg-background border rounded px-2 py-1.5 text-xs text-foreground font-mono truncate" />
+              <button
+                onClick={() => { navigator.clipboard.writeText(pixData.copy_paste || ""); toast({ title: "Código copiado!" }); }}
+                className="bg-accent text-accent-foreground p-2 rounded-lg hover:bg-accent/90"
+              >
+                <Copy className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="flex flex-col gap-3">
+          <Link to="/conta" className="bg-accent text-accent-foreground font-display font-semibold py-3 rounded-lg text-sm text-center hover:bg-accent/90 transition-colors">
+            Acompanhar pedido
+          </Link>
+          <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Continuar comprando</Link>
+        </div>
+      </div>
+    );
+  }
 
   if (step === 3) {
     return (
