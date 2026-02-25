@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Truck, ShieldCheck, CreditCard } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
 import { useProducts, useCategoriesWithStock } from "@/hooks/useSupabaseData";
+import { CustomHtmlBlock } from "@/components/CustomHtmlBlock";
 
 const Index = () => {
   const { data: featured = [], isLoading: loadingFeatured } = useProducts({ featured: true });
@@ -10,6 +11,9 @@ const Index = () => {
 
   return (
     <div>
+      {/* Custom HTML from admin editor */}
+      <CustomHtmlBlock section="home_html" />
+
       {/* Hero Banner */}
       <section className="relative bg-primary overflow-hidden">
         <div className="container py-16 md:py-24 relative z-10">

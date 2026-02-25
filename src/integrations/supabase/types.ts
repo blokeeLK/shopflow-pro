@@ -469,6 +469,33 @@ export type Database = {
           },
         ]
       }
+      site_html: {
+        Row: {
+          footer_html: string | null
+          header_html: string | null
+          home_html: string | null
+          id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          footer_html?: string | null
+          header_html?: string | null
+          home_html?: string | null
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          footer_html?: string | null
+          header_html?: string | null
+          home_html?: string | null
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           created_at: string
