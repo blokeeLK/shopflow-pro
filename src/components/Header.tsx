@@ -1,13 +1,88 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ShoppingBag, Menu, X, Search, User } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { useCategoriesWithStock } from "@/hooks/useSupabaseData";
+import { supabase } from "@/integrations/supabase/client";
+import { formatCurrency, getProductPrice } from "@/hooks/useSupabaseData";
+
+interface SearchResult {
+  id: string;
+  name: string;
+  slug: string;
+  price: number;
+  promo_price: number | null;
+  is_promo: boolean;
+  image?: string;
+}
 
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [searching, setSearching] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
+
   const { totalItems } = useCart();
   const { data: categories = [] } = useCategoriesWithStock();
+
+  // Close search on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setSearchOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  // Focus input when search opens
+  useEffect(() => {
+    if (searchOpen) inputRef.current?.focus();
+  }, [searchOpen]);
+
+  // Debounced search
+  useEffect(() => {
+    if (searchQuery.trim().length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    const timeout = setTimeout(async () => {
+      setSearching(true);
+      const { data } = await supabase
+        .from("products")
+        .select("id, name, slug, price, promo_price, is_promo, product_images(url, position)")
+        .eq("active", true)
+        .ilike("name", `%${searchQuery.trim()}%`)
+        .limit(6);
+
+      if (data) {
+        setSearchResults(
+          data.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            slug: p.slug,
+            price: p.price,
+            promo_price: p.promo_price,
+            is_promo: p.is_promo,
+            image: p.product_images?.sort((a: any, b: any) => (a.position || 0) - (b.position || 0))[0]?.url,
+          }))
+        );
+      }
+      setSearching(false);
+    }, 300);
+    return () => clearTimeout(timeout);
+  }, [searchQuery]);
+
+  const handleResultClick = (slug: string) => {
+    setSearchOpen(false);
+    setSearchQuery("");
+    navigate(`/produto/${slug}`);
+  };
 
   return (
     <>
@@ -34,9 +109,66 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-2">
-            <button className="p-2 text-muted-foreground hover:text-foreground transition-colors" aria-label="Buscar">
-              <Search className="h-5 w-5" />
-            </button>
+            <div ref={searchRef} className="relative">
+              <button
+                onClick={() => setSearchOpen(!searchOpen)}
+                className="p-2 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Buscar"
+              >
+                <Search className="h-5 w-5" />
+              </button>
+
+              {searchOpen && (
+                <div className="absolute right-0 top-full mt-2 w-80 md:w-96 bg-card border rounded-lg shadow-xl z-50 overflow-hidden">
+                  <div className="p-3 border-b">
+                    <input
+                      ref={inputRef}
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Buscar produtos..."
+                      className="w-full bg-secondary rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none"
+                      onKeyDown={(e) => {
+                        if (e.key === "Escape") setSearchOpen(false);
+                      }}
+                    />
+                  </div>
+
+                  {searching && (
+                    <div className="p-4 text-center text-sm text-muted-foreground">Buscando...</div>
+                  )}
+
+                  {!searching && searchQuery.trim().length >= 2 && searchResults.length === 0 && (
+                    <div className="p-4 text-center text-sm text-muted-foreground">Nenhum produto encontrado</div>
+                  )}
+
+                  {searchResults.length > 0 && (
+                    <div className="max-h-80 overflow-y-auto">
+                      {searchResults.map((r) => (
+                        <button
+                          key={r.id}
+                          onClick={() => handleResultClick(r.slug)}
+                          className="w-full flex items-center gap-3 p-3 hover:bg-secondary/50 transition-colors text-left"
+                        >
+                          <img
+                            src={r.image || "/placeholder.svg"}
+                            alt={r.name}
+                            className="w-12 h-14 object-cover rounded"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground truncate">{r.name}</p>
+                            <p className="text-sm font-display font-bold text-foreground">
+                              {formatCurrency(getProductPrice(r))}
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             <Link to="/conta" className="p-2 text-muted-foreground hover:text-foreground transition-colors hidden md:block" aria-label="Conta">
               <User className="h-5 w-5" />
             </Link>
