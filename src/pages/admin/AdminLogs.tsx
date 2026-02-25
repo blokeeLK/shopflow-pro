@@ -9,22 +9,23 @@ export default function AdminLogs() {
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ["admin-logs"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Fetch logs and profiles separately to avoid FK cache issues
+      const { data: logsData, error: logsError } = await supabase
         .from("admin_logs")
-        .select("*, profile:profiles!admin_logs_admin_id_fkey(name, email)")
+        .select("*")
         .order("created_at", { ascending: false })
         .limit(200);
-      if (error) {
-        // Fallback without join if FK doesn't exist
-        const { data: d2, error: e2 } = await supabase
-          .from("admin_logs")
-          .select("*")
-          .order("created_at", { ascending: false })
-          .limit(200);
-        if (e2) throw e2;
-        return d2;
-      }
-      return data;
+      if (logsError) throw logsError;
+      
+      // Get unique admin IDs and fetch their profiles
+      const adminIds = [...new Set((logsData || []).map((l: any) => l.admin_id))];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, name, email")
+        .in("id", adminIds);
+      
+      const profileMap = new Map((profiles || []).map((p: any) => [p.id, p]));
+      return (logsData || []).map((l: any) => ({ ...l, profile: profileMap.get(l.admin_id) || null }));
     },
   });
 
