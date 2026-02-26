@@ -28,12 +28,22 @@ export default function AdminOrders() {
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ["admin-orders"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: ordersData, error } = await supabase
         .from("orders")
-        .select("*, order_items(*, products:product_id(name)), profiles:user_id(name, email, cpf, phone)")
+        .select("*, order_items(*)")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data;
+      if (!ordersData || ordersData.length === 0) return [];
+
+      // Fetch profiles separately since FK points to auth.users not profiles
+      const userIds = [...new Set(ordersData.map((o) => o.user_id))];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, name, email, cpf, phone")
+        .in("id", userIds);
+
+      const profileMap = new Map((profiles || []).map((p) => [p.id, p]));
+      return ordersData.map((o) => ({ ...o, profiles: profileMap.get(o.user_id) || null }));
     },
   });
 
