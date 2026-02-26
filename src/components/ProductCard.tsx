@@ -32,11 +32,9 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             <span className="bg-warning text-warning-foreground text-[10px] font-bold px-2 py-0.5 rounded-sm">Últimas unidades</span>
           )}
         </div>
-        {product.sold_count > 0 && (
-          <span className="absolute top-2 right-2 bg-primary/80 text-primary-foreground text-[10px] font-medium px-2 py-0.5 rounded-sm backdrop-blur-sm">
-            {product.sold_count} vendidos
-          </span>
-        )}
+        <span className="absolute top-2 right-2 bg-accent text-accent-foreground text-[10px] font-bold px-2 py-0.5 rounded-sm">
+          {product.sold_count} Vendidos
+        </span>
       </div>
 
       <div className="p-3 md:p-4">

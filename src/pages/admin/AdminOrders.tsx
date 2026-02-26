@@ -83,30 +83,47 @@ export default function AdminOrders() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Orders list */}
-        <div className="lg:col-span-2 space-y-2">
+        {/* Orders table */}
+        <div className="lg:col-span-2 overflow-x-auto">
           {isLoading ? (
-            [...Array(3)].map((_, i) => <div key={i} className="h-20 bg-card border rounded-lg animate-pulse" />)
+            [...Array(3)].map((_, i) => <div key={i} className="h-12 bg-card border rounded-lg animate-pulse mb-2" />)
           ) : filtered.length === 0 ? (
             <p className="text-center py-10 text-muted-foreground">Nenhum pedido encontrado</p>
           ) : (
-            filtered.map((order: any) => (
-              <button key={order.id} onClick={() => setSelected(order.id)}
-                className={`w-full text-left bg-card border rounded-lg p-4 hover:bg-secondary/30 transition-colors ${selected === order.id ? "ring-2 ring-accent" : ""}`}>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs text-muted-foreground font-mono">#{order.id.slice(0, 8)}</span>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded capitalize ${STATUS_COLORS[order.status] || ""}`}>
-                    {order.status.replace(/_/g, " ")}
-                  </span>
-                </div>
-                <p className="text-sm font-medium text-foreground">{(order.profiles as any)?.name || "—"}</p>
-                <p className="text-xs text-muted-foreground">{(order.profiles as any)?.email} · {(order.profiles as any)?.phone || "sem tel"}</p>
-                <div className="flex items-center justify-between mt-1">
-                  <span className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleDateString("pt-BR")}</span>
-                  <span className="text-sm font-bold text-foreground">{formatCurrency(Number(order.total))}</span>
-                </div>
-              </button>
-            ))
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left text-xs text-muted-foreground uppercase">
+                  <th className="py-2 px-2">ID</th>
+                  <th className="py-2 px-2">Cliente</th>
+                  <th className="py-2 px-2">Celular</th>
+                  <th className="py-2 px-2">CPF</th>
+                  <th className="py-2 px-2">Status</th>
+                  <th className="py-2 px-2">Data</th>
+                  <th className="py-2 px-2 text-right">Valor</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((order: any) => {
+                  const profile = order.profiles as any;
+                  return (
+                    <tr key={order.id} onClick={() => setSelected(order.id)}
+                      className={`border-b cursor-pointer hover:bg-secondary/30 transition-colors ${selected === order.id ? "bg-accent/10" : ""}`}>
+                      <td className="py-2.5 px-2 font-mono text-xs">#{order.id.slice(0, 8)}</td>
+                      <td className="py-2.5 px-2 font-medium text-foreground">{profile?.name || "—"}</td>
+                      <td className="py-2.5 px-2 text-muted-foreground">{profile?.phone || "—"}</td>
+                      <td className="py-2.5 px-2 text-muted-foreground">{profile?.cpf || ""}</td>
+                      <td className="py-2.5 px-2">
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded capitalize ${STATUS_COLORS[order.status] || ""}`}>
+                          {order.status.replace(/_/g, " ")}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-2 text-muted-foreground text-xs">{new Date(order.created_at).toLocaleDateString("pt-BR")}</td>
+                      <td className="py-2.5 px-2 text-right font-bold">{formatCurrency(Number(order.total))}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           )}
         </div>
 
