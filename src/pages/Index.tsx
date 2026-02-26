@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
 import { useProducts, useCategoriesWithStock } from "@/hooks/useSupabaseData";
+import { HeroCarousel } from "@/components/HeroCarousel";
 
 const Index = () => {
   const { data: featured = [], isLoading: loadingFeatured } = useProducts({ featured: true });
@@ -10,14 +11,8 @@ const Index = () => {
 
   return (
     <div>
-      {/* Hero Banner */}
-      <section className="relative overflow-hidden">
-        <img
-          src="/images/banner-nova-colecao.png"
-          alt="Nova Coleção - Estilo que fala por você"
-          className="w-full h-auto object-contain max-h-[280px] md:max-h-[420px]"
-        />
-      </section>
+      {/* Hero Carousel */}
+      <HeroCarousel />
 
       {/* Trust bar */}
 
