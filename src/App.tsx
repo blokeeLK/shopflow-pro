@@ -30,6 +30,9 @@ import AdminMarketing from "./pages/admin/AdminMarketing";
 import AdminFinancial from "./pages/admin/AdminFinancial";
 import AdminLogs from "./pages/admin/AdminLogs";
 import AdminSiteEditor from "./pages/admin/AdminSiteEditor";
+import AdminSettings from "./pages/admin/AdminSettings";
+import AdminFaq from "./pages/admin/AdminFaq";
+import FaqPage from "./pages/FaqPage";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +56,7 @@ const App = () => (
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/conta" element={<AccountPage />} />
                 <Route path="/checkout" element={<CheckoutPage />} />
+                <Route path="/faq" element={<FaqPage />} />
               </Route>
               <Route element={<AdminLayout />}>
                 <Route path="/admin" element={<AdminDashboard />} />
@@ -67,6 +71,8 @@ const App = () => (
                 <Route path="/admin/financeiro" element={<AdminFinancial />} />
                 <Route path="/admin/logs" element={<AdminLogs />} />
                 <Route path="/admin/editor" element={<AdminSiteEditor />} />
+                <Route path="/admin/configuracoes" element={<AdminSettings />} />
+                <Route path="/admin/faq" element={<AdminFaq />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

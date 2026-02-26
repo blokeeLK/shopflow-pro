@@ -3,7 +3,7 @@ import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   LayoutDashboard, Package, FolderTree, ShoppingCart, Warehouse,
-  Image, Megaphone, BarChart3, ClipboardList, Users, LogOut, Menu, X, Store, Code
+  Image, Megaphone, BarChart3, ClipboardList, Users, LogOut, Menu, X, Store, Code, Settings, HelpCircle
 } from "lucide-react";
 
 const navItems = [
@@ -18,6 +18,8 @@ const navItems = [
   { title: "Financeiro", url: "/admin/financeiro", icon: BarChart3 },
   { title: "Logs", url: "/admin/logs", icon: ClipboardList },
   { title: "Editor do Site", url: "/admin/editor", icon: Code },
+  { title: "FAQ", url: "/admin/faq", icon: HelpCircle },
+  { title: "Configurações", url: "/admin/configuracoes", icon: Settings },
 ];
 
 export function AdminSidebar() {
