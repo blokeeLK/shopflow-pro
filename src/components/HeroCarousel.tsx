@@ -48,21 +48,25 @@ export function HeroCarousel() {
   if (slides.length === 0) {
     return (
       <section className="w-full overflow-hidden">
-        <img
-          src="/images/banner-nova-colecao.png"
-          alt="Nova Coleção - Estilo que fala por você"
-          className="w-full h-auto object-cover"
-        />
+        <div className="w-full" style={{ maxWidth: 1920, margin: '0 auto', aspectRatio: '1920/560' }}>
+          <img
+            src="/images/banner-nova-colecao.png"
+            alt="Nova Coleção - Estilo que fala por você"
+            className="w-full h-full object-cover"
+          />
+        </div>
       </section>
     );
   }
 
   const SlideImage = ({ slide }: { slide: Slide }) => (
-    <img
-      src={slide.image}
-      alt={`Banner`}
-      className="w-full h-auto object-cover"
-    />
+    <div className="w-full" style={{ maxWidth: 1920, margin: '0 auto', aspectRatio: '1920/560' }}>
+      <img
+        src={slide.image}
+        alt="Banner"
+        className="w-full h-full object-cover"
+      />
+    </div>
   );
 
   return (
