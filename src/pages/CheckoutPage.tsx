@@ -287,7 +287,28 @@ export default function CheckoutPage() {
                 <div className="bg-card border rounded-lg p-4 space-y-3">
                   <h3 className="font-display font-semibold text-sm text-foreground">Novo endereço</h3>
                   <div className="grid grid-cols-2 gap-3">
-                    <input placeholder="CEP *" value={addressForm.cep} onChange={(e) => setAddressForm((f) => ({ ...f, cep: e.target.value }))} className="col-span-1 bg-background border rounded-lg px-3 py-2 text-sm text-foreground" />
+                    <div className="col-span-1">
+                      <input placeholder="CEP *" value={addressForm.cep} onChange={(e) => {
+                        const cep = e.target.value.replace(/\D/g, "").slice(0, 8);
+                        setAddressForm((f) => ({ ...f, cep }));
+                        if (cep.length === 8) {
+                          fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                            .then(r => r.json())
+                            .then(data => {
+                              if (!data.erro) {
+                                setAddressForm(f => ({
+                                  ...f,
+                                  street: data.logradouro || f.street,
+                                  neighborhood: data.bairro || f.neighborhood,
+                                  city: data.localidade || f.city,
+                                  state: data.uf || f.state,
+                                }));
+                              }
+                            })
+                            .catch(() => {});
+                        }
+                      }} className="w-full bg-background border rounded-lg px-3 py-2 text-sm text-foreground" />
+                    </div>
                     <input placeholder="Apelido" value={addressForm.label} onChange={(e) => setAddressForm((f) => ({ ...f, label: e.target.value }))} className="col-span-1 bg-background border rounded-lg px-3 py-2 text-sm text-foreground" />
                     <input placeholder="Rua *" value={addressForm.street} onChange={(e) => setAddressForm((f) => ({ ...f, street: e.target.value }))} className="col-span-2 bg-background border rounded-lg px-3 py-2 text-sm text-foreground" />
                     <input placeholder="Número *" value={addressForm.number} onChange={(e) => setAddressForm((f) => ({ ...f, number: e.target.value }))} className="bg-background border rounded-lg px-3 py-2 text-sm text-foreground" />

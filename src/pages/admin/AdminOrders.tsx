@@ -30,7 +30,7 @@ export default function AdminOrders() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")
-        .select("*, order_items(*, products:product_id(name)), profiles:user_id(name, email, cpf)")
+        .select("*, order_items(*, products:product_id(name)), profiles:user_id(name, email, cpf, phone)")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
@@ -59,7 +59,7 @@ export default function AdminOrders() {
     if (filterStatus && o.status !== filterStatus) return false;
     if (search) {
       const s = search.toLowerCase();
-      return o.id.toLowerCase().includes(s) || (o.profiles as any)?.name?.toLowerCase().includes(s) || (o.profiles as any)?.email?.toLowerCase().includes(s);
+      return o.id.toLowerCase().includes(s) || (o.profiles as any)?.name?.toLowerCase().includes(s) || (o.profiles as any)?.email?.toLowerCase().includes(s) || (o.profiles as any)?.phone?.includes(s);
     }
     return true;
   });
@@ -73,7 +73,7 @@ export default function AdminOrders() {
       <div className="flex flex-wrap gap-3 mb-4">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por ID, nome ou email..."
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por ID, nome, email ou telefone..."
             className="w-full pl-10 pr-4 py-2 bg-card border rounded-lg text-sm text-foreground" />
         </div>
         <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="bg-card border rounded-lg px-3 py-2 text-sm text-foreground">
@@ -100,6 +100,7 @@ export default function AdminOrders() {
                   </span>
                 </div>
                 <p className="text-sm font-medium text-foreground">{(order.profiles as any)?.name || "—"}</p>
+                <p className="text-xs text-muted-foreground">{(order.profiles as any)?.email} · {(order.profiles as any)?.phone || "sem tel"}</p>
                 <div className="flex items-center justify-between mt-1">
                   <span className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleDateString("pt-BR")}</span>
                   <span className="text-sm font-bold text-foreground">{formatCurrency(Number(order.total))}</span>
@@ -126,14 +127,19 @@ export default function AdminOrders() {
 function OrderDetail({ order, onUpdateStatus, onUpdateTracking }: { order: any; onUpdateStatus: (s: string) => void; onUpdateTracking: (t: string) => void }) {
   const [tracking, setTracking] = useState(order.tracking_code || "");
   const address = order.address_snapshot as any;
+  const profile = order.profiles as any;
 
   return (
     <div className="space-y-4">
       <div>
         <p className="text-xs text-muted-foreground font-mono">#{order.id.slice(0, 8)}</p>
-        <p className="font-display font-bold text-foreground">{(order.profiles as any)?.name}</p>
-        <p className="text-xs text-muted-foreground">{(order.profiles as any)?.email}</p>
-        {(order.profiles as any)?.cpf && <p className="text-xs text-muted-foreground">CPF: {(order.profiles as any)?.cpf}</p>}
+        <p className="font-display font-bold text-foreground">{profile?.name}</p>
+        <p className="text-xs text-muted-foreground">{profile?.email}</p>
+        {profile?.phone && <p className="text-xs text-muted-foreground">Tel: {profile.phone}</p>}
+        {profile?.cpf && <p className="text-xs text-muted-foreground">CPF: {profile.cpf}</p>}
+        <p className="text-xs text-muted-foreground mt-1">
+          {new Date(order.created_at).toLocaleString("pt-BR")} · {order.payment_method || "—"}
+        </p>
       </div>
 
       {/* Items */}
