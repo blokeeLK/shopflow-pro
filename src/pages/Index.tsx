@@ -11,11 +11,11 @@ const Index = () => {
   return (
     <div>
       {/* Hero Banner */}
-      <section className="relative overflow-hidden max-h-[220px] md:max-h-[380px]">
+      <section className="relative overflow-hidden">
         <img
           src="/images/banner-nova-colecao.png"
           alt="Nova Coleção - Estilo que fala por você"
-          className="w-full h-full object-cover"
+          className="w-full h-auto object-contain max-h-[280px] md:max-h-[420px]"
         />
       </section>
 
