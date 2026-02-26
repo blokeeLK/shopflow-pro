@@ -143,9 +143,7 @@ export default function ProductPage() {
             </div>
           )}
 
-          {product.sold_count > 0 && (
-            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground mb-4">🔥 {product.sold_count} vendidos</span>
-          )}
+          <span className="inline-flex items-center gap-1 text-sm text-accent font-semibold mb-4">🔥 {product.sold_count} unidades já vendidas</span>
 
           <div className="mb-4">
             {product.is_promo && product.promo_price && (

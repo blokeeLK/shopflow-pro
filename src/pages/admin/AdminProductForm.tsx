@@ -20,7 +20,7 @@ export default function AdminProductForm() {
   const [form, setForm] = useState({
     name: "", slug: "", description: "", category_id: "", price: 0, promo_price: null as number | null,
     is_promo: false, promo_end_date: "", is_featured: false, active: true,
-    weight: 0, width: 0, height: 0, length: 0, installment_count: 3,
+    weight: 0, width: 0, height: 0, length: 0, installment_count: 3, sold_count: 0,
   });
   const [variants, setVariants] = useState<Variant[]>([{ size: "", stock: 0 }]);
   const [images, setImages] = useState<ImageItem[]>([]);
@@ -58,7 +58,7 @@ export default function AdminProductForm() {
         is_promo: existing.is_promo, promo_end_date: existing.promo_end_date ? existing.promo_end_date.slice(0, 16) : "",
         is_featured: existing.is_featured, active: existing.active,
         weight: existing.weight || 0, width: existing.width || 0, height: existing.height || 0, length: existing.length || 0,
-        installment_count: existing.installment_count || 3,
+        installment_count: existing.installment_count || 3, sold_count: existing.sold_count || 0,
       });
       setVariants(
         (existing.product_variants || []).map((v: any) => ({ id: v.id, size: v.size, stock: v.stock }))
@@ -101,7 +101,7 @@ export default function AdminProductForm() {
         is_promo: form.is_promo, promo_end_date: form.promo_end_date ? new Date(form.promo_end_date).toISOString() : null,
         is_featured: form.is_featured, active: form.active,
         weight: form.weight, width: form.width, height: form.height, length: form.length,
-        installment_count: form.installment_count,
+        installment_count: form.installment_count, sold_count: form.sold_count,
       };
 
       let productId: string;
@@ -223,14 +223,21 @@ export default function AdminProductForm() {
           </div>
         </div>
 
-        {/* Flags */}
-        <div className="bg-card border rounded-lg p-4 flex flex-wrap gap-4">
-          <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
-            <input type="checkbox" checked={form.is_featured} onChange={(e) => setForm({ ...form, is_featured: e.target.checked })} className="rounded" /> Destaque
-          </label>
-          <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
-            <input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} className="rounded" /> Ativo
-          </label>
+        {/* Flags + Sold Count */}
+        <div className="bg-card border rounded-lg p-4 space-y-3">
+          <div className="flex flex-wrap gap-4">
+            <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
+              <input type="checkbox" checked={form.is_featured} onChange={(e) => setForm({ ...form, is_featured: e.target.checked })} className="rounded" /> Destaque
+            </label>
+            <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
+              <input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} className="rounded" /> Ativo
+            </label>
+          </div>
+          <div className="max-w-[200px]">
+            <label className="text-xs text-muted-foreground">Quantidade já vendida</label>
+            <input type="number" min="0" step="1" value={form.sold_count} onChange={(e) => setForm({ ...form, sold_count: Math.max(0, Math.floor(Number(e.target.value))) })}
+              className="w-full bg-background border rounded-lg px-3 py-2 text-sm text-foreground" />
+          </div>
         </div>
 
         {/* Dimensions */}

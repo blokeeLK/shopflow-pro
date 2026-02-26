@@ -254,6 +254,23 @@ export default function AccountPage() {
 
       {tab === "orders" && (
         <div className="space-y-3">
+          {/* Delete unpaid orders button */}
+          {orders.some((o) => o.status === "criado" || o.status === "aguardando_pagamento") && (
+            <button
+              onClick={async () => {
+                const unpaid = orders.filter((o) => o.status === "criado" || o.status === "aguardando_pagamento");
+                for (const o of unpaid) {
+                  await supabase.from("order_items").delete().eq("order_id", o.id);
+                  await supabase.from("orders").delete().eq("id", o.id);
+                }
+                toast({ title: `${unpaid.length} pedido(s) removido(s)` });
+                loadOrders();
+              }}
+              className="w-full bg-destructive text-destructive-foreground font-display font-semibold py-2.5 rounded-lg text-sm hover:bg-destructive/90 transition-colors"
+            >
+              APAGAR PEDIDOS
+            </button>
+          )}
           {orders.length === 0 ? (
             <div className="bg-card border rounded-xl p-8 text-center">
               <Package className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
