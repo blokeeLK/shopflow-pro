@@ -45,8 +45,31 @@ export default function AdminDesign() {
       });
   }, []);
 
-  const handleFileChange = (index: number, file: File | undefined) => {
+  const validateImageDimensions = (file: File): Promise<{ valid: boolean; width: number; height: number }> => {
+    return new Promise((resolve) => {
+      const img = new window.Image();
+      img.onload = () => {
+        URL.revokeObjectURL(img.src);
+        resolve({ valid: img.width === 1920 && img.height === 560, width: img.width, height: img.height });
+      };
+      img.onerror = () => resolve({ valid: false, width: 0, height: 0 });
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  const handleFileChange = async (index: number, file: File | undefined) => {
     if (!file) return;
+
+    const { valid, width, height } = await validateImageDimensions(file);
+    if (!valid) {
+      toast({
+        title: "Dimensão incorreta",
+        description: `A imagem deve ter 1920×560px. A enviada tem ${width}×${height}px.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     const updated = [...slides];
     updated[index] = {
       ...updated[index],
