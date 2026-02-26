@@ -113,8 +113,8 @@ export function Header() {
 
   return (
     <>
-      <div className="bg-primary text-primary-foreground text-center text-xs py-2 px-4 font-body">
-        🔥 <span className="font-semibold">FRETE GRÁTIS</span> acima de R$ 130
+      <div className="bg-destructive text-destructive-foreground text-center text-xs py-2 px-4 font-semibold">
+        🔥 FRETE GRÁTIS para Pará de Minas - MG · Compra 100% segura · Parcele em até 3x
       </div>
 
       <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-md border-b">

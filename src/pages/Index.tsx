@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Truck, ShieldCheck, CreditCard } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
 import { useProducts, useCategoriesWithStock } from "@/hooks/useSupabaseData";
 
@@ -35,20 +35,8 @@ const Index = () => {
       </section>
 
       {/* Trust bar */}
-      <section className="border-b bg-destructive text-destructive-foreground">
-        <div className="container py-3 flex flex-wrap justify-center gap-6 md:gap-12">
-          {[
-            { icon: Truck, text: "Frete grátis para Pará de Minas - MG" },
-            { icon: ShieldCheck, text: "Compra 100% segura" },
-            { icon: CreditCard, text: "Parcele em até 3x sem juros" },
-          ].map(({ icon: Icon, text }) => (
-            <div key={text} className="flex items-center gap-2 text-xs md:text-sm font-semibold">
-              <Icon className="h-4 w-4" />
-              <span>{text}</span>
-            </div>
-          ))}
-        </div>
-      </section>
+
+
 
       {/* Categories */}
       {categoriesWithStock.length > 0 && (
