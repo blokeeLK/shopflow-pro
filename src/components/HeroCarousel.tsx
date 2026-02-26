@@ -7,16 +7,15 @@ import { Link } from "react-router-dom";
 
 interface Slide {
   id: string;
-  image_url: string;
-  link: string;
-  position: number;
+  image: string;
+  link: string | null;
+  position: number | null;
   active: boolean;
 }
 
 export function HeroCarousel() {
   const [slides, setSlides] = useState<Slide[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [prevIndex, setPrevIndex] = useState(0);
 
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [
     Autoplay({ delay: 5000, stopOnInteraction: false }),
@@ -24,7 +23,7 @@ export function HeroCarousel() {
 
   useEffect(() => {
     supabase
-      .from("carousel_slides")
+      .from("banners")
       .select("*")
       .eq("active", true)
       .order("position")
@@ -35,9 +34,8 @@ export function HeroCarousel() {
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
-    setPrevIndex(selectedIndex);
     setSelectedIndex(emblaApi.selectedScrollSnap());
-  }, [emblaApi, selectedIndex]);
+  }, [emblaApi]);
 
   useEffect(() => {
     if (!emblaApi) return;
@@ -61,8 +59,8 @@ export function HeroCarousel() {
 
   const SlideImage = ({ slide }: { slide: Slide }) => (
     <img
-      src={slide.image_url}
-      alt={`Banner ${slide.position}`}
+      src={slide.image}
+      alt={`Banner`}
       className="w-full h-auto object-cover"
     />
   );
