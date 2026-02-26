@@ -123,8 +123,8 @@ export function Header() {
             {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
 
-          <Link to="/" className="font-display font-bold text-xl md:text-2xl tracking-tight text-foreground">
-            LOJA<span className="text-accent">.</span>
+          <Link to="/" className="flex items-center">
+            <img src="/images/logo-shopflow.png" alt="ShopFlow" className="h-9 md:h-11 w-auto" />
           </Link>
 
           <nav className="hidden md:flex items-center gap-6">
