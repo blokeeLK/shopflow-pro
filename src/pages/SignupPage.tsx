@@ -33,15 +33,20 @@ export default function SignupPage() {
     e.preventDefault();
     const cleanCpf = cpf.replace(/\D/g, "");
 
-    if (!name.trim() || !email.trim() || !password || !cleanCpf) {
+    const cleanPhone = phone.replace(/\D/g, "");
+    if (!name.trim() || !email.trim() || !password || !cleanPhone) {
       toast({ title: "Preencha todos os campos obrigatórios", variant: "destructive" });
+      return;
+    }
+    if (cleanPhone.length < 10) {
+      toast({ title: "Telefone inválido", description: "Informe DDD + número.", variant: "destructive" });
       return;
     }
     if (password.length < 6) {
       toast({ title: "A senha deve ter no mínimo 6 caracteres", variant: "destructive" });
       return;
     }
-    if (!validateCPF(cleanCpf)) {
+    if (cleanCpf && !validateCPF(cleanCpf)) {
       toast({ title: "CPF inválido", description: "Verifique o número digitado.", variant: "destructive" });
       return;
     }
@@ -66,10 +71,9 @@ export default function SignupPage() {
     // Update profile with CPF and phone
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      await supabase.from("profiles").update({
-        cpf: cleanCpf,
-        phone: phone.replace(/\D/g, ""),
-      }).eq("id", user.id);
+      const updateData: any = { phone: phone.replace(/\D/g, "") };
+      if (cleanCpf) updateData.cpf = cleanCpf;
+      await supabase.from("profiles").update(updateData).eq("id", user.id);
     }
 
     setLoading(false);
@@ -91,11 +95,11 @@ export default function SignupPage() {
             <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="seu@email.com" maxLength={255} />
           </div>
           <div>
-            <label className="text-sm font-medium text-foreground mb-1 block">CPF *</label>
+            <label className="text-sm font-medium text-foreground mb-1 block">CPF <span className="text-muted-foreground font-normal">(opcional)</span></label>
             <Input value={cpf} onChange={(e) => handleCpfChange(e.target.value)} placeholder="000.000.000-00" maxLength={14} />
           </div>
           <div>
-            <label className="text-sm font-medium text-foreground mb-1 block">Telefone</label>
+            <label className="text-sm font-medium text-foreground mb-1 block">Telefone *</label>
             <Input value={phone} onChange={(e) => handlePhoneChange(e.target.value)} placeholder="(00) 00000-0000" maxLength={15} />
           </div>
           <div>

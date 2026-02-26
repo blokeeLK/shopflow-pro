@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/hooks/useSupabaseData";
 import { Package, ShoppingCart, DollarSign, TrendingUp, AlertTriangle } from "lucide-react";
 
+const PAID_STATUSES = ["pago", "separando", "enviado", "entregue"];
+
 export default function AdminDashboard() {
   const { data: stats } = useQuery({
     queryKey: ["admin-stats"],
@@ -12,17 +14,20 @@ export default function AdminDashboard() {
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
       const [ordersToday, ordersMonth, allOrders, lowStock, topProduct] = await Promise.all([
-        supabase.from("orders").select("total").gte("created_at", startOfDay),
-        supabase.from("orders").select("total").gte("created_at", startOfMonth),
+        supabase.from("orders").select("total, status").gte("created_at", startOfDay),
+        supabase.from("orders").select("total, status").gte("created_at", startOfMonth),
         supabase.from("orders").select("id, status"),
         supabase.from("product_variants").select("stock, product_id, size, products(name)").lte("stock", 5).gt("stock", 0),
         supabase.from("products").select("name, sold_count").order("sold_count", { ascending: false }).limit(1).single(),
       ]);
 
-      const todayRevenue = (ordersToday.data || []).reduce((a, o) => a + Number(o.total), 0);
-      const monthRevenue = (ordersMonth.data || []).reduce((a, o) => a + Number(o.total), 0);
-      const totalOrders = allOrders.data?.length || 0;
-      const avgTicket = totalOrders > 0 ? monthRevenue / (ordersMonth.data?.length || 1) : 0;
+      // Only count paid orders for revenue
+      const paidToday = (ordersToday.data || []).filter(o => PAID_STATUSES.includes(o.status));
+      const paidMonth = (ordersMonth.data || []).filter(o => PAID_STATUSES.includes(o.status));
+
+      const todayRevenue = paidToday.reduce((a, o) => a + Number(o.total), 0);
+      const monthRevenue = paidMonth.reduce((a, o) => a + Number(o.total), 0);
+      const avgTicket = paidMonth.length > 0 ? monthRevenue / paidMonth.length : 0;
 
       const statusCount: Record<string, number> = {};
       (allOrders.data || []).forEach((o) => { statusCount[o.status] = (statusCount[o.status] || 0) + 1; });
@@ -30,7 +35,7 @@ export default function AdminDashboard() {
       return {
         todayRevenue,
         monthRevenue,
-        totalOrders,
+        totalOrders: allOrders.data?.length || 0,
         avgTicket,
         statusCount,
         lowStock: lowStock.data || [],
@@ -47,7 +52,6 @@ export default function AdminDashboard() {
     <div className="p-6 md:p-8 max-w-7xl">
       <h1 className="font-display text-2xl font-bold text-foreground mb-6">Dashboard</h1>
 
-      {/* Metric cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
           { label: "Vendas Hoje", value: formatCurrency(s?.todayRevenue || 0), icon: DollarSign, color: "text-success" },
@@ -65,8 +69,9 @@ export default function AdminDashboard() {
         ))}
       </div>
 
+      <p className="text-xs text-muted-foreground mb-6">💡 Vendas contam apenas pedidos com pagamento confirmado.</p>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Orders by status */}
         <div className="bg-card border rounded-lg p-4">
           <h2 className="font-display font-semibold text-foreground mb-3">Pedidos por Status</h2>
           <div className="space-y-2">
@@ -82,7 +87,6 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Low stock alerts */}
         <div className="bg-card border rounded-lg p-4">
           <h2 className="font-display font-semibold text-foreground mb-3 flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-warning" /> Estoque Baixo
@@ -100,7 +104,6 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Top product */}
         <div className="bg-card border rounded-lg p-4">
           <h2 className="font-display font-semibold text-foreground mb-3 flex items-center gap-2">
             <Package className="h-4 w-4 text-accent" /> Mais Vendido

@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { formatCPF } from "@/lib/cpf";
+import { formatCPF, validateCPF } from "@/lib/cpf";
 import { formatCurrency } from "@/hooks/useSupabaseData";
-import { User, Package, LogOut, Star, Save, Truck, ExternalLink, Copy } from "lucide-react";
+import { User, Package, LogOut, Star, Save, Truck, ExternalLink, Copy, CreditCard } from "lucide-react";
 
 interface Profile {
   name: string;
@@ -22,6 +22,7 @@ interface Order {
   tracking_code: string;
   created_at: string;
   shipping_service: string;
+  payment_method: string;
   order_items?: { product_id: string; product_name: string }[];
 }
 
@@ -51,6 +52,8 @@ export default function AccountPage() {
   const { toast } = useToast();
   const [tab, setTab] = useState<"profile" | "orders">("profile");
   const [profile, setProfile] = useState<Profile>({ name: "", cpf: "", phone: "", email: "" });
+  const [originalCpf, setOriginalCpf] = useState("");
+  const [cpfInput, setCpfInput] = useState("");
   const [orders, setOrders] = useState<Order[]>([]);
   const [saving, setSaving] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
@@ -88,6 +91,8 @@ export default function AccountPage() {
         phone: data.phone || "",
         email: data.email || "",
       });
+      setOriginalCpf(data.cpf || "");
+      setCpfInput(data.cpf || "");
     }
     setLoadingData(false);
   }
@@ -95,7 +100,7 @@ export default function AccountPage() {
   async function loadOrders() {
     const { data } = await supabase
       .from("orders")
-      .select("id, status, total, tracking_code, created_at, shipping_service, order_items(product_id, product_name)")
+      .select("id, status, total, tracking_code, created_at, shipping_service, payment_method, order_items(product_id, product_name)")
       .eq("user_id", user!.id)
       .order("created_at", { ascending: false });
     if (data) setOrders(data as any[]);
@@ -111,18 +116,45 @@ export default function AccountPage() {
     }
   }
 
+  const handleCpfChange = (val: string) => {
+    const digits = val.replace(/\D/g, "").slice(0, 11);
+    setCpfInput(digits.length === 11 ? formatCPF(digits) : digits);
+  };
+
+  const handlePhoneChange = (val: string) => {
+    const digits = val.replace(/\D/g, "").slice(0, 11);
+    if (digits.length <= 2) setProfile(p => ({ ...p, phone: digits }));
+    else if (digits.length <= 7) setProfile(p => ({ ...p, phone: `(${digits.slice(0, 2)}) ${digits.slice(2)}` }));
+    else setProfile(p => ({ ...p, phone: `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}` }));
+  };
+
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
-    setSaving(true);
-    const { error } = await supabase.from("profiles").update({
+    const updateData: any = {
       name: profile.name.trim(),
       phone: profile.phone.replace(/\D/g, ""),
-    }).eq("id", user!.id);
+    };
+
+    // Only include CPF if it was empty and user is setting it for the first time
+    const cleanCpf = cpfInput.replace(/\D/g, "");
+    if (!originalCpf && cleanCpf) {
+      if (!validateCPF(cleanCpf)) {
+        toast({ title: "CPF inválido", variant: "destructive" });
+        return;
+      }
+      updateData.cpf = cleanCpf;
+    }
+
+    setSaving(true);
+    const { error } = await supabase.from("profiles").update(updateData).eq("id", user!.id);
     setSaving(false);
     if (error) {
       toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Dados atualizados! ✅" });
+      if (updateData.cpf) {
+        setOriginalCpf(updateData.cpf);
+      }
     }
   }
 
@@ -152,6 +184,8 @@ export default function AccountPage() {
     await signOut();
     navigate("/");
   };
+
+  const canPayOrder = (status: string) => status === "criado" || status === "aguardando_pagamento";
 
   if (authLoading || !user) {
     return <div className="container py-20 text-center text-muted-foreground">Carregando...</div>;
@@ -196,12 +230,18 @@ export default function AccountPage() {
                 <Input value={profile.email} disabled className="bg-muted" />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground mb-1 block">CPF (não editável)</label>
-                <Input value={profile.cpf ? formatCPF(profile.cpf) : "Não informado"} disabled className="bg-muted" />
+                <label className="text-sm font-medium text-foreground mb-1 block">
+                  CPF {originalCpf ? "(não editável)" : "(opcional — só pode ser informado 1 vez)"}
+                </label>
+                {originalCpf ? (
+                  <Input value={formatCPF(originalCpf)} disabled className="bg-muted" />
+                ) : (
+                  <Input value={cpfInput} onChange={(e) => handleCpfChange(e.target.value)} placeholder="000.000.000-00" maxLength={14} />
+                )}
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground mb-1 block">Telefone</label>
-                <Input value={profile.phone} onChange={(e) => setProfile({ ...profile, phone: e.target.value })} placeholder="(00) 00000-0000" maxLength={15} />
+                <Input value={profile.phone} onChange={(e) => handlePhoneChange(e.target.value)} placeholder="(00) 00000-0000" maxLength={15} />
               </div>
               <button type="submit" disabled={saving}
                 className="w-full bg-accent text-accent-foreground font-display font-semibold py-3 rounded-lg hover:bg-accent/90 transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-50">
@@ -229,7 +269,6 @@ export default function AccountPage() {
                   </span>
                 </div>
 
-                {/* Status timeline */}
                 <OrderTimeline status={order.status} />
 
                 <div className="flex items-center justify-between mt-3">
@@ -238,6 +277,18 @@ export default function AccountPage() {
                     <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleDateString("pt-BR")}</p>
                   </div>
                 </div>
+
+                {/* Pay now button for unpaid orders */}
+                {canPayOrder(order.status) && (
+                  <div className="mt-3 pt-3 border-t">
+                    <Link
+                      to={`/checkout?order_id=${order.id}`}
+                      className="w-full bg-accent text-accent-foreground font-display font-semibold py-2.5 rounded-lg text-sm text-center hover:bg-accent/90 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <CreditCard className="h-4 w-4" /> Pagar agora
+                    </Link>
+                  </div>
+                )}
 
                 {/* Tracking section */}
                 {order.tracking_code && (
