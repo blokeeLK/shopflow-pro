@@ -11,27 +11,12 @@ const Index = () => {
   return (
     <div>
       {/* Hero Banner */}
-      <section className="relative bg-primary overflow-hidden">
-        <div className="container py-16 md:py-24 relative z-10">
-          <div className="max-w-lg">
-            <span className="inline-block bg-accent text-accent-foreground text-xs font-bold px-3 py-1 rounded-sm mb-4 animate-pulse-soft">
-              NOVA COLEÇÃO
-            </span>
-            <h1 className="font-display text-3xl md:text-5xl font-bold text-primary-foreground leading-tight mb-4">
-              Estilo que fala<br />por você<span className="text-accent">.</span>
-            </h1>
-            <p className="text-primary-foreground/70 text-sm md:text-base mb-6 leading-relaxed">
-              Descubra peças únicas com qualidade premium e preços que cabem no seu bolso.
-            </p>
-            <Link
-              to={categoriesWithStock[0] ? `/categoria/${categoriesWithStock[0].slug}` : "/"}
-              className="inline-flex items-center gap-2 bg-accent text-accent-foreground font-display font-semibold text-sm px-6 py-3 rounded-lg hover:bg-accent/90 transition-colors"
-            >
-              Ver coleção <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-        </div>
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-accent/5 rounded-bl-[100px] hidden md:block" />
+      <section className="relative overflow-hidden">
+        <img
+          src="/images/banner-nova-colecao.png"
+          alt="Nova Coleção - Estilo que fala por você"
+          className="w-full h-auto object-cover min-h-[300px] md:min-h-[500px]"
+        />
       </section>
 
       {/* Trust bar */}
