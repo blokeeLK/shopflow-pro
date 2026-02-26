@@ -63,11 +63,9 @@ export default function AdminDesign() {
     const { valid, width, height } = await validateImageDimensions(file);
     if (!valid) {
       toast({
-        title: "Dimensão incorreta",
-        description: `A imagem deve ter 1920×560px. A enviada tem ${width}×${height}px.`,
-        variant: "destructive",
+        title: "Dimensão recomendada: 1920×560px",
+        description: `Sua imagem tem ${width}×${height}px. Recomendamos 1920×560 para melhor resultado, mas ela será aceita.`,
       });
-      return;
     }
 
     const updated = [...slides];
@@ -114,12 +112,16 @@ export default function AdminDesign() {
           imageUrl = await uploadFile(slide.file, slide.position);
         }
 
-        await supabase.from("carousel_slides").insert({
+        const { error: insertError } = await supabase.from("carousel_slides").insert({
           image_url: imageUrl,
           link: slide.link || "",
           position: slide.position,
           active: true,
         });
+        if (insertError) {
+          console.error("Erro ao inserir slide:", insertError);
+          throw insertError;
+        }
       }
 
       toast({ title: "Carrossel salvo com sucesso!" });
