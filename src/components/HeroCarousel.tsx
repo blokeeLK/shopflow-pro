@@ -49,11 +49,11 @@ export function HeroCarousel() {
   // Fallback
   if (slides.length === 0) {
     return (
-      <section className="relative overflow-hidden">
+      <section className="w-full overflow-hidden">
         <img
           src="/images/banner-nova-colecao.png"
           alt="Nova Coleção - Estilo que fala por você"
-          className="w-full h-auto object-contain max-h-[280px] md:max-h-[420px]"
+          className="w-full h-auto object-cover"
         />
       </section>
     );
@@ -63,7 +63,7 @@ export function HeroCarousel() {
     <img
       src={slide.image_url}
       alt={`Banner ${slide.position}`}
-      className="w-full h-auto object-cover max-h-[280px] md:max-h-[420px]"
+      className="w-full h-auto object-cover"
     />
   );
 
