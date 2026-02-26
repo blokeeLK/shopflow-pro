@@ -124,7 +124,7 @@ export function Header() {
           </button>
 
           <Link to="/" className="flex items-center">
-            <img src="/images/logo-shopflow.png" alt="ShopFlow" className="h-12 md:h-14 w-auto" />
+            <img src="/images/logo-shopflow.png" alt="ShopFlow" className="h-16 md:h-20 w-auto" />
           </Link>
 
           <nav className="hidden md:flex items-center gap-6">
