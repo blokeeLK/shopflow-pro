@@ -16,6 +16,7 @@ interface Slide {
 export function HeroCarousel() {
   const [slides, setSlides] = useState<Slide[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [prevIndex, setPrevIndex] = useState(0);
 
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [
     Autoplay({ delay: 5000, stopOnInteraction: false }),
@@ -34,8 +35,9 @@ export function HeroCarousel() {
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
+    setPrevIndex(selectedIndex);
     setSelectedIndex(emblaApi.selectedScrollSnap());
-  }, [emblaApi]);
+  }, [emblaApi, selectedIndex]);
 
   useEffect(() => {
     if (!emblaApi) return;
@@ -69,8 +71,12 @@ export function HeroCarousel() {
     <section className="relative overflow-hidden group">
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex">
-          {slides.map((slide) => (
-            <div key={slide.id} className="flex-[0_0_100%] min-w-0">
+          {slides.map((slide, i) => (
+            <div
+              key={slide.id}
+              className="flex-[0_0_100%] min-w-0 transition-opacity duration-500 ease-in-out"
+              style={{ opacity: i === selectedIndex ? 1 : 0.4 }}
+            >
               {slide.link ? (
                 <Link to={slide.link}>
                   <SlideImage slide={slide} />
@@ -110,8 +116,8 @@ export function HeroCarousel() {
             <button
               key={i}
               onClick={() => emblaApi?.scrollTo(i)}
-              className={`w-2.5 h-2.5 rounded-full transition-colors ${
-                i === selectedIndex ? "bg-accent" : "bg-background/60"
+              className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                i === selectedIndex ? "bg-accent scale-125" : "bg-background/60"
               }`}
               aria-label={`Ir para slide ${i + 1}`}
             />
