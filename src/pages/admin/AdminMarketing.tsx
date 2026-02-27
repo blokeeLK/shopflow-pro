@@ -12,6 +12,7 @@ const SETTINGS_KEYS = [
   { key: "social_proof_interval_min", label: "Social Proof — intervalo mín (seg)", type: "number" },
   { key: "social_proof_interval_max", label: "Social Proof — intervalo máx (seg)", type: "number" },
   { key: "top_bar_message", label: "Mensagem barra topo (vazio = padrão)", type: "text" },
+  { key: "wholesale_block_enabled", label: "Bloco Atacado/Revenda (true ou false)", type: "text" },
 ];
 
 export default function AdminMarketing() {
