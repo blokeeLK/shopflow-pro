@@ -4,6 +4,7 @@ import { Star, ShoppingBag, Minus, Plus, Clock, ChevronLeft, ChevronRight } from
 import { useProduct, useProducts, useReviews, formatCurrency, getInstallments, getTotalStock, getProductPrice, getDiscount } from "@/hooks/useSupabaseData";
 import { useCart } from "@/contexts/CartContext";
 import { ProductCard } from "@/components/ProductCard";
+import { WholesaleCTA } from "@/components/WholesaleCTA";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ProductPage() {
@@ -195,6 +196,10 @@ export default function ProductPage() {
           <button onClick={handleAddToCart} className="w-full bg-accent text-accent-foreground font-display font-semibold py-3.5 rounded-lg hover:bg-accent/90 transition-colors flex items-center justify-center gap-2 text-sm">
             <ShoppingBag className="h-5 w-5" /> Adicionar ao carrinho
           </button>
+
+          <div className="mt-8 pt-6 border-t">
+            <WholesaleCTA />
+          </div>
 
           <div className="mt-8 pt-6 border-t">
             <h3 className="font-display font-semibold text-foreground mb-2">Descrição</h3>
