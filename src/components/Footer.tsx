@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
-import { useCategoriesWithStock } from "@/hooks/useSupabaseData";
+import { useCategoriesWithStock, useSiteSettings } from "@/hooks/useSupabaseData";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export function Footer() {
   const { data: categories = [] } = useCategoriesWithStock();
+  const { data: siteSettings } = useSiteSettings();
+  const logoUrl = siteSettings?.site_logo_url || "/images/logo-shopflow.png";
 
   const { data: settings } = useQuery({
     queryKey: ["site-settings-footer"],
@@ -25,7 +27,7 @@ export function Footer() {
       <div className="container py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <img src="/images/logo-shopflow.png" alt="ShopFlow" className="h-16 md:h-20 w-auto mb-4" />
+            <img src={logoUrl} alt="ShopFlow" className="h-16 md:h-20 w-auto mb-4" />
             <p className="text-sm leading-relaxed">Moda com estilo e qualidade. Entregamos em todo o Brasil com os melhores preços.</p>
           </div>
           <div>

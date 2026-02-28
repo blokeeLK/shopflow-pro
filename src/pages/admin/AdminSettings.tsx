@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Save, Building2, Phone, Mail } from "lucide-react";
+import { Save, Building2, Phone, Mail, ImageIcon, Upload, Loader2 } from "lucide-react";
 
-const SETTING_KEYS = ["company_address", "company_phone", "company_email"];
+const SETTING_KEYS = ["company_address", "company_phone", "company_email", "site_logo_url"];
 
 export default function AdminSettings() {
   const { user } = useAuth();
@@ -27,7 +27,33 @@ export default function AdminSettings() {
   });
 
   const [form, setForm] = useState<Record<string, string>>({});
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const currentValues = { ...settings, ...form };
+
+  async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Selecione uma imagem válida", variant: "destructive" });
+      return;
+    }
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `logo/site-logo-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("site-assets").upload(path, file, { upsert: true });
+      if (upErr) throw upErr;
+      const { data: urlData } = supabase.storage.from("site-assets").getPublicUrl(path);
+      setForm(f => ({ ...f, site_logo_url: urlData.publicUrl }));
+      toast({ title: "Logo enviada! Salve para aplicar ✅" });
+    } catch (err: any) {
+      toast({ title: "Erro ao enviar logo", description: err.message, variant: "destructive" });
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -71,6 +97,41 @@ export default function AdminSettings() {
       <h1 className="font-display text-2xl font-bold text-foreground mb-6">Configurações da Loja</h1>
 
       <div className="bg-card border rounded-xl p-6 space-y-5">
+        {/* Logo Upload */}
+        <div>
+          <label className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+            <ImageIcon className="h-4 w-4 text-accent" /> Logo do Site (Header + Footer)
+          </label>
+          <div className="flex items-center gap-4">
+            {currentValues.site_logo_url ? (
+              <img src={currentValues.site_logo_url} alt="Logo atual" className="h-16 w-auto object-contain bg-[#1a1a2e] rounded-lg p-2" />
+            ) : (
+              <div className="h-16 w-24 bg-muted rounded-lg flex items-center justify-center text-xs text-muted-foreground">
+                Sem logo
+              </div>
+            )}
+            <div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleLogoUpload}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="flex items-center gap-2 px-4 py-2 text-sm border rounded-lg hover:bg-secondary transition-colors disabled:opacity-50"
+              >
+                {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                {uploading ? "Enviando..." : "Enviar nova logo"}
+              </button>
+              <p className="text-[11px] text-muted-foreground mt-1">PNG ou JPG recomendado. Fundo transparente ideal.</p>
+            </div>
+          </div>
+        </div>
+
         <div>
           <label className="text-sm font-medium text-foreground mb-1 flex items-center gap-2">
             <Building2 className="h-4 w-4 text-accent" /> Endereço da Sede
