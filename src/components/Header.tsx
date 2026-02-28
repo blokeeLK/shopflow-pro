@@ -113,7 +113,7 @@ export function Header() {
 
   return (
     <>
-      <div className="bg-destructive text-destructive-foreground text-center text-xs py-2 px-4 font-semibold">
+      <div className="bg-gradient-to-r from-[#1a1a2e] via-[#16213e] to-[#1a1a2e] text-white text-center text-xs py-2 px-4 font-semibold">
         🔥 FRETE GRÁTIS para Pará de Minas - MG · Compra 100% segura · Parcele em até 3x
       </div>
 
