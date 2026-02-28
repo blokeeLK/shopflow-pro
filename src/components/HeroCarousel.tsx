@@ -48,12 +48,11 @@ export function HeroCarousel() {
   if (slides.length === 0) {
     return (
       <section className="w-full">
-        <div className="w-full">
+        <div className="w-full" style={{ aspectRatio: '1920/550' }}>
           <img
             src="/images/banner-nova-colecao.png"
             alt="Nova Coleção - Estilo que fala por você"
-            className="block w-full h-auto"
-            style={{ maxWidth: '100%', height: 'auto' }}
+            className="block w-full h-full object-cover"
           />
         </div>
       </section>
@@ -61,12 +60,11 @@ export function HeroCarousel() {
   }
 
   const SlideImage = ({ slide }: { slide: Slide }) => (
-    <div className="w-full">
+    <div className="w-full" style={{ aspectRatio: '1920/550' }}>
       <img
         src={slide.image}
         alt="Banner"
-        className="block w-full h-auto"
-        style={{ maxWidth: '100%', height: 'auto' }}
+        className="block w-full h-full object-cover"
       />
     </div>
   );
