@@ -5,6 +5,7 @@ import { useProduct, useProducts, useReviews, formatCurrency, getInstallments, g
 import { useCart } from "@/contexts/CartContext";
 import { ProductCard } from "@/components/ProductCard";
 import { WholesaleCTA } from "@/components/WholesaleCTA";
+import { ProductReviews } from "@/components/ProductReviews";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ProductPage() {
@@ -206,27 +207,6 @@ export default function ProductPage() {
             <p className="text-sm text-muted-foreground leading-relaxed">{product.description}</p>
           </div>
 
-          {/* Reviews */}
-          {reviews.length > 0 && (
-            <div className="mt-8 pt-6 border-t">
-              <h3 className="font-display font-semibold text-foreground mb-4">Avaliações ({reviews.length})</h3>
-              <div className="space-y-4">
-                {reviews.slice(0, 5).map((r) => (
-                  <div key={r.id} className="bg-secondary/50 rounded-lg p-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className="flex gap-0.5">
-                        {[1, 2, 3, 4, 5].map((s) => (
-                          <Star key={s} className={`h-3 w-3 ${s <= r.rating ? "fill-warning text-warning" : "text-border"}`} />
-                        ))}
-                      </div>
-                      <span className="text-xs text-muted-foreground">{(r as any).profile?.name || "Anônimo"}</span>
-                    </div>
-                    {r.comment && <p className="text-sm text-muted-foreground">{r.comment}</p>}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -240,6 +220,9 @@ export default function ProductPage() {
           </div>
         </section>
       )}
+
+      {/* Reviews Section */}
+      {product && <ProductReviews productId={product.id} />}
     </div>
   );
 }

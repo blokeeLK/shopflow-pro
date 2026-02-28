@@ -32,6 +32,7 @@ import AdminLogs from "./pages/admin/AdminLogs";
 import AdminSiteEditor from "./pages/admin/AdminSiteEditor";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminFaq from "./pages/admin/AdminFaq";
+import AdminReviews from "./pages/admin/AdminReviews";
 
 import FaqPage from "./pages/FaqPage";
 
@@ -75,6 +76,7 @@ const App = () => (
                 <Route path="/admin/configuracoes" element={<AdminSettings />} />
                 
                 <Route path="/admin/faq" element={<AdminFaq />} />
+                <Route path="/admin/avaliacoes" element={<AdminReviews />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
