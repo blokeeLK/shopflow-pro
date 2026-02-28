@@ -1,19 +1,17 @@
 
 
-## Diagnóstico
+The issue is that the banner container forces a fixed `aspectRatio: '1920/560'` and uses `object-cover`, which crops images that don't match that exact ratio. The fix is to remove the forced aspect ratio and use `object-contain` or simply let images display at their natural proportions.
 
-A tabela `carousel_slides` está **vazia** — nenhum slide foi salvo. As políticas RLS estão corretas (permissivas). O problema é a **validação de dimensão exata (1920x560px)** que bloqueia o upload se a imagem não tiver exatamente essas dimensões. A imagem que você tentou enviar provavelmente foi rejeitada pela validação.
+## Changes
 
-## Plano
+**File: `src/components/HeroCarousel.tsx`**
 
-### 1. Flexibilizar a validação de dimensão no AdminDesign
-- Remover a exigência de dimensão **exata** 1920x560
-- Converter para uma **recomendação** (aviso via toast informativo, mas permitir o upload)
-- Aceitar qualquer imagem, apenas sugerindo a proporção ideal
+1. In `SlideImage` component (line 62-70): Remove the fixed `aspectRatio` style and change `object-cover` to `object-contain` or just use `w-full` with auto height. The image will display at its natural aspect ratio without cropping.
 
-### 2. Melhorar o feedback de erro no save
-- Adicionar logs no console para debug em caso de falha no insert
-- Mostrar toast de erro mais detalhado se o insert falhar
+2. In the fallback section (line 50-58): Same change — remove forced aspect ratio, let the image render naturally.
 
-Nenhuma alteração de banco de dados necessária — a tabela e RLS já estão corretas.
+Specifically:
+- Remove `style={{ maxWidth: 1920, margin: '0 auto', aspectRatio: '1920/560' }}` from the wrapper divs
+- Change `className="w-full h-full object-cover"` to `className="w-full h-auto"` on the `<img>` tags
+- Keep `maxWidth: 1920` and `margin: '0 auto'` on the wrapper for centering on ultra-wide screens
 
