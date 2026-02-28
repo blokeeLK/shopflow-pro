@@ -21,7 +21,7 @@ export function Footer() {
   });
 
   return (
-    <footer className="bg-primary text-primary-foreground mt-16">
+    <footer className="bg-[#1a1a2e] text-white mt-16">
       <div className="container py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
