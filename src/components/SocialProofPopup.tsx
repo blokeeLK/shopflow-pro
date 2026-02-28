@@ -43,8 +43,8 @@ export function SocialProofPopup() {
   return (
     <div className="fixed bottom-4 left-4 z-50 max-w-xs bg-card rounded-lg shadow-elevated border p-3 animate-slide-in-right">
       <div className="flex items-start gap-3">
-        <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-          <span className="text-sm font-bold text-foreground">{notification.name.charAt(0)}</span>
+        <div className="h-10 w-10 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+          <span className="text-sm font-bold text-black">{notification.name.charAt(0)}</span>
         </div>
         <div className="min-w-0">
           <p className="text-xs font-medium text-foreground"><span className="font-bold">{notification.name}</span> comprou</p>
