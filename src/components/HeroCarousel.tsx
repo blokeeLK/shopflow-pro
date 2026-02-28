@@ -47,12 +47,13 @@ export function HeroCarousel() {
   // Fallback
   if (slides.length === 0) {
     return (
-      <section className="w-full overflow-hidden">
-      <div className="w-full" style={{ maxWidth: 1920, margin: '0 auto' }}>
+      <section className="w-full">
+        <div className="w-full">
           <img
             src="/images/banner-nova-colecao.png"
             alt="Nova Coleção - Estilo que fala por você"
-            className="w-full h-auto"
+            className="block w-full h-auto"
+            style={{ maxWidth: '100%', height: 'auto' }}
           />
         </div>
       </section>
@@ -60,17 +61,18 @@ export function HeroCarousel() {
   }
 
   const SlideImage = ({ slide }: { slide: Slide }) => (
-    <div className="w-full" style={{ maxWidth: 1920, margin: '0 auto' }}>
+    <div className="w-full">
       <img
         src={slide.image}
         alt="Banner"
-        className="w-full h-auto"
+        className="block w-full h-auto"
+        style={{ maxWidth: '100%', height: 'auto' }}
       />
     </div>
   );
 
   return (
-    <section className="relative overflow-hidden group">
+    <section className="relative group">
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex">
           {slides.map((slide, i) => (
