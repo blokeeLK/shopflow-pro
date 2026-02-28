@@ -54,7 +54,7 @@ export function Footer() {
             </Link>
           </div>
         </div>
-        <div className="mt-10 pt-6 border-t border-white/20 text-center text-xs">© 2026 ShopFlow. Todos os direitos reservados.</div>
+        <div className="mt-10 pt-6 border-t border-white/20 text-center text-xs">© 2024 ShopFlow. Todos os direitos reservados.</div>
       </div>
     </footer>
   );
