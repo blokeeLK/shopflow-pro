@@ -1,12 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-
-function sanitizeHtml(raw: string) {
-  return raw
-    .replace(/<script[\s\S]*?<\/script>/gi, "")
-    .replace(/on\w+="[^"]*"/gi, "")
-    .replace(/<iframe[\s\S]*?<\/iframe>/gi, "");
-}
+import DOMPurify from "dompurify";
 
 export function CustomHtmlBlock({ section }: { section: "home_html" | "header_html" | "footer_html" }) {
   const [html, setHtml] = useState("");
@@ -19,7 +13,7 @@ export function CustomHtmlBlock({ section }: { section: "home_html" | "header_ht
       .single()
       .then(({ data }) => {
         if (data && (data as any)[section]) {
-          setHtml(sanitizeHtml((data as any)[section]));
+          setHtml(DOMPurify.sanitize((data as any)[section]));
         }
       });
   }, [section]);
