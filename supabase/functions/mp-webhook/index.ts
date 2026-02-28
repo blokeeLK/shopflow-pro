@@ -148,32 +148,18 @@ Deno.serve(async (req) => {
 
       if (orderItems) {
         for (const item of orderItems) {
-          const { data: variant } = await supabase
-            .from("product_variants")
-            .select("id, stock")
-            .eq("product_id", item.product_id)
-            .eq("size", item.size)
-            .single();
+          // Atomic stock decrement — prevents race conditions
+          await supabase.rpc("decrement_variant_stock", {
+            p_product_id: item.product_id,
+            p_size: item.size,
+            p_quantity: item.quantity,
+          });
 
-          if (variant) {
-            await supabase
-              .from("product_variants")
-              .update({ stock: Math.max(0, variant.stock - item.quantity) })
-              .eq("id", variant.id);
-          }
-
-          const { data: product } = await supabase
-            .from("products")
-            .select("id, sold_count")
-            .eq("id", item.product_id)
-            .single();
-
-          if (product) {
-            await supabase
-              .from("products")
-              .update({ sold_count: (product.sold_count || 0) + item.quantity })
-              .eq("id", product.id);
-          }
+          // Atomic sold_count increment
+          await supabase.rpc("increment_sold_count", {
+            p_product_id: item.product_id,
+            p_quantity: item.quantity,
+          });
         }
       }
 

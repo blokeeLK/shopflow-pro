@@ -102,6 +102,13 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-body);
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  input, textarea, select, [contenteditable], .checkout-area, .selectable-text {
+    user-select: text;
+    -webkit-user-select: text;
   }
 
   h1, h2, h3, h4, h5, h6 {
