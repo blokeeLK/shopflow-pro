@@ -117,9 +117,9 @@ export function Header() {
         🔥 FRETE GRÁTIS para Pará de Minas - MG · Compra 100% segura · Parcele em até 3x
       </div>
 
-      <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-md border-b">
+      <header className="sticky top-0 z-50 bg-[#1a1a2e]/95 backdrop-blur-md border-b border-white/10">
         <div className="container flex items-center justify-between h-14 md:h-16">
-          <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden p-2 -ml-2 text-foreground" aria-label="Menu">
+          <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden p-2 -ml-2 text-white" aria-label="Menu">
             {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
 
@@ -129,7 +129,7 @@ export function Header() {
 
           <nav className="hidden md:flex items-center gap-6">
             {categories.map((cat) => (
-              <Link key={cat.slug} to={`/categoria/${cat.slug}`} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              <Link key={cat.slug} to={`/categoria/${cat.slug}`} className="text-sm font-medium text-white hover:text-white/80 transition-colors">
                 {cat.name}
               </Link>
             ))}
@@ -139,7 +139,7 @@ export function Header() {
             <div ref={searchRef} className="relative">
               <button
                 onClick={() => setSearchOpen(!searchOpen)}
-                className="p-2 text-muted-foreground hover:text-foreground transition-colors"
+                className="p-2 text-white hover:text-white/80 transition-colors"
                 aria-label="Buscar"
               >
                 <Search className="h-5 w-5" />
@@ -256,10 +256,10 @@ export function Header() {
               )}
             </div>
 
-            <Link to="/conta" className="p-2 text-muted-foreground hover:text-foreground transition-colors" aria-label="Conta">
+            <Link to="/conta" className="p-2 text-white hover:text-white/80 transition-colors" aria-label="Conta">
               <User className="h-5 w-5" />
             </Link>
-            <Link to="/carrinho" className="relative p-2 text-muted-foreground hover:text-foreground transition-colors" aria-label="Carrinho">
+            <Link to="/carrinho" className="relative p-2 text-white hover:text-white/80 transition-colors" aria-label="Carrinho">
               <ShoppingBag className="h-5 w-5" />
               {totalItems > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 bg-accent text-accent-foreground text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
