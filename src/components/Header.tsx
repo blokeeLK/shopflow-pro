@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ShoppingBag, Menu, X, Search, User, Package } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useCart } from "@/contexts/CartContext";
-import { useCategoriesWithStock } from "@/hooks/useSupabaseData";
+import { useCategoriesWithStock, useSiteSettings } from "@/hooks/useSupabaseData";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency, getProductPrice } from "@/hooks/useSupabaseData";
 import { useAuth } from "@/contexts/AuthContext";
@@ -40,6 +40,8 @@ export function Header() {
 
   const { totalItems } = useCart();
   const { data: categories = [] } = useCategoriesWithStock();
+  const { data: siteSettings } = useSiteSettings();
+  const logoUrl = siteSettings?.site_logo_url || "/images/logo-shopflow.png";
 
   // Close search on outside click
   useEffect(() => {
@@ -124,7 +126,7 @@ export function Header() {
           </button>
 
           <Link to="/" className="flex items-center">
-            <img src="/images/logo-shopflow.png" alt="ShopFlow" className="h-12 md:h-14 w-auto object-contain" />
+            <img src={logoUrl} alt="ShopFlow" className="h-12 md:h-14 w-auto object-contain" />
           </Link>
 
           <nav className="hidden md:flex items-center gap-6">
