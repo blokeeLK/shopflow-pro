@@ -1,9 +1,14 @@
 import { useState } from "react";
-import { Star, Pin, Award, Trash2, Check, X, Plus, Search, Edit2, Eye } from "lucide-react";
+import { format } from "date-fns";
+import { Star, Pin, Award, Trash2, Check, X, Plus, Search, Edit2, Eye, CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button";
 import { Camera } from "lucide-react";
 
 interface Review {
@@ -89,6 +94,7 @@ export default function AdminReviews() {
   const [formExistingImages, setFormExistingImages] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [productSearch, setProductSearch] = useState("");
+  const [formDate, setFormDate] = useState<Date>(new Date());
 
   const filteredProducts = products.filter(p => p.name.toLowerCase().includes(productSearch.toLowerCase()));
 
@@ -134,6 +140,7 @@ export default function AdminReviews() {
     setFormFiles([]);
     setFormExistingImages([]);
     setProductSearch("");
+    setFormDate(new Date());
     setDialogOpen(true);
   };
 
@@ -149,6 +156,7 @@ export default function AdminReviews() {
     setFormFiles([]);
     setFormExistingImages(r.images || []);
     setProductSearch("");
+    setFormDate(new Date(r.created_at));
     setDialogOpen(true);
   };
 
@@ -187,6 +195,7 @@ export default function AdminReviews() {
           images: allImages,
           is_pinned: formPinned,
           is_featured: formFeatured,
+          created_at: formDate.toISOString(),
         } as any).eq("id", editReview.id);
         if (error) throw error;
         toast({ title: "Avaliação atualizada ✅" });
@@ -202,6 +211,7 @@ export default function AdminReviews() {
           source: "admin",
           is_pinned: formPinned,
           is_featured: formFeatured,
+          created_at: formDate.toISOString(),
         } as any);
         if (error) throw error;
         toast({ title: "Avaliação criada ✅" });
@@ -360,6 +370,20 @@ export default function AdminReviews() {
                   </label>
                 )}
               </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Data da avaliação</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className={cn("mt-1 w-full justify-start text-left font-normal", !formDate && "text-muted-foreground")}>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formDate ? format(formDate, "dd/MM/yyyy") : "Selecionar data"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar mode="single" selected={formDate} onSelect={(d) => d && setFormDate(d)} initialFocus className={cn("p-3 pointer-events-auto")} />
+                </PopoverContent>
+              </Popover>
             </div>
             <div className="flex gap-4">
               <label className="flex items-center gap-2 text-sm">
