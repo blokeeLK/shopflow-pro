@@ -8,8 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 // ── Default HTML snapshots matching the actual site layout ──
 
 const DEFAULT_HEADER_HTML = `<!-- Banner de topo customizável -->
-<div style="background:#e11d48;color:#fff;text-align:center;font-size:12px;padding:8px 16px;font-family:sans-serif;">
-  🔥 <strong>FRETE GRÁTIS</strong> acima de R$ 130
+<div style="background:#1e2a4a;color:#fff;text-align:center;font-size:13px;padding:10px 16px;font-family:sans-serif;letter-spacing:0.3px;">
+  🔥 <strong>FRETE GRÁTIS</strong> para Pará de Minas – MG · Compra 100% segura · Parcele em até 3x
 </div>`;
 
 const DEFAULT_HOME_HTML = `<!-- Hero Banner -->
