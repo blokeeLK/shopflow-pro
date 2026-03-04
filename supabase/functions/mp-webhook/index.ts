@@ -1,5 +1,4 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { createHash } from "https://deno.land/std@0.208.0/crypto/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -8,8 +7,8 @@ const corsHeaders = {
 
 // Simple in-memory rate limiter
 const requestLog = new Map<string, number[]>();
-const RATE_LIMIT_WINDOW = 60_000; // 1 minute
-const RATE_LIMIT_MAX = 5; // max 5 webhook calls per minute per payment ID
+const RATE_LIMIT_WINDOW = 60_000;
+const RATE_LIMIT_MAX = 10;
 
 function isRateLimited(key: string): boolean {
   const now = Date.now();
@@ -21,41 +20,11 @@ function isRateLimited(key: string): boolean {
   return false;
 }
 
-function verifyMPSignature(
-  xSignature: string | null,
-  xRequestId: string | null,
-  dataId: string,
-  webhookSecret: string
-): boolean {
-  if (!xSignature || !xRequestId || !webhookSecret) return false;
-
+async function safeLog(supabase: any, log: Record<string, any>) {
   try {
-    // Parse x-signature header: "ts=...,v1=..."
-    const parts: Record<string, string> = {};
-    xSignature.split(",").forEach((part) => {
-      const [key, value] = part.trim().split("=", 2);
-      if (key && value) parts[key] = value;
-    });
-
-    const ts = parts["ts"];
-    const v1 = parts["v1"];
-    if (!ts || !v1) return false;
-
-    // Build the manifest string per MP docs
-    const manifest = `id:${dataId};request-id:${xRequestId};ts:${ts};`;
-
-    // HMAC-SHA256
-    const encoder = new TextEncoder();
-    const keyData = encoder.encode(webhookSecret);
-    const msgData = encoder.encode(manifest);
-
-    // Use Web Crypto API for HMAC
-    // Since this is sync context, we'll use a simpler approach
-    // For now, verify by re-fetching from MP API (existing pattern)
-    // The signature check is an additional layer
-    return true; // Signature parsing succeeded, full crypto check below
-  } catch {
-    return false;
+    await supabase.from("admin_logs").insert(log);
+  } catch (e) {
+    console.error("Failed to write log:", e);
   }
 }
 
@@ -64,38 +33,57 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Always respond 200 to MP
+  const ok200 = (data: Record<string, unknown> = {}) =>
+    new Response(JSON.stringify({ received: true, ...data }), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
   );
 
   try {
-    const body = await req.json();
+    // Parse body with tolerance
+    let body: any = {};
+    try {
+      body = await req.json();
+    } catch {
+      console.warn("Webhook: empty or invalid JSON body");
+      return ok200({ msg: "no_body" });
+    }
+
     const dataId = String(body.data?.id || "");
+
+    console.log("Webhook received:", JSON.stringify({
+      type: body.type,
+      action: body.action,
+      data_id: dataId,
+    }));
+
+    // Log every webhook event
+    await safeLog(supabase, {
+      admin_id: "00000000-0000-0000-0000-000000000000",
+      entity: "webhook",
+      action: "mp_notification",
+      entity_id: dataId || "unknown",
+      details: { type: body.type, action: body.action, data_id: dataId },
+    });
 
     // Rate limiting per payment ID
     if (dataId && isRateLimited(dataId)) {
       console.warn("Rate limited webhook for payment:", dataId);
-      await supabase.from("admin_logs").insert({
-        admin_id: "00000000-0000-0000-0000-000000000000",
-        entity: "webhook",
-        action: "rate_limited",
-        entity_id: dataId,
-        details: { type: body.type },
-      });
-      return new Response(JSON.stringify({ error: "Rate limited" }), {
-        status: 429,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return ok200({ msg: "rate_limited" });
     }
 
-    // Webhook signature verification
+    // Webhook signature verification (optional)
     const xSignature = req.headers.get("x-signature");
     const xRequestId = req.headers.get("x-request-id");
     const webhookSecret = Deno.env.get("MP_WEBHOOK_SECRET") || "";
 
-    // If webhook secret is configured, verify signature
-    if (webhookSecret && xSignature) {
+    if (webhookSecret && xSignature && xRequestId) {
       try {
         const parts: Record<string, string> = {};
         xSignature.split(",").forEach((part) => {
@@ -125,18 +113,15 @@ Deno.serve(async (req) => {
             .join("");
 
           if (computed !== v1) {
-            console.error("Invalid webhook signature");
-            await supabase.from("admin_logs").insert({
+            console.error("Invalid webhook signature for payment:", dataId);
+            await safeLog(supabase, {
               admin_id: "00000000-0000-0000-0000-000000000000",
               entity: "webhook",
               action: "invalid_signature",
               entity_id: dataId,
               details: { x_request_id: xRequestId },
             });
-            return new Response(JSON.stringify({ error: "Invalid signature" }), {
-              status: 401,
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
-            });
+            return ok200({ msg: "signature_invalid" });
           }
         }
       } catch (sigErr) {
@@ -144,86 +129,58 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Validate payment ID format (must be numeric)
-    if (dataId && !/^\d+$/.test(dataId)) {
-      console.warn("Invalid payment ID format:", dataId);
-      return new Response(JSON.stringify({ error: "Invalid payment ID" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    console.log("Webhook received:", JSON.stringify({ type: body.type, action: body.action, data_id: dataId }));
-
-    // Log every webhook event
-    await supabase.from("admin_logs").insert({
-      admin_id: "00000000-0000-0000-0000-000000000000",
-      entity: "webhook",
-      action: "mp_notification",
-      entity_id: dataId,
-      details: { type: body.type, action: body.action, data_id: dataId },
-    });
-
     // Only process payment events
     if (body.type !== "payment" && body.action !== "payment.updated" && body.action !== "payment.created") {
-      return new Response(JSON.stringify({ ok: true, msg: "ignored" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return ok200({ msg: "ignored_event" });
     }
 
     const paymentId = body.data?.id;
     if (!paymentId) {
-      return new Response(JSON.stringify({ ok: true }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return ok200({ msg: "no_payment_id" });
+    }
+
+    // Validate payment ID format (must be numeric)
+    if (!/^\d+$/.test(String(paymentId))) {
+      console.warn("Invalid payment ID format:", paymentId);
+      return ok200({ msg: "invalid_payment_id" });
     }
 
     const MP_TOKEN = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN");
     if (!MP_TOKEN) {
       console.error("MERCADOPAGO_ACCESS_TOKEN not set");
-      return new Response(JSON.stringify({ error: "MP not configured" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return ok200({ msg: "mp_not_configured" });
     }
 
-    // Validate by fetching payment from MP API (security - this is the authoritative check)
+    // Fetch payment from MP API
     const mpResponse = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
       headers: { Authorization: `Bearer ${MP_TOKEN}` },
     });
     const payment = await mpResponse.json();
 
     if (!mpResponse.ok) {
-      console.error("MP payment fetch error:", JSON.stringify(payment));
-      await supabase.from("admin_logs").insert({
+      // Payment not found (test/fake ID) — log and return 200
+      console.warn("MP payment not found (possibly test):", paymentId);
+      await safeLog(supabase, {
         admin_id: "00000000-0000-0000-0000-000000000000",
         entity: "webhook",
-        action: "mp_fetch_error",
+        action: "mp_payment_not_found",
         entity_id: String(paymentId),
-        details: { error: payment },
+        details: { mp_status: mpResponse.status },
       });
-      return new Response(JSON.stringify({ error: "Failed to fetch payment" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return ok200({ msg: "payment_not_found_in_mp" });
     }
 
     const orderId = payment.external_reference;
     if (!orderId) {
       console.log("No external_reference in payment", paymentId);
-      return new Response(JSON.stringify({ ok: true }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return ok200({ msg: "no_external_reference" });
     }
 
-    // Validate orderId is UUID format
+    // Validate orderId is UUID
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(orderId)) {
       console.error("Invalid order ID format:", orderId);
-      return new Response(JSON.stringify({ error: "Invalid order reference" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return ok200({ msg: "invalid_order_format" });
     }
 
     // Map MP status to order status
@@ -246,7 +203,7 @@ Deno.serve(async (req) => {
         orderStatus = "aguardando_pagamento";
     }
 
-    // Check current order status for idempotency
+    // Check current order for idempotency
     const { data: currentOrder } = await supabase
       .from("orders")
       .select("status, payment_id")
@@ -254,19 +211,14 @@ Deno.serve(async (req) => {
       .single();
 
     if (!currentOrder) {
-      console.error("Order not found:", orderId);
-      return new Response(JSON.stringify({ error: "Order not found" }), {
-        status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      console.error("Order not found in DB:", orderId);
+      return ok200({ msg: "order_not_found" });
     }
 
-    // IDEMPOTENCY: If already "pago", don't process again
+    // IDEMPOTENCY: If already "pago", skip
     if (currentOrder.status === "pago") {
       console.log("Order already pago, skipping:", orderId);
-      return new Response(JSON.stringify({ ok: true, status: "already_pago" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return ok200({ msg: "already_pago" });
     }
 
     // Update order
@@ -277,7 +229,7 @@ Deno.serve(async (req) => {
     }).eq("id", orderId);
 
     // Log status change
-    await supabase.from("admin_logs").insert({
+    await safeLog(supabase, {
       admin_id: "00000000-0000-0000-0000-000000000000",
       entity: "order",
       action: "payment_status_changed",
@@ -305,24 +257,18 @@ Deno.serve(async (req) => {
           });
         }
       }
-
       console.log("Stock updated for order:", orderId);
     }
 
-    return new Response(JSON.stringify({ ok: true, status: orderStatus }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return ok200({ status: orderStatus });
   } catch (err: any) {
     console.error("Webhook error:", err);
-    await supabase.from("admin_logs").insert({
+    await safeLog(supabase, {
       admin_id: "00000000-0000-0000-0000-000000000000",
       entity: "webhook",
       action: "webhook_error",
       details: { error: err.message },
-    }).catch(() => {});
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
+    return ok200({ msg: "internal_error" });
   }
 });
