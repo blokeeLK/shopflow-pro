@@ -16,12 +16,12 @@ export default function AtacadoPage() {
       {/* Hero */}
       <section className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] text-white py-16 md:py-24">
         <div className="container text-center max-w-3xl mx-auto px-4">
-          <span className="inline-block bg-accent/20 text-accent text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-6">
+          <span className="inline-block bg-success/20 text-success text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-6">
             Atacado exclusivo
           </span>
           <h1 className="font-display text-3xl md:text-5xl font-extrabold leading-tight mb-6">
             ATACADO EXCLUSIVO –<br className="hidden md:block" /> COMPRE A PARTIR DE{" "}
-            <span className="text-accent">8 PEÇAS</span>
+            <span className="text-success">8 PEÇAS</span>
           </h1>
           <p className="text-base md:text-lg text-white/80 leading-relaxed max-w-2xl mx-auto">
             Agora você pode comprar direto no <strong>ATACADO</strong> em nossa loja e pagar muito menos por peça.
@@ -40,8 +40,8 @@ export default function AtacadoPage() {
               key={b.title}
               className="flex items-start gap-4 rounded-xl border border-border bg-card p-5 md:p-6 shadow-sm hover:shadow-md transition-shadow"
             >
-              <div className="flex-shrink-0 rounded-lg bg-accent/10 p-3">
-                <b.icon className="h-6 w-6 text-accent" />
+              <div className="flex-shrink-0 rounded-lg bg-success/10 p-3">
+                <b.icon className="h-6 w-6 text-success" />
               </div>
               <div>
                 <h3 className="font-display font-bold text-foreground mb-1">{b.title}</h3>
@@ -63,8 +63,8 @@ export default function AtacadoPage() {
             Ideal para <strong>revendedores</strong> ou quem quer economizar comprando mais.
           </p>
 
-          <div className="inline-flex items-start gap-3 bg-destructive/10 border border-destructive/20 rounded-xl p-5 text-left max-w-lg mx-auto">
-            <AlertTriangle className="h-6 w-6 text-destructive flex-shrink-0 mt-0.5" />
+          <div className="inline-flex items-start gap-3 bg-success/10 border border-success/20 rounded-xl p-5 text-left max-w-lg mx-auto">
+            <AlertTriangle className="h-6 w-6 text-success flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-bold text-foreground text-sm mb-1">⚠️ Atenção: Estoque limitado!</p>
               <p className="text-sm text-muted-foreground leading-relaxed">
@@ -78,7 +78,7 @@ export default function AtacadoPage() {
 
       {/* CTA */}
       <section className="container py-16 md:py-24 max-w-2xl mx-auto px-4 text-center">
-        <Clock className="h-10 w-10 text-accent mx-auto mb-4" />
+        <Clock className="h-10 w-10 text-success mx-auto mb-4" />
         <h2 className="font-display text-2xl md:text-3xl font-extrabold text-foreground mb-3">
           Não perca tempo!
         </h2>
