@@ -247,8 +247,11 @@ export type Database = {
           address_snapshot: Json | null
           created_at: string
           id: string
+          payment_expires_at: string | null
           payment_id: string | null
+          payment_init_point: string | null
           payment_method: string | null
+          payment_qr_code_base64: string | null
           shipping_cost: number
           shipping_deadline: string | null
           shipping_service: string | null
@@ -263,8 +266,11 @@ export type Database = {
           address_snapshot?: Json | null
           created_at?: string
           id?: string
+          payment_expires_at?: string | null
           payment_id?: string | null
+          payment_init_point?: string | null
           payment_method?: string | null
+          payment_qr_code_base64?: string | null
           shipping_cost?: number
           shipping_deadline?: string | null
           shipping_service?: string | null
@@ -279,8 +285,11 @@ export type Database = {
           address_snapshot?: Json | null
           created_at?: string
           id?: string
+          payment_expires_at?: string | null
           payment_id?: string | null
+          payment_init_point?: string | null
           payment_method?: string | null
+          payment_qr_code_base64?: string | null
           shipping_cost?: number
           shipping_deadline?: string | null
           shipping_service?: string | null

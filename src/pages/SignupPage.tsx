@@ -34,12 +34,16 @@ export default function SignupPage() {
     const cleanCpf = cpf.replace(/\D/g, "");
 
     const cleanPhone = phone.replace(/\D/g, "");
-    if (!name.trim() || !email.trim() || !password || !cleanPhone) {
+    if (!name.trim() || !email.trim() || !password) {
       toast({ title: "Preencha todos os campos obrigatórios", variant: "destructive" });
       return;
     }
-    if (cleanPhone.length < 10) {
-      toast({ title: "Telefone inválido", description: "Informe DDD + número.", variant: "destructive" });
+    if (!cleanPhone) {
+      toast({ title: "Telefone é obrigatório para criar a conta", description: "Informe seu DDD + número.", variant: "destructive" });
+      return;
+    }
+    if (cleanPhone.length < 10 || cleanPhone.length > 11) {
+      toast({ title: "Telefone inválido", description: "Informe DDD + número (10 ou 11 dígitos).", variant: "destructive" });
       return;
     }
     if (password.length < 6) {
