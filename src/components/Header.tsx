@@ -6,6 +6,7 @@ import { useCategoriesWithStock, useSiteSettings } from "@/hooks/useSupabaseData
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency, getProductPrice } from "@/hooks/useSupabaseData";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePendingPixCount } from "@/hooks/usePendingPixCount";
 
 interface SearchResult {
   id: string;
@@ -37,6 +38,7 @@ export function Header() {
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const pendingPixCount = usePendingPixCount();
 
   const { totalItems } = useCart();
   const { data: categories = [] } = useCategoriesWithStock();
@@ -261,8 +263,13 @@ export function Header() {
               )}
             </div>
 
-            <Link to="/conta" className="p-2 text-white hover:text-white/80 transition-colors" aria-label="Conta">
+            <Link to="/conta" className="relative p-2 text-white hover:text-white/80 transition-colors" aria-label="Conta">
               <User className="h-5 w-5" />
+              {pendingPixCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center animate-pulse">
+                  {pendingPixCount}
+                </span>
+              )}
             </Link>
             <Link to="/carrinho" className="relative p-2 text-white hover:text-white/80 transition-colors" aria-label="Carrinho">
               <ShoppingBag className="h-5 w-5" />
@@ -288,6 +295,11 @@ export function Header() {
               </Link>
               <Link to="/conta" onClick={() => setMenuOpen(false)} className="text-sm font-medium text-foreground py-2 flex items-center gap-2">
                 <User className="h-4 w-4" /> Minha Conta
+                {pendingPixCount > 0 && (
+                  <span className="bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full h-4 min-w-[1rem] px-1 flex items-center justify-center">
+                    {pendingPixCount}
+                  </span>
+                )}
               </Link>
             </div>
           </nav>
