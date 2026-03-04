@@ -135,7 +135,7 @@ export function Header() {
                 {cat.name}
               </Link>
             ))}
-            <Link to="/atacado" className="text-sm font-bold text-accent hover:text-accent/80 transition-colors">
+            <Link to="/atacado" className="text-sm font-bold text-success hover:text-success/80 transition-colors">
               Atacado
             </Link>
           </nav>
@@ -283,7 +283,7 @@ export function Header() {
                   {cat.name}
                 </Link>
               ))}
-              <Link to="/atacado" onClick={() => setMenuOpen(false)} className="text-sm font-bold text-accent py-2 border-b border-border">
+              <Link to="/atacado" onClick={() => setMenuOpen(false)} className="text-sm font-bold text-success py-2 border-b border-border">
                 💼 Atacado
               </Link>
               <Link to="/conta" onClick={() => setMenuOpen(false)} className="text-sm font-medium text-foreground py-2 flex items-center gap-2">
