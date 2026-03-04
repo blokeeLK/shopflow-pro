@@ -11,6 +11,9 @@ interface Slide {
   link: string | null;
   position: number | null;
   active: boolean;
+  position_x: number;
+  position_y: number;
+  zoom: number;
 }
 
 export function HeroCarousel() {
@@ -28,7 +31,7 @@ export function HeroCarousel() {
       .eq("active", true)
       .order("position")
       .then(({ data }) => {
-        if (data && data.length > 0) setSlides(data);
+        if (data && data.length > 0) setSlides(data as Slide[]);
       });
   }, []);
 
@@ -60,11 +63,16 @@ export function HeroCarousel() {
   }
 
   const SlideImage = ({ slide }: { slide: Slide }) => (
-    <div className="w-full" style={{ aspectRatio: '1920/550' }}>
+    <div className="w-full overflow-hidden" style={{ aspectRatio: '1920/550' }}>
       <img
         src={slide.image}
         alt="Banner"
         className="block w-full h-full object-cover"
+        style={{
+          objectPosition: `${slide.position_x ?? 50}% ${slide.position_y ?? 50}%`,
+          transform: `scale(${slide.zoom ?? 1})`,
+          transformOrigin: `${slide.position_x ?? 50}% ${slide.position_y ?? 50}%`,
+        }}
       />
     </div>
   );
