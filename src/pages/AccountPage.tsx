@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { formatCPF, validateCPF } from "@/lib/cpf";
 import { formatCurrency } from "@/hooks/useSupabaseData";
-import { User, Package, LogOut, Star, Save, Truck, ExternalLink, Copy, CreditCard, QrCode, Loader2, RefreshCw } from "lucide-react";
+import { User, Package, LogOut, Star, Save, Truck, ExternalLink, Copy, CreditCard, QrCode, Loader2, RefreshCw, AlertTriangle } from "lucide-react";
 
 interface Profile {
   name: string;
@@ -54,6 +54,7 @@ export default function AccountPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [tab, setTab] = useState<"profile" | "orders">("profile");
+  const [filterPending, setFilterPending] = useState(false);
   const [profile, setProfile] = useState<Profile>({ name: "", cpf: "", phone: "", email: "" });
   const [originalCpf, setOriginalCpf] = useState("");
   const [cpfInput, setCpfInput] = useState("");
@@ -389,6 +390,29 @@ export default function AccountPage() {
 
       {tab === "orders" && (
         <div className="space-y-3">
+          {/* Pending PIX alert banner */}
+          {(() => {
+            const pendingPix = orders.filter(o => o.status === "aguardando_pagamento" && o.payment_method === "pix");
+            if (pendingPix.length === 0) return null;
+            return (
+              <div className="bg-warning/10 border border-warning/30 rounded-xl p-4 flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-warning">PIX pendente</p>
+                  <p className="text-xs text-warning/80 mt-0.5">
+                    Você tem {pendingPix.length} pedido(s) aguardando pagamento via PIX. Finalize para garantir seu pedido.
+                  </p>
+                  <button
+                    onClick={() => setFilterPending(prev => !prev)}
+                    className="mt-2 bg-warning text-warning-foreground text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-warning/90 transition-colors"
+                  >
+                    {filterPending ? "Ver todos os pedidos" : "Ver pedidos pendentes"}
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Delete unpaid orders button */}
           {orders.some((o) => o.status === "criado" || o.status === "aguardando_pagamento") && (
             <button
@@ -406,13 +430,19 @@ export default function AccountPage() {
               APAGAR PEDIDOS
             </button>
           )}
-          {orders.length === 0 ? (
+          {(() => {
+            const displayOrders = filterPending
+              ? orders.filter(o => o.status === "aguardando_pagamento" && o.payment_method === "pix")
+              : orders;
+            return displayOrders.length === 0 ? (
             <div className="bg-card border rounded-xl p-8 text-center">
               <Package className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
-              <p className="text-muted-foreground text-sm">Você ainda não fez nenhum pedido.</p>
+              <p className="text-muted-foreground text-sm">
+                {filterPending ? "Nenhum pedido pendente." : "Você ainda não fez nenhum pedido."}
+              </p>
             </div>
           ) : (
-            orders.map((order) => (
+            displayOrders.map((order) => (
               <div key={order.id} className="bg-card border rounded-xl p-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs text-muted-foreground font-mono">#{order.id.slice(0, 8)}</span>
@@ -548,7 +578,8 @@ export default function AccountPage() {
                 )}
               </div>
             ))
-          )}
+          );
+          })()}
         </div>
       )}
     </div>
