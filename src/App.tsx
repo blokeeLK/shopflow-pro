@@ -31,6 +31,7 @@ import AdminMarketing from "./pages/admin/AdminMarketing";
 import AdminFinancial from "./pages/admin/AdminFinancial";
 import AdminLogs from "./pages/admin/AdminLogs";
 import AdminSiteEditor from "./pages/admin/AdminSiteEditor";
+import AdminTopbar from "./pages/admin/AdminTopbar";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminFaq from "./pages/admin/AdminFaq";
 import AdminReviews from "./pages/admin/AdminReviews";
@@ -77,6 +78,7 @@ const App = () => (
                 <Route path="/admin/financeiro" element={<AdminFinancial />} />
                 <Route path="/admin/logs" element={<AdminLogs />} />
                 <Route path="/admin/editor" element={<AdminSiteEditor />} />
+                <Route path="/admin/topbar" element={<AdminTopbar />} />
                 <Route path="/admin/configuracoes" element={<AdminSettings />} />
                 
                 <Route path="/admin/faq" element={<AdminFaq />} />
