@@ -46,8 +46,24 @@ export default function SignupPage() {
       toast({ title: "Telefone inválido", description: "Informe DDD + número (10 ou 11 dígitos).", variant: "destructive" });
       return;
     }
-    if (password.length < 6) {
-      toast({ title: "A senha deve ter no mínimo 6 caracteres", variant: "destructive" });
+    if (password.length < 8) {
+      toast({ title: "A senha deve ter no mínimo 8 caracteres", variant: "destructive" });
+      return;
+    }
+    if (!/[A-Z]/.test(password)) {
+      toast({ title: "A senha deve conter pelo menos uma letra maiúscula", variant: "destructive" });
+      return;
+    }
+    if (!/[a-z]/.test(password)) {
+      toast({ title: "A senha deve conter pelo menos uma letra minúscula", variant: "destructive" });
+      return;
+    }
+    if (!/[0-9]/.test(password)) {
+      toast({ title: "A senha deve conter pelo menos um número", variant: "destructive" });
+      return;
+    }
+    if (!/[^A-Za-z0-9]/.test(password)) {
+      toast({ title: "A senha deve conter pelo menos um caractere especial (!@#$%...)", variant: "destructive" });
       return;
     }
     if (cleanCpf && !validateCPF(cleanCpf)) {
@@ -113,7 +129,7 @@ export default function SignupPage() {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Mínimo 6 caracteres"
+                placeholder="Mín. 8 caracteres, maiúsc., minúsc., número e especial"
                 maxLength={72}
               />
               <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">

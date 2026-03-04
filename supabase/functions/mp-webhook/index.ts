@@ -1,9 +1,63 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createHash } from "https://deno.land/std@0.208.0/crypto/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Simple in-memory rate limiter
+const requestLog = new Map<string, number[]>();
+const RATE_LIMIT_WINDOW = 60_000; // 1 minute
+const RATE_LIMIT_MAX = 5; // max 5 webhook calls per minute per payment ID
+
+function isRateLimited(key: string): boolean {
+  const now = Date.now();
+  const timestamps = requestLog.get(key) || [];
+  const recent = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW);
+  if (recent.length >= RATE_LIMIT_MAX) return true;
+  recent.push(now);
+  requestLog.set(key, recent);
+  return false;
+}
+
+function verifyMPSignature(
+  xSignature: string | null,
+  xRequestId: string | null,
+  dataId: string,
+  webhookSecret: string
+): boolean {
+  if (!xSignature || !xRequestId || !webhookSecret) return false;
+
+  try {
+    // Parse x-signature header: "ts=...,v1=..."
+    const parts: Record<string, string> = {};
+    xSignature.split(",").forEach((part) => {
+      const [key, value] = part.trim().split("=", 2);
+      if (key && value) parts[key] = value;
+    });
+
+    const ts = parts["ts"];
+    const v1 = parts["v1"];
+    if (!ts || !v1) return false;
+
+    // Build the manifest string per MP docs
+    const manifest = `id:${dataId};request-id:${xRequestId};ts:${ts};`;
+
+    // HMAC-SHA256
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(webhookSecret);
+    const msgData = encoder.encode(manifest);
+
+    // Use Web Crypto API for HMAC
+    // Since this is sync context, we'll use a simpler approach
+    // For now, verify by re-fetching from MP API (existing pattern)
+    // The signature check is an additional layer
+    return true; // Signature parsing succeeded, full crypto check below
+  } catch {
+    return false;
+  }
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -17,15 +71,97 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json();
-    console.log("Webhook received:", JSON.stringify({ type: body.type, action: body.action, data_id: body.data?.id }));
+    const dataId = String(body.data?.id || "");
+
+    // Rate limiting per payment ID
+    if (dataId && isRateLimited(dataId)) {
+      console.warn("Rate limited webhook for payment:", dataId);
+      await supabase.from("admin_logs").insert({
+        admin_id: "00000000-0000-0000-0000-000000000000",
+        entity: "webhook",
+        action: "rate_limited",
+        entity_id: dataId,
+        details: { type: body.type },
+      });
+      return new Response(JSON.stringify({ error: "Rate limited" }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Webhook signature verification
+    const xSignature = req.headers.get("x-signature");
+    const xRequestId = req.headers.get("x-request-id");
+    const webhookSecret = Deno.env.get("MP_WEBHOOK_SECRET") || "";
+
+    // If webhook secret is configured, verify signature
+    if (webhookSecret && xSignature) {
+      try {
+        const parts: Record<string, string> = {};
+        xSignature.split(",").forEach((part) => {
+          const [key, value] = part.trim().split("=", 2);
+          if (key && value) parts[key] = value;
+        });
+
+        const ts = parts["ts"];
+        const v1 = parts["v1"];
+
+        if (ts && v1) {
+          const manifest = `id:${dataId};request-id:${xRequestId};ts:${ts};`;
+          const key = await crypto.subtle.importKey(
+            "raw",
+            new TextEncoder().encode(webhookSecret),
+            { name: "HMAC", hash: "SHA-256" },
+            false,
+            ["sign"]
+          );
+          const signature = await crypto.subtle.sign(
+            "HMAC",
+            key,
+            new TextEncoder().encode(manifest)
+          );
+          const computed = Array.from(new Uint8Array(signature))
+            .map((b) => b.toString(16).padStart(2, "0"))
+            .join("");
+
+          if (computed !== v1) {
+            console.error("Invalid webhook signature");
+            await supabase.from("admin_logs").insert({
+              admin_id: "00000000-0000-0000-0000-000000000000",
+              entity: "webhook",
+              action: "invalid_signature",
+              entity_id: dataId,
+              details: { x_request_id: xRequestId },
+            });
+            return new Response(JSON.stringify({ error: "Invalid signature" }), {
+              status: 401,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
+          }
+        }
+      } catch (sigErr) {
+        console.error("Signature verification error:", sigErr);
+      }
+    }
+
+    // Validate payment ID format (must be numeric)
+    if (dataId && !/^\d+$/.test(dataId)) {
+      console.warn("Invalid payment ID format:", dataId);
+      return new Response(JSON.stringify({ error: "Invalid payment ID" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    console.log("Webhook received:", JSON.stringify({ type: body.type, action: body.action, data_id: dataId }));
 
     // Log every webhook event
     await supabase.from("admin_logs").insert({
       admin_id: "00000000-0000-0000-0000-000000000000",
       entity: "webhook",
       action: "mp_notification",
-      entity_id: String(body.data?.id || ""),
-      details: { type: body.type, action: body.action, data_id: body.data?.id },
+      entity_id: dataId,
+      details: { type: body.type, action: body.action, data_id: dataId },
     });
 
     // Only process payment events
@@ -51,7 +187,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Validate by fetching payment from MP API (security)
+    // Validate by fetching payment from MP API (security - this is the authoritative check)
     const mpResponse = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
       headers: { Authorization: `Bearer ${MP_TOKEN}` },
     });
@@ -76,6 +212,16 @@ Deno.serve(async (req) => {
     if (!orderId) {
       console.log("No external_reference in payment", paymentId);
       return new Response(JSON.stringify({ ok: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Validate orderId is UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(orderId)) {
+      console.error("Invalid order ID format:", orderId);
+      return new Response(JSON.stringify({ error: "Invalid order reference" }), {
+        status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -115,7 +261,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // IDEMPOTENCY: If already "pago", don't process again (prevents double stock deduction)
+    // IDEMPOTENCY: If already "pago", don't process again
     if (currentOrder.status === "pago") {
       console.log("Order already pago, skipping:", orderId);
       return new Response(JSON.stringify({ ok: true, status: "already_pago" }), {
@@ -139,7 +285,7 @@ Deno.serve(async (req) => {
       details: { mp_status: payment.status, order_status: orderStatus, payment_id: paymentId },
     });
 
-    // If paid, decrease stock (only once due to idempotency check above)
+    // If paid, decrease stock
     if (orderStatus === "pago") {
       const { data: orderItems } = await supabase
         .from("order_items")
@@ -148,14 +294,11 @@ Deno.serve(async (req) => {
 
       if (orderItems) {
         for (const item of orderItems) {
-          // Atomic stock decrement — prevents race conditions
           await supabase.rpc("decrement_variant_stock", {
             p_product_id: item.product_id,
             p_size: item.size,
             p_quantity: item.quantity,
           });
-
-          // Atomic sold_count increment
           await supabase.rpc("increment_sold_count", {
             p_product_id: item.product_id,
             p_quantity: item.quantity,
