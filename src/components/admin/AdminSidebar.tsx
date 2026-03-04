@@ -18,6 +18,7 @@ const navItems = [
   { title: "Financeiro", url: "/admin/financeiro", icon: BarChart3 },
   { title: "Logs", url: "/admin/logs", icon: ClipboardList },
   { title: "Editor do Site", url: "/admin/editor", icon: Code },
+  { title: "Topbar do Site", url: "/admin/topbar", icon: Megaphone },
   { title: "Avaliações", url: "/admin/avaliacoes", icon: Star },
   { title: "FAQ", url: "/admin/faq", icon: HelpCircle },
   { title: "Configurações", url: "/admin/configuracoes", icon: Settings },

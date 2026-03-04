@@ -1,12 +1,18 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingBag, Menu, X, Search, User, Package } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { ShoppingBag, Menu, X, Search, User, Package, Truck, Shield, CreditCard, Zap, Tag, Heart, Star, Gift, Clock, MapPin, Phone } from "lucide-react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { useCategoriesWithStock, useSiteSettings } from "@/hooks/useSupabaseData";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency, getProductPrice } from "@/hooks/useSupabaseData";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePendingPixCount } from "@/hooks/usePendingPixCount";
+
+const TOPBAR_ICONS: Record<string, React.ComponentType<any>> = {
+  truck: Truck, shield: Shield, "credit-card": CreditCard, zap: Zap,
+  tag: Tag, heart: Heart, star: Star, gift: Gift, clock: Clock,
+  "map-pin": MapPin, phone: Phone,
+};
 
 interface SearchResult {
   id: string;
@@ -44,6 +50,14 @@ export function Header() {
   const { data: categories = [] } = useCategoriesWithStock();
   const { data: siteSettings } = useSiteSettings();
   const logoUrl = siteSettings?.site_logo_url || "/images/logo-shopflow.png";
+
+  const topbarEnabled = siteSettings?.topbar_enabled !== "false";
+  const topbarItems = useMemo(() => {
+    try {
+      const parsed = JSON.parse(siteSettings?.topbar_items || "[]");
+      return (parsed as any[]).filter((i: any) => i.enabled).sort((a: any, b: any) => a.order - b.order);
+    } catch { return []; }
+  }, [siteSettings?.topbar_items]);
 
   // Close search on outside click
   useEffect(() => {
@@ -117,9 +131,21 @@ export function Header() {
 
   return (
     <>
-      <div className="bg-white text-black text-center text-xs py-2 px-4 font-semibold">
-        🔥 FRETE GRÁTIS para Pará de Minas - MG · Compra 100% segura · Parcele em até 3x
-      </div>
+      {topbarEnabled && topbarItems.length > 0 && (
+        <div className="bg-white text-black text-xs py-2 px-4 font-semibold">
+          <div className="container flex items-center justify-center gap-4 md:gap-6 flex-wrap">
+            {topbarItems.map((item: any) => {
+              const IconComp = TOPBAR_ICONS[item.icon] || Zap;
+              return (
+                <span key={item.id} className="flex items-center gap-1.5 whitespace-nowrap">
+                  <IconComp className="h-3.5 w-3.5" />
+                  {item.text}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <header className="sticky top-0 z-50 bg-[#1a1a2e]/95 backdrop-blur-md border-b border-white/10">
         <div className="container flex items-center justify-between h-14 md:h-16">
