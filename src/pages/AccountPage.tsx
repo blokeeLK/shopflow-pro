@@ -345,9 +345,17 @@ export default function AccountPage() {
         </button>
         <button
           onClick={() => setTab("orders")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-md text-sm font-medium transition-colors ${tab === "orders" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-md text-sm font-medium transition-colors relative ${tab === "orders" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}
         >
           <Package className="h-4 w-4" /> Pedidos
+          {(() => {
+            const pending = orders.filter(o => o.status === "aguardando_pagamento" && o.payment_method === "pix").length;
+            return pending > 0 ? (
+              <span className="bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full h-4 min-w-[1rem] px-1 flex items-center justify-center animate-pulse">
+                {pending}
+              </span>
+            ) : null;
+          })()}
         </button>
       </div>
 
