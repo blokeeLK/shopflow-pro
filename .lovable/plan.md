@@ -1,81 +1,68 @@
 
 
-## Plan: Security Hardening (Admin Lockdown, Anti-Copy, Data Protection)
+## Security Audit: Profiles & Related Tables
 
-### Current State
+### Current State Analysis
 
-- **Admin routes**: Protected client-side via `AuthContext` checking `user_roles` table. Backend data is already protected by RLS policies using `has_role()`.
-- **RLS**: Already enabled on all sensitive tables (profiles, addresses, orders, order_items, reviews, product_reviews). Policies are mostly correct.
-- **Security scan**: 6 agent findings + 1 Supabase finding (leaked password - platform limitation).
+After reviewing the RLS policies, the **profiles table policies are already correctly configured**:
+- `Users can view own profile`: `auth.uid() = id` — users can ONLY see their own profile
+- `Users can update own profile`: `auth.uid() = id` — users can ONLY edit their own
+- `Users can insert own profile`: `auth.uid() = id` — users can ONLY create their own
+- `Admins can view all profiles`: `has_role(auth.uid(), 'admin')` — secure via `SECURITY DEFINER` function
 
-### Implementation Steps
+The scanner findings are mostly theoretical risks, not actual exploitable vulnerabilities. However, we can make targeted improvements and dismiss false positives.
 
-#### 1. Anti-Copy / Anti-Plagiarism Protection (Frontend)
+### Plan
 
-Create a new component `src/components/SecurityShield.tsx` that:
-- Disables right-click (`contextmenu`) globally
-- Blocks keyboard shortcuts: `Ctrl+U`, `Ctrl+S`, `Ctrl+P`, `Ctrl+Shift+I/J/C`, `F12`, and Mac equivalents
-- Applies `user-select: none` to body (except inputs/textareas/checkout)
-- Adds invisible watermark comment in HTML
+#### 1. Database Migration — Harden admin_logs to append-only
+The scanner correctly flags that admins can delete their own audit logs. Fix by replacing the `ALL` policy with separate `INSERT` and `SELECT` policies.
 
-Add CSS in `src/index.css`:
-```css
-body { user-select: none; }
-input, textarea, select, [contenteditable], .checkout-area { user-select: text; }
-```
-
-Mount `<SecurityShield />` in `App.tsx` (renders nothing visible, just event listeners).
-
-#### 2. Strengthen Admin Route Protection (Frontend)
-
-Update `AdminLayout.tsx` to show an explicit "Acesso negado" message and redirect to `/` instead of `/login`. The current implementation is already functional but can be improved with a toast notification.
-
-#### 3. Fix HTML Sanitization (XSS - Security Scan Error)
-
-Install `dompurify` and replace the custom `sanitizeHtml` regex in `CustomHtmlBlock.tsx` with `DOMPurify.sanitize()`.
-
-#### 4. Fix Stock Race Condition (Security Scan Error)
-
-Update `mp-webhook/index.ts` to use atomic SQL operations:
 ```sql
-UPDATE product_variants SET stock = GREATEST(0, stock - $quantity) WHERE product_id = $pid AND size = $size
+DROP POLICY "Admins can manage logs" ON admin_logs;
+CREATE POLICY "Admins can insert logs" ON admin_logs FOR INSERT TO authenticated
+  WITH CHECK (has_role(auth.uid(), 'admin'::app_role));
+CREATE POLICY "Admins can view logs" ON admin_logs FOR SELECT TO authenticated
+  USING (has_role(auth.uid(), 'admin'::app_role));
 ```
-Same for `sold_count` on products table.
 
-#### 5. Fix Shipping Function Auth (Security Scan Warning)
+#### 2. Database Migration — Add price validation trigger on order_items
+Prevent price manipulation during checkout by validating `unit_price` matches the product's actual price.
 
-Update `calculate-shipping/index.ts` to use `SUPABASE_ANON_KEY` instead of `SUPABASE_SERVICE_ROLE_KEY` since product data is public via RLS.
+```sql
+CREATE OR REPLACE FUNCTION validate_order_item_price()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE actual_price numeric;
+BEGIN
+  SELECT COALESCE(
+    CASE WHEN is_promo AND promo_price IS NOT NULL THEN promo_price ELSE NULL END,
+    price
+  ) INTO actual_price FROM products WHERE id = NEW.product_id;
+  IF actual_price IS NULL THEN RAISE EXCEPTION 'Product not found';
+  END IF;
+  IF NEW.unit_price <> actual_price THEN RAISE EXCEPTION 'Price mismatch';
+  END IF;
+  RETURN NEW;
+END; $$;
 
-#### 6. Database Migration for Customer-Safe View
+CREATE TRIGGER check_order_item_price BEFORE INSERT ON order_items
+  FOR EACH ROW EXECUTE FUNCTION validate_order_item_price();
+```
 
-Create a migration to add a `customer_orders_view` that excludes sensitive fields. However, reviewing current RLS policies, they are already correctly scoped:
-- `addresses`: Users can only manage own (already correct)
-- `orders`: Users see own, admins see all (already correct)
-- `profiles`: Users see own, admins see all (already correct)
+#### 3. Dismiss false-positive / low-risk findings
+Use the security finding management tool to properly categorize findings that are already mitigated:
 
-No additional RLS changes needed — current policies are already secure.
+- **Profiles**: Policies are already correct — dismiss with explanation
+- **Addresses admin access**: Admin access is required for order fulfillment — dismiss as accepted risk
+- **Orders/payment data**: Already scoped to own user — dismiss
+- **Reviews user_id**: Public reviews showing author names is intentional for social proof
+- **user_roles read own**: Needed for frontend auth flow
+- **site_settings public**: Non-sensitive config data
 
-#### 7. Invisible Watermark
+#### 4. Files Modified
+| File/Resource | Change |
+|---|---|
+| DB Migration | Append-only admin_logs, price validation trigger |
+| Security findings | Dismiss false positives with documented reasons |
 
-Add HTML comment watermark in `index.html` and a CSS comment in `index.css` for authorship proof.
-
-### Files to Create/Modify
-
-| File | Action |
-|------|--------|
-| `src/components/SecurityShield.tsx` | Create - anti-copy protection component |
-| `src/App.tsx` | Add SecurityShield component |
-| `src/index.css` | Add user-select rules |
-| `src/components/CustomHtmlBlock.tsx` | Replace sanitizer with DOMPurify |
-| `supabase/functions/mp-webhook/index.ts` | Fix race condition with atomic updates |
-| `supabase/functions/calculate-shipping/index.ts` | Use anon key instead of service role key |
-| `src/components/admin/AdminLayout.tsx` | Improve access denied UX |
-| `index.html` | Add watermark comment |
-| New migration | Customer-safe view (if needed) |
-
-### Limitations
-
-- **Leaked Password Protection**: Platform-level setting not available in Lovable Cloud UI. Cannot be enabled via code.
-- **HTTP Security Headers** (CSP, X-Frame-Options, HSTS): Cannot be configured in Lovable's hosting environment. These are controlled at the platform level.
-- **Anti-copy measures**: These are deterrents only — determined users can always bypass them via browser extensions or DevTools workarounds. The real protection is server-side RLS.
+No frontend changes needed — the existing RLS is already secure.
 
