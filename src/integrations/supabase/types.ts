@@ -101,9 +101,12 @@ export type Database = {
           image: string
           link: string | null
           position: number | null
+          position_x: number
+          position_y: number
           start_date: string | null
           title: string
           updated_at: string
+          zoom: number
         }
         Insert: {
           active?: boolean
@@ -113,9 +116,12 @@ export type Database = {
           image: string
           link?: string | null
           position?: number | null
+          position_x?: number
+          position_y?: number
           start_date?: string | null
           title?: string
           updated_at?: string
+          zoom?: number
         }
         Update: {
           active?: boolean
@@ -125,9 +131,12 @@ export type Database = {
           image?: string
           link?: string | null
           position?: number | null
+          position_x?: number
+          position_y?: number
           start_date?: string | null
           title?: string
           updated_at?: string
+          zoom?: number
         }
         Relationships: []
       }
