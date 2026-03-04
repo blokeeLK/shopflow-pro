@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { formatCPF, validateCPF } from "@/lib/cpf";
 import { formatCurrency } from "@/hooks/useSupabaseData";
-import { User, Package, LogOut, Star, Save, Truck, ExternalLink, Copy, CreditCard } from "lucide-react";
+import { User, Package, LogOut, Star, Save, Truck, ExternalLink, Copy, CreditCard, QrCode, Loader2, RefreshCw } from "lucide-react";
 
 interface Profile {
   name: string;
@@ -23,6 +23,9 @@ interface Order {
   created_at: string;
   shipping_service: string;
   payment_method: string;
+  payment_init_point: string;
+  payment_qr_code_base64: string;
+  payment_expires_at: string | null;
   order_items?: { product_id: string; product_name: string }[];
 }
 
@@ -57,6 +60,10 @@ export default function AccountPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [saving, setSaving] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
+
+  // PIX modal state
+  const [pixModalOrder, setPixModalOrder] = useState<Order | null>(null);
+  const [regeneratingPix, setRegeneratingPix] = useState<string | null>(null);
 
   // Review state
   const [reviewOrderId, setReviewOrderId] = useState<string | null>(null);
@@ -100,7 +107,7 @@ export default function AccountPage() {
   async function loadOrders() {
     const { data } = await supabase
       .from("orders")
-      .select("id, status, total, tracking_code, created_at, shipping_service, payment_method, order_items(product_id, product_name)")
+      .select("id, status, total, tracking_code, created_at, shipping_service, payment_method, payment_init_point, payment_qr_code_base64, payment_expires_at, order_items(product_id, product_name)")
       .eq("user_id", user!.id)
       .order("created_at", { ascending: false });
     if (data) setOrders(data as any[]);
@@ -135,7 +142,6 @@ export default function AccountPage() {
       phone: profile.phone.replace(/\D/g, ""),
     };
 
-    // Only include CPF if it was empty and user is setting it for the first time
     const cleanCpf = cpfInput.replace(/\D/g, "");
     if (!originalCpf && cleanCpf) {
       if (!validateCPF(cleanCpf)) {
@@ -187,12 +193,141 @@ export default function AccountPage() {
 
   const canPayOrder = (status: string) => status === "criado" || status === "aguardando_pagamento";
 
+  const isPixExpired = (order: Order): boolean => {
+    if (!order.payment_expires_at) return false;
+    return new Date(order.payment_expires_at) < new Date();
+  };
+
+  const hasValidPix = (order: Order): boolean => {
+    return !!(order.payment_init_point && order.payment_init_point.length > 0 && !isPixExpired(order));
+  };
+
+  async function handlePayNow(order: Order) {
+    // If it's a PIX payment with valid data, show it directly
+    if (order.payment_method === "pix" && hasValidPix(order)) {
+      setPixModalOrder(order);
+      return;
+    }
+
+    // If PIX expired or no data, regenerate
+    if (order.payment_method === "pix" || order.status === "aguardando_pagamento" || order.status === "criado") {
+      await regeneratePix(order);
+      return;
+    }
+
+    // Fallback: redirect to checkout
+    navigate(`/checkout?order_id=${order.id}`);
+  }
+
+  async function regeneratePix(order: Order) {
+    setRegeneratingPix(order.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-payment", {
+        body: { order_id: order.id, payment_method: "pix" },
+      });
+
+      if (error || data?.error) {
+        const msg = data?.error || (typeof error === "object" ? JSON.stringify(error) : String(error));
+        toast({ title: "Erro ao gerar PIX", description: msg, variant: "destructive" });
+        return;
+      }
+
+      // Update local order data with new PIX info
+      const updatedOrder: Order = {
+        ...order,
+        payment_method: "pix",
+        payment_init_point: data.pix_copy_paste || data.pix_qr_code || "",
+        payment_qr_code_base64: data.pix_qr_code_base64 || "",
+        payment_expires_at: data.expires_at || null,
+        status: "aguardando_pagamento",
+      };
+
+      setOrders(prev => prev.map(o => o.id === order.id ? updatedOrder : o));
+      setPixModalOrder(updatedOrder);
+      toast({ title: "PIX gerado com sucesso! Escaneie o QR Code." });
+    } catch (err: any) {
+      toast({ title: "Erro ao gerar PIX", description: err?.message, variant: "destructive" });
+    } finally {
+      setRegeneratingPix(null);
+    }
+  }
+
   if (authLoading || !user) {
     return <div className="container py-20 text-center text-muted-foreground">Carregando...</div>;
   }
 
   return (
     <div className="container max-w-2xl py-6 md:py-10">
+      {/* PIX Modal */}
+      {pixModalOrder && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={() => setPixModalOrder(null)}>
+          <div className="bg-card rounded-xl p-6 max-w-md w-full shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="text-center">
+              <div className="bg-accent/10 rounded-full h-16 w-16 flex items-center justify-center mx-auto mb-4">
+                <QrCode className="h-8 w-8 text-accent" />
+              </div>
+              <h2 className="font-display text-xl font-bold text-foreground mb-1">Pague com Pix</h2>
+              <p className="text-muted-foreground text-sm mb-4">
+                Pedido #{pixModalOrder.id.slice(0, 8)} — {formatCurrency(Number(pixModalOrder.total))}
+              </p>
+
+              {pixModalOrder.payment_qr_code_base64 && (
+                <div className="flex justify-center mb-4">
+                  <img
+                    src={`data:image/png;base64,${pixModalOrder.payment_qr_code_base64}`}
+                    alt="QR Code Pix"
+                    className="w-48 h-48 rounded-lg border"
+                  />
+                </div>
+              )}
+
+              {pixModalOrder.payment_init_point && (
+                <div className="bg-secondary rounded-lg p-3 mb-4">
+                  <p className="text-xs text-muted-foreground mb-2">Código Pix (copiar e colar)</p>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      value={pixModalOrder.payment_init_point}
+                      readOnly
+                      className="flex-1 bg-background border rounded px-2 py-1.5 text-xs text-foreground font-mono truncate"
+                    />
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(pixModalOrder.payment_init_point || "");
+                        toast({ title: "Código copiado!" });
+                      }}
+                      className="bg-accent text-accent-foreground p-2 rounded-lg hover:bg-accent/90"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {pixModalOrder.payment_expires_at && (
+                <p className="text-xs text-muted-foreground mb-4">
+                  Expira em: {new Date(pixModalOrder.payment_expires_at).toLocaleString("pt-BR")}
+                </p>
+              )}
+
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={() => setPixModalOrder(null)}
+                  className="w-full bg-accent text-accent-foreground font-display font-semibold py-2.5 rounded-lg text-sm hover:bg-accent/90 transition-colors"
+                >
+                  Fechar
+                </button>
+                <button
+                  onClick={() => { setPixModalOrder(null); regeneratePix(pixModalOrder); }}
+                  className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center gap-1 py-2"
+                >
+                  <RefreshCw className="h-3.5 w-3.5" /> Gerar novo PIX
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-display text-2xl font-bold text-foreground">Minha Conta</h1>
         <button onClick={handleLogout} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-destructive transition-colors">
@@ -295,15 +430,36 @@ export default function AccountPage() {
                   </div>
                 </div>
 
+                {/* PIX notice for aguardando_pagamento */}
+                {order.status === "aguardando_pagamento" && order.payment_method === "pix" && (
+                  <div className="mt-3 bg-warning/10 border border-warning/20 rounded-lg p-3 flex items-start gap-2">
+                    <QrCode className="h-4 w-4 text-warning flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-warning font-medium">
+                      {hasValidPix(order)
+                        ? "PIX gerado — clique em 'Pagar agora' para abrir novamente."
+                        : "PIX expirado — clique em 'Pagar agora' para gerar um novo."}
+                    </p>
+                  </div>
+                )}
+
                 {/* Pay now button for unpaid orders */}
                 {canPayOrder(order.status) && (
                   <div className="mt-3 pt-3 border-t">
-                    <Link
-                      to={`/checkout?order_id=${order.id}`}
-                      className="w-full bg-accent text-accent-foreground font-display font-semibold py-2.5 rounded-lg text-sm text-center hover:bg-accent/90 transition-colors flex items-center justify-center gap-2"
+                    <button
+                      onClick={() => handlePayNow(order)}
+                      disabled={regeneratingPix === order.id}
+                      className="w-full bg-accent text-accent-foreground font-display font-semibold py-2.5 rounded-lg text-sm text-center hover:bg-accent/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                     >
-                      <CreditCard className="h-4 w-4" /> Pagar agora
-                    </Link>
+                      {regeneratingPix === order.id ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" /> Gerando PIX...
+                        </>
+                      ) : (
+                        <>
+                          <CreditCard className="h-4 w-4" /> Pagar agora
+                        </>
+                      )}
+                    </button>
                   </div>
                 )}
 
@@ -402,27 +558,19 @@ export default function AccountPage() {
 const TIMELINE_STEPS = ["criado", "pago", "separando", "enviado", "entregue"];
 
 function OrderTimeline({ status }: { status: string }) {
-  if (status === "cancelado") {
-    return (
-      <div className="flex items-center gap-1 mt-2">
-        <div className="h-1.5 flex-1 bg-destructive/30 rounded-full" />
-        <span className="text-[10px] text-destructive font-semibold">Cancelado</span>
-      </div>
-    );
-  }
-
-  const currentIdx = TIMELINE_STEPS.indexOf(status);
+  const cancelled = status === "cancelado";
+  const currentIdx = TIMELINE_STEPS.indexOf(status === "aguardando_pagamento" ? "criado" : status);
 
   return (
-    <div className="flex items-center gap-0.5 mt-2">
-      {TIMELINE_STEPS.map((step, i) => (
-        <div key={step} className="flex-1 flex flex-col items-center gap-0.5">
-          <div className={`h-1.5 w-full rounded-full transition-colors ${i <= currentIdx ? "bg-accent" : "bg-secondary"}`} />
-          <span className={`text-[9px] leading-tight ${i <= currentIdx ? "text-accent font-semibold" : "text-muted-foreground"}`}>
-            {step === "criado" ? "Pedido" : step === "pago" ? "Pago" : step === "separando" ? "Separando" : step === "enviado" ? "Enviado" : "Entregue"}
-          </span>
-        </div>
-      ))}
+    <div className="flex items-center gap-1 my-2">
+      {TIMELINE_STEPS.map((s, i) => {
+        const done = !cancelled && i <= currentIdx;
+        return (
+          <div key={s} className="flex items-center gap-1 flex-1">
+            <div className={`h-2 flex-1 rounded-full ${cancelled ? "bg-destructive/30" : done ? "bg-accent" : "bg-secondary"}`} />
+          </div>
+        );
+      })}
     </div>
   );
 }

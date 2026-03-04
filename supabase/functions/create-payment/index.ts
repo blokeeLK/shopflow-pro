@@ -65,6 +65,14 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Don't allow payment for already paid orders
+    if (order.status === "pago" || order.status === "separando" || order.status === "enviado" || order.status === "entregue") {
+      return new Response(JSON.stringify({ error: "Este pedido já foi pago" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Get user email
     const { data: profile } = await supabaseAdmin
       .from("profiles")
@@ -104,7 +112,6 @@ Deno.serve(async (req) => {
     if (payment_method === "pix") {
       // Use a safe payer email — MP forbids payer email = seller email
       let payerEmail = profile?.email || "cliente@loja.com";
-      // If the payer email is the same as the MP account owner, use a placeholder
       const SELLER_EMAIL = "alexjunior160@gmail.com";
       if (payerEmail.toLowerCase() === SELLER_EMAIL.toLowerCase()) {
         payerEmail = `comprador+${order_id.slice(0, 8)}@loja.com`;
@@ -141,19 +148,36 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Update order with payment info
+      const pixQrCode = mpData.point_of_interaction?.transaction_data?.qr_code || "";
+      const pixQrCodeBase64 = mpData.point_of_interaction?.transaction_data?.qr_code_base64 || "";
+      const expiresAt = mpData.date_of_expiration || null;
+
+      // Update order with payment info including PIX data for retry
       await supabaseAdmin.from("orders").update({
         payment_id: String(mpData.id),
         payment_method: "pix",
         status: "aguardando_pagamento",
+        payment_init_point: pixQrCode,
+        payment_qr_code_base64: pixQrCodeBase64,
+        payment_expires_at: expiresAt,
       }).eq("id", order_id);
+
+      // Log PIX generation
+      await supabaseAdmin.from("admin_logs").insert({
+        admin_id: "00000000-0000-0000-0000-000000000000",
+        entity: "order",
+        action: "pix_generated",
+        entity_id: order_id,
+        details: { payment_id: mpData.id, expires_at: expiresAt },
+      });
 
       return new Response(JSON.stringify({
         payment_id: mpData.id,
         status: mpData.status,
-        pix_qr_code: mpData.point_of_interaction?.transaction_data?.qr_code,
-        pix_qr_code_base64: mpData.point_of_interaction?.transaction_data?.qr_code_base64,
-        pix_copy_paste: mpData.point_of_interaction?.transaction_data?.qr_code,
+        pix_qr_code: pixQrCode,
+        pix_qr_code_base64: pixQrCodeBase64,
+        pix_copy_paste: pixQrCode,
+        expires_at: expiresAt,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -200,6 +224,7 @@ Deno.serve(async (req) => {
       await supabaseAdmin.from("orders").update({
         payment_method: "card",
         status: "aguardando_pagamento",
+        payment_init_point: mpData.init_point || "",
       }).eq("id", order_id);
 
       return new Response(JSON.stringify({
