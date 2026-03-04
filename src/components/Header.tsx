@@ -135,6 +135,9 @@ export function Header() {
                 {cat.name}
               </Link>
             ))}
+            <Link to="/atacado" className="text-sm font-bold text-accent hover:text-accent/80 transition-colors">
+              Atacado
+            </Link>
           </nav>
 
           <div className="flex items-center gap-2">
@@ -276,10 +279,13 @@ export function Header() {
           <nav className="md:hidden bg-card border-t animate-fade-in-up">
             <div className="container py-4 flex flex-col gap-3">
               {categories.map((cat) => (
-                <Link key={cat.slug} to={`/categoria/${cat.slug}`} onClick={() => setMenuOpen(false)} className="text-sm font-medium text-foreground py-2 border-b border-border last:border-0">
+                <Link key={cat.slug} to={`/categoria/${cat.slug}`} onClick={() => setMenuOpen(false)} className="text-sm font-medium text-foreground py-2 border-b border-border">
                   {cat.name}
                 </Link>
               ))}
+              <Link to="/atacado" onClick={() => setMenuOpen(false)} className="text-sm font-bold text-accent py-2 border-b border-border">
+                💼 Atacado
+              </Link>
               <Link to="/conta" onClick={() => setMenuOpen(false)} className="text-sm font-medium text-foreground py-2 flex items-center gap-2">
                 <User className="h-4 w-4" /> Minha Conta
               </Link>
