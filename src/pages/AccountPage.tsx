@@ -44,7 +44,7 @@ const statusColors: Record<string, string> = {
   aguardando_pagamento: "bg-warning/20 text-warning",
   pago: "bg-accent/20 text-accent",
   separando: "bg-accent/20 text-accent",
-  enviado: "bg-primary/20 text-primary",
+  enviado: "bg-warning/20 text-warning",
   entregue: "bg-success/20 text-success",
   cancelado: "bg-destructive/20 text-destructive",
 };
@@ -604,7 +604,7 @@ function OrderTimeline({ status }: { status: string }) {
     if (cancelled) return "bg-destructive/30";
     if (!done) return "bg-secondary";
     if (status === "entregue") return "bg-success";
-    if (status === "enviado") return "bg-primary";
+    if (status === "enviado") return "bg-warning";
     return "bg-accent";
   };
 
