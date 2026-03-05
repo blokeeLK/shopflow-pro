@@ -1,68 +1,50 @@
 
 
-## Security Audit: Profiles & Related Tables
+## Security Hardening — Analysis & Plan
 
-### Current State Analysis
+### Critical Warning: The Proposed SQL Would Break Your Store
 
-After reviewing the RLS policies, the **profiles table policies are already correctly configured**:
-- `Users can view own profile`: `auth.uid() = id` — users can ONLY see their own profile
-- `Users can update own profile`: `auth.uid() = id` — users can ONLY edit their own
-- `Users can insert own profile`: `auth.uid() = id` — users can ONLY create their own
-- `Admins can view all profiles`: `has_role(auth.uid(), 'admin')` — secure via `SECURITY DEFINER` function
+The SQL you provided must **not** be run as-is. Here is why:
 
-The scanner findings are mostly theoretical risks, not actual exploitable vulnerabilities. However, we can make targeted improvements and dismiss false positives.
+1. **`REVOKE ALL ON SCHEMA public FROM anon`** — This would break the entire public storefront. Anonymous visitors need SELECT access to products, categories, banners, and site_settings to see your store.
+
+2. **`admin_users` table + `is_admin()` function** — Your project already uses `user_roles` table + `has_role()` function for admin checks. Creating a parallel system would cause conflicts and require migrating all existing policies.
+
+3. **Dropping existing policies** — Your current policies are **RESTRICTIVE** (deny-by-default), which is more secure than the PERMISSIVE replacements in the proposed SQL. Restrictive policies require ALL policies to pass; permissive ones allow access if ANY policy passes.
+
+4. **`reviews` policy changes** — The proposed SQL allows users to UPDATE/DELETE their own reviews, but your current design intentionally prevents this (append-only reviews for integrity).
+
+### What the Scanner Actually Flags (3 items)
+
+| Finding | Real Risk | Fix |
+|---|---|---|
+| `profiles` — no explicit anon denial | **False positive.** Restrictive `auth.uid() = id` already blocks anon (NULL ≠ id). | Dismiss with explanation |
+| `addresses` — no explicit anon denial | **False positive.** Same logic — restrictive `auth.uid() = user_id` blocks anon. | Dismiss with explanation |
+| `public_reviews` — no RLS | **Real issue.** It's a VIEW (not a table), so RLS can't be enabled. But it exposes `reviews` data without going through the table's policies. | Drop the view; queries already select safe columns directly. |
 
 ### Plan
 
-#### 1. Database Migration — Harden admin_logs to append-only
-The scanner correctly flags that admins can delete their own audit logs. Fix by replacing the `ALL` policy with separate `INSERT` and `SELECT` policies.
+#### 1. Drop the `public_reviews` view
+This view was created as a data-masking layer but is redundant — the `useReviews` hook already selects only `id, product_id, rating, comment, created_at` directly from the `reviews` table. Dropping the view resolves the scanner finding.
 
 ```sql
-DROP POLICY "Admins can manage logs" ON admin_logs;
-CREATE POLICY "Admins can insert logs" ON admin_logs FOR INSERT TO authenticated
-  WITH CHECK (has_role(auth.uid(), 'admin'::app_role));
-CREATE POLICY "Admins can view logs" ON admin_logs FOR SELECT TO authenticated
-  USING (has_role(auth.uid(), 'admin'::app_role));
+DROP VIEW IF EXISTS public.public_reviews;
 ```
 
-#### 2. Database Migration — Add price validation trigger on order_items
-Prevent price manipulation during checkout by validating `unit_price` matches the product's actual price.
+#### 2. Dismiss the two false-positive findings
+Use the security finding management tool to mark `profiles_table_public_exposure` and `addresses_table_exposure` as acknowledged — the restrictive policies with `auth.uid() = id` already deny anonymous access since `NULL = id` evaluates to `false`.
 
-```sql
-CREATE OR REPLACE FUNCTION validate_order_item_price()
-RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
-DECLARE actual_price numeric;
-BEGIN
-  SELECT COALESCE(
-    CASE WHEN is_promo AND promo_price IS NOT NULL THEN promo_price ELSE NULL END,
-    price
-  ) INTO actual_price FROM products WHERE id = NEW.product_id;
-  IF actual_price IS NULL THEN RAISE EXCEPTION 'Product not found';
-  END IF;
-  IF NEW.unit_price <> actual_price THEN RAISE EXCEPTION 'Price mismatch';
-  END IF;
-  RETURN NEW;
-END; $$;
+#### 3. No other changes needed
+- RLS is already enabled on all tables
+- `has_role()` already serves as the admin check function
+- All sensitive tables already restrict access to own data
+- Reviews are already append-only for regular users
 
-CREATE TRIGGER check_order_item_price BEFORE INSERT ON order_items
-  FOR EACH ROW EXECUTE FUNCTION validate_order_item_price();
-```
-
-#### 3. Dismiss false-positive / low-risk findings
-Use the security finding management tool to properly categorize findings that are already mitigated:
-
-- **Profiles**: Policies are already correct — dismiss with explanation
-- **Addresses admin access**: Admin access is required for order fulfillment — dismiss as accepted risk
-- **Orders/payment data**: Already scoped to own user — dismiss
-- **Reviews user_id**: Public reviews showing author names is intentional for social proof
-- **user_roles read own**: Needed for frontend auth flow
-- **site_settings public**: Non-sensitive config data
-
-#### 4. Files Modified
-| File/Resource | Change |
+### Files Modified
+| Resource | Change |
 |---|---|
-| DB Migration | Append-only admin_logs, price validation trigger |
-| Security findings | Dismiss false positives with documented reasons |
+| DB Migration | Drop `public_reviews` view |
+| Security findings | Dismiss 2 false positives |
 
-No frontend changes needed — the existing RLS is already secure.
+No frontend or backend code changes needed.
 
