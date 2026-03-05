@@ -612,9 +612,10 @@ function OrderTimeline({ status }: { status: string }) {
     <div className="flex items-center gap-1 my-2">
       {TIMELINE_STEPS.map((s, i) => {
         const done = i <= currentIdx;
+        const isEnviadoBar = status === "enviado" && done;
         return (
           <div key={s} className="flex items-center gap-1 flex-1">
-            <div className={`h-2 flex-1 rounded-full ${getBarColor(done)}`} />
+            <div className={`h-2 flex-1 rounded-full ${getBarColor(done)} ${isEnviadoBar ? "status-enviado" : ""}`} />
           </div>
         );
       })}
