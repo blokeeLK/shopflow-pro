@@ -651,6 +651,16 @@ export type Database = {
         Args: { p_product_id: string; p_quantity: number; p_size: string }
         Returns: undefined
       }
+      get_public_reviews: {
+        Args: { p_product_id: string }
+        Returns: {
+          comment: string
+          created_at: string
+          id: string
+          product_id: string
+          rating: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
