@@ -45,7 +45,7 @@ const statusColors: Record<string, string> = {
   pago: "bg-accent/20 text-accent",
   separando: "bg-accent/20 text-accent",
   enviado: "bg-primary/20 text-primary",
-  entregue: "bg-green-100 text-green-700",
+  entregue: "bg-success/20 text-success",
   cancelado: "bg-destructive/20 text-destructive",
 };
 
@@ -600,13 +600,21 @@ function OrderTimeline({ status }: { status: string }) {
   const cancelled = status === "cancelado";
   const currentIdx = TIMELINE_STEPS.indexOf(status === "aguardando_pagamento" ? "criado" : status);
 
+  const getBarColor = (done: boolean) => {
+    if (cancelled) return "bg-destructive/30";
+    if (!done) return "bg-secondary";
+    if (status === "entregue") return "bg-success";
+    if (status === "enviado") return "bg-primary";
+    return "bg-accent";
+  };
+
   return (
     <div className="flex items-center gap-1 my-2">
       {TIMELINE_STEPS.map((s, i) => {
-        const done = !cancelled && i <= currentIdx;
+        const done = i <= currentIdx;
         return (
           <div key={s} className="flex items-center gap-1 flex-1">
-            <div className={`h-2 flex-1 rounded-full ${cancelled ? "bg-destructive/30" : done ? "bg-accent" : "bg-secondary"}`} />
+            <div className={`h-2 flex-1 rounded-full ${getBarColor(done)}`} />
           </div>
         );
       })}
