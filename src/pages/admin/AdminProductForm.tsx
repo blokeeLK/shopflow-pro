@@ -101,7 +101,7 @@ export default function AdminProductForm() {
     }
     setSaving(true);
     try {
-      const productData: Record<string, any> = {
+      const productData = {
         name: form.name, slug: form.slug, description: form.description,
         category_id: form.category_id || null, price: form.price,
         promo_price: form.is_promo ? form.promo_price : null,
@@ -109,6 +109,10 @@ export default function AdminProductForm() {
         is_featured: form.is_featured, active: form.active,
         weight: form.weight, width: form.width, height: form.height, length: form.length,
         installment_count: form.installment_count, sold_count: form.sold_count,
+      };
+
+      // Image settings are saved via raw update since they're not in the generated types yet
+      const imageSettings = {
         image_fit_mode: form.image_fit_mode,
         image_position_x: form.image_position_x,
         image_position_y: form.image_position_y,
@@ -120,9 +124,11 @@ export default function AdminProductForm() {
         const { data, error } = await supabase.from("products").insert(productData).select("id").single();
         if (error) throw error;
         productId = data.id;
+        // Update image settings separately
+        await supabase.from("products").update(imageSettings as any).eq("id", productId);
         await supabase.from("admin_logs").insert({ admin_id: user!.id, action: "create", entity: "product", entity_id: productId, details: { name: form.name } });
       } else {
-        const { error } = await supabase.from("products").update(productData).eq("id", id!);
+        const { error } = await supabase.from("products").update({ ...productData, ...imageSettings as any }).eq("id", id!);
         if (error) throw error;
         productId = id!;
         await supabase.from("admin_logs").insert({ admin_id: user!.id, action: "update", entity: "product", entity_id: productId, details: { name: form.name } });
