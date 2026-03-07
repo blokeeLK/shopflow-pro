@@ -46,7 +46,7 @@ export default function ProductPage() {
     return (
       <div className="container py-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-          <div className="aspect-[3/4] bg-secondary rounded-lg animate-pulse" />
+          <div className="aspect-[3/4] bg-secondary rounded-lg animate-pulse flex items-center justify-center" />
           <div className="space-y-4">
             <div className="h-4 bg-secondary rounded w-1/4" />
             <div className="h-8 bg-secondary rounded w-3/4" />
@@ -102,8 +102,18 @@ export default function ProductPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
         {/* Image Gallery */}
         <div className="space-y-3">
-          <div className="relative aspect-[3/4] bg-secondary rounded-lg overflow-hidden">
-            <img src={imageUrl} alt={product.name} className="w-full h-full object-cover" />
+          <div className="relative aspect-[3/4] bg-secondary rounded-lg overflow-hidden flex items-center justify-center">
+            {(() => {
+              const fitMode = (product as any).image_fit_mode || "contain";
+              const posX = (product as any).image_position_x ?? 50;
+              const posY = (product as any).image_position_y ?? 50;
+              const zoom = (product as any).image_zoom ?? 1;
+              const isContain = fitMode === "contain";
+              const style: React.CSSProperties = isContain
+                ? { objectFit: "contain", objectPosition: "center" }
+                : { objectFit: "cover", objectPosition: `${posX}% ${posY}%`, transform: `scale(${zoom})` };
+              return <img src={imageUrl} alt={product.name} className={`w-full h-full ${isContain ? "p-3" : ""}`} style={style} />;
+            })()}
             {discount > 0 && (
               <span className="absolute top-3 left-3 bg-accent text-accent-foreground text-xs font-bold px-3 py-1 rounded-sm">-{discount}%</span>
             )}

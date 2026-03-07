@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Plus, Trash2, Upload } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Upload, RotateCcw, Crosshair } from "lucide-react";
 
 interface Variant { id?: string; size: string; stock: number; }
 interface ImageItem { id?: string; url: string; position: number; file?: File; }
@@ -21,6 +21,10 @@ export default function AdminProductForm() {
     name: "", slug: "", description: "", category_id: "", price: 0, promo_price: null as number | null,
     is_promo: false, promo_end_date: "", is_featured: false, active: true,
     weight: 0, width: 0, height: 0, length: 0, installment_count: 3, sold_count: 0,
+    image_fit_mode: "contain" as string,
+    image_position_x: 50,
+    image_position_y: 50,
+    image_zoom: 1,
   });
   const [variants, setVariants] = useState<Variant[]>([{ size: "", stock: 0 }]);
   const [images, setImages] = useState<ImageItem[]>([]);
@@ -34,7 +38,6 @@ export default function AdminProductForm() {
     },
   });
 
-  // Load existing product
   const { data: existing } = useQuery({
     queryKey: ["admin-product", id],
     queryFn: async () => {
@@ -59,6 +62,10 @@ export default function AdminProductForm() {
         is_featured: existing.is_featured, active: existing.active,
         weight: existing.weight || 0, width: existing.width || 0, height: existing.height || 0, length: existing.length || 0,
         installment_count: existing.installment_count || 3, sold_count: existing.sold_count || 0,
+        image_fit_mode: (existing as any).image_fit_mode || "contain",
+        image_position_x: (existing as any).image_position_x ?? 50,
+        image_position_y: (existing as any).image_position_y ?? 50,
+        image_zoom: (existing as any).image_zoom ?? 1,
       });
       setVariants(
         (existing.product_variants || []).map((v: any) => ({ id: v.id, size: v.size, stock: v.stock }))
@@ -104,20 +111,29 @@ export default function AdminProductForm() {
         installment_count: form.installment_count, sold_count: form.sold_count,
       };
 
+      // Image settings are saved via raw update since they're not in the generated types yet
+      const imageSettings = {
+        image_fit_mode: form.image_fit_mode,
+        image_position_x: form.image_position_x,
+        image_position_y: form.image_position_y,
+        image_zoom: form.image_zoom,
+      };
+
       let productId: string;
       if (isNew) {
         const { data, error } = await supabase.from("products").insert(productData).select("id").single();
         if (error) throw error;
         productId = data.id;
+        // Update image settings separately
+        await supabase.from("products").update(imageSettings as any).eq("id", productId);
         await supabase.from("admin_logs").insert({ admin_id: user!.id, action: "create", entity: "product", entity_id: productId, details: { name: form.name } });
       } else {
-        const { error } = await supabase.from("products").update(productData).eq("id", id!);
+        const { error } = await supabase.from("products").update({ ...productData, ...imageSettings as any }).eq("id", id!);
         if (error) throw error;
         productId = id!;
         await supabase.from("admin_logs").insert({ admin_id: user!.id, action: "update", entity: "product", entity_id: productId, details: { name: form.name } });
       }
 
-      // Variants: delete existing, insert fresh
       if (!isNew) {
         await supabase.from("product_variants").delete().eq("product_id", productId);
       }
@@ -128,7 +144,6 @@ export default function AdminProductForm() {
         );
       }
 
-      // Images: delete existing, insert fresh
       if (!isNew) {
         await supabase.from("product_images").delete().eq("product_id", productId);
       }
@@ -139,6 +154,7 @@ export default function AdminProductForm() {
       }
 
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
       toast({ title: isNew ? "Produto criado!" : "Produto atualizado!" });
       navigate("/admin/produtos");
     } catch (err: any) {
@@ -147,6 +163,13 @@ export default function AdminProductForm() {
       setSaving(false);
     }
   };
+
+  const previewImage = images[0]?.url || "/placeholder.svg";
+  const isContain = form.image_fit_mode === "contain";
+
+  const previewStyle: React.CSSProperties = isContain
+    ? { objectFit: "contain", objectPosition: "center" }
+    : { objectFit: "cover", objectPosition: `${form.image_position_x}% ${form.image_position_y}%`, transform: `scale(${form.image_zoom})` };
 
   return (
     <div className="p-6 md:p-8 max-w-3xl">
@@ -298,6 +321,103 @@ export default function AdminProductForm() {
               <input type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" />
             </label>
           </div>
+        </div>
+
+        {/* Image Adjustment */}
+        <div className="bg-card border rounded-lg p-4 space-y-4">
+          <h2 className="font-display font-semibold text-foreground text-sm">Ajuste de Imagem</h2>
+          <p className="text-xs text-muted-foreground">Configure como a imagem principal será exibida nos cards e na página do produto.</p>
+
+          {/* Fit mode selector */}
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">Modo de exibição</label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, image_fit_mode: "contain" })}
+                className={`px-3 py-1.5 text-xs rounded-lg border transition-all ${form.image_fit_mode === "contain" ? "bg-accent text-accent-foreground border-accent" : "bg-background text-foreground border-border hover:border-accent/50"}`}
+              >
+                Automático (sem corte)
+              </button>
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, image_fit_mode: "cover" })}
+                className={`px-3 py-1.5 text-xs rounded-lg border transition-all ${form.image_fit_mode === "cover" ? "bg-accent text-accent-foreground border-accent" : "bg-background text-foreground border-border hover:border-accent/50"}`}
+              >
+                Manual (com enquadramento)
+              </button>
+            </div>
+          </div>
+
+          {/* Manual controls — only show in cover mode */}
+          {form.image_fit_mode === "cover" && (
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs text-muted-foreground flex items-center justify-between">
+                  Posição Horizontal
+                  <span className="text-foreground font-medium">{form.image_position_x}%</span>
+                </label>
+                <input type="range" min={0} max={100} value={form.image_position_x}
+                  onChange={(e) => setForm({ ...form, image_position_x: Number(e.target.value) })}
+                  className="w-full h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer accent-accent" />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground flex items-center justify-between">
+                  Posição Vertical
+                  <span className="text-foreground font-medium">{form.image_position_y}%</span>
+                </label>
+                <input type="range" min={0} max={100} value={form.image_position_y}
+                  onChange={(e) => setForm({ ...form, image_position_y: Number(e.target.value) })}
+                  className="w-full h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer accent-accent" />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground flex items-center justify-between">
+                  Zoom
+                  <span className="text-foreground font-medium">{form.image_zoom.toFixed(2)}x</span>
+                </label>
+                <input type="range" min={0.5} max={2.5} step={0.05} value={form.image_zoom}
+                  onChange={(e) => setForm({ ...form, image_zoom: Number(e.target.value) })}
+                  className="w-full h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer accent-accent" />
+              </div>
+              <div className="flex gap-2">
+                <button type="button" onClick={() => setForm({ ...form, image_position_x: 50, image_position_y: 50 })}
+                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                  <Crosshair className="h-3 w-3" /> Centralizar
+                </button>
+                <button type="button" onClick={() => setForm({ ...form, image_position_x: 50, image_position_y: 50, image_zoom: 1 })}
+                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                  <RotateCcw className="h-3 w-3" /> Restaurar padrão
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Live preview */}
+          {images.length > 0 && (
+            <div>
+              <p className="text-xs text-muted-foreground mb-2">Pré-visualização</p>
+              <div className="flex gap-4 items-start flex-wrap">
+                {/* Card preview */}
+                <div>
+                  <p className="text-[10px] text-muted-foreground mb-1 text-center">Card</p>
+                  <div className="w-32 bg-secondary rounded-lg overflow-hidden border">
+                    <div className="aspect-[4/5] flex items-center justify-center overflow-hidden">
+                      <img src={previewImage} alt="Preview" className={`w-full h-full ${isContain ? "p-1.5" : ""}`} style={previewStyle} />
+                    </div>
+                  </div>
+                </div>
+                {/* Product page preview */}
+                <div>
+                  <p className="text-[10px] text-muted-foreground mb-1 text-center">Página</p>
+                  <div className="w-44 bg-secondary rounded-lg overflow-hidden border">
+                    <div className="aspect-[3/4] flex items-center justify-center overflow-hidden">
+                      <img src={previewImage} alt="Preview" className={`w-full h-full ${isContain ? "p-2" : ""}`} style={previewStyle} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Save */}

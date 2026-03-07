@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { Star } from "lucide-react";
 import { DbProduct, formatCurrency, getInstallments, getTotalStock, getProductPrice, getDiscount } from "@/hooks/useSupabaseData";
 
 interface ProductCardProps {
@@ -16,14 +15,32 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const image = product.product_images?.sort((a, b) => (a.position || 0) - (b.position || 0))[0]?.url || "/placeholder.svg";
   const categoryName = (product.category as any)?.name || "";
 
+  // Image fit settings from DB — default to contain (no cropping)
+  const fitMode = (product as any).image_fit_mode || "contain";
+  const posX = (product as any).image_position_x ?? 50;
+  const posY = (product as any).image_position_y ?? 50;
+  const zoom = (product as any).image_zoom ?? 1;
+
+  const isContain = fitMode === "contain";
+
+  const imageStyle: React.CSSProperties = isContain
+    ? { objectFit: "contain", objectPosition: "center" }
+    : { objectFit: "cover", objectPosition: `${posX}% ${posY}%`, transform: `scale(${zoom})` };
+
   return (
     <Link
       to={`/produto/${product.slug}`}
       className="group block bg-card rounded-lg overflow-hidden shadow-product hover:shadow-elevated transition-all duration-300"
       style={{ animationDelay: `${index * 80}ms` }}
     >
-      <div className="relative aspect-[4/5] bg-secondary overflow-hidden">
-        <img src={image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+      <div className="relative aspect-[4/5] bg-secondary overflow-hidden flex items-center justify-center">
+        <img
+          src={image}
+          alt={product.name}
+          className={`w-full h-full group-hover:scale-105 transition-transform duration-500 ${isContain ? "p-2" : ""}`}
+          style={imageStyle}
+          loading="lazy"
+        />
         <div className="absolute top-1.5 left-1.5 flex flex-col gap-0.5">
           {discount > 0 && (
             <span className="bg-accent text-accent-foreground text-[9px] font-bold px-1.5 py-0.5 rounded-sm">-{discount}%</span>

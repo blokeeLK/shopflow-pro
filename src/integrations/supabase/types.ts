@@ -442,6 +442,10 @@ export type Database = {
           description: string | null
           height: number | null
           id: string
+          image_fit_mode: string
+          image_position_x: number
+          image_position_y: number
+          image_zoom: number
           installment_count: number | null
           is_featured: boolean
           is_promo: boolean
@@ -463,6 +467,10 @@ export type Database = {
           description?: string | null
           height?: number | null
           id?: string
+          image_fit_mode?: string
+          image_position_x?: number
+          image_position_y?: number
+          image_zoom?: number
           installment_count?: number | null
           is_featured?: boolean
           is_promo?: boolean
@@ -484,6 +492,10 @@ export type Database = {
           description?: string | null
           height?: number | null
           id?: string
+          image_fit_mode?: string
+          image_position_x?: number
+          image_position_y?: number
+          image_zoom?: number
           installment_count?: number | null
           is_featured?: boolean
           is_promo?: boolean
