@@ -33,8 +33,8 @@ export function SocialProofPopup() {
       setVisible(true);
       setTimeout(() => setVisible(false), 4000);
     };
-    const interval = setInterval(show, 25000 + Math.random() * 20000);
-    const initial = setTimeout(show, 5000);
+    const interval = setInterval(show, 50000);
+    const initial = setTimeout(show, 8000);
     return () => { clearInterval(interval); clearTimeout(initial); };
   }, [productNames]);
 
@@ -43,13 +43,13 @@ export function SocialProofPopup() {
   return (
     <div className="fixed bottom-4 left-4 z-50 max-w-xs bg-card rounded-lg shadow-elevated border p-3 animate-slide-in-right">
       <div className="flex items-start gap-3">
-        <div className="h-10 w-10 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-          <span className="text-sm font-bold text-black">{notification.name.charAt(0)}</span>
+        <div className="h-9 w-9 rounded-full bg-success flex items-center justify-center flex-shrink-0">
+          <span className="text-xs font-bold text-success-foreground">{notification.name.charAt(0)}</span>
         </div>
         <div className="min-w-0">
-          <p className="text-xs font-medium text-foreground"><span className="font-bold">{notification.name}</span> comprou</p>
-          <p className="text-xs text-muted-foreground truncate">{notification.product}</p>
-          <p className="text-[10px] text-muted-foreground mt-0.5">{notification.city} • agora mesmo</p>
+          <p className="text-xs font-medium text-foreground">ShopFlow agradece <span className="font-bold">{notification.name}</span></p>
+          <p className="text-xs text-muted-foreground truncate">comprou {notification.product}</p>
+          <p className="text-[10px] text-muted-foreground mt-0.5">{notification.city}</p>
         </div>
       </div>
     </div>
