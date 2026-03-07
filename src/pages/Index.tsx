@@ -76,12 +76,17 @@ const Index = () => {
         <FadeInSection>
           <section className="container py-10 md:py-14">
             <h2 className="font-display font-bold text-xl md:text-2xl text-foreground mb-6">Categorias</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            <div className="flex flex-wrap justify-center gap-3 md:gap-4">
               {categoriesWithStock.map((cat, i) => (
-                <FadeInSection key={cat.slug} delay={i * 60}>
-                  <Link to={`/categoria/${cat.slug}`} className="group relative bg-secondary rounded-lg p-6 md:p-8 text-center hover:bg-accent hover:text-accent-foreground transition-all duration-300">
-                    <h3 className="font-display font-semibold text-sm md:text-base">{cat.name}</h3>
-                    <ArrowRight className="h-4 w-4 mx-auto mt-2 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <FadeInSection key={cat.slug} delay={i * 80}>
+                  <Link
+                    to={`/categoria/${cat.slug}`}
+                    className="group flex items-center gap-2.5 bg-card rounded-xl px-5 py-3.5 md:px-6 md:py-4 shadow-product hover:shadow-elevated hover:scale-[1.03] transition-all duration-300 border border-border/50 hover:border-accent/40 min-w-[140px] justify-center"
+                  >
+                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-accent transition-colors shrink-0" />
+                    <h3 className="font-display font-semibold text-sm md:text-base text-foreground group-hover:text-accent transition-colors whitespace-nowrap">
+                      {cat.name}
+                    </h3>
                   </Link>
                 </FadeInSection>
               ))}
