@@ -1,56 +1,115 @@
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Flame, Tag } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
-import { useProducts, useCategoriesWithStock } from "@/hooks/useSupabaseData";
+import { useProducts, useCategoriesWithStock, DbProduct } from "@/hooks/useSupabaseData";
 import { HeroCarousel } from "@/components/HeroCarousel";
+import { FadeInSection } from "@/components/FadeInSection";
+import { useMemo } from "react";
+
+/** Filter products that have stock in a given size */
+function filterBySize(products: DbProduct[], size: string): DbProduct[] {
+  return products.filter((p) =>
+    p.product_variants?.some((v) => v.size.toUpperCase() === size.toUpperCase() && v.stock > 0)
+  );
+}
+
+/** Filter products that are on promo */
+function filterPromo(products: DbProduct[]): DbProduct[] {
+  return products.filter((p) => p.is_promo && p.promo_price != null && p.promo_price < p.price);
+}
+
+interface ProductSectionProps {
+  title: string;
+  icon?: React.ReactNode;
+  products: DbProduct[];
+  sectionDelay?: number;
+}
+
+function ProductSection({ title, icon, products, sectionDelay = 0 }: ProductSectionProps) {
+  if (products.length === 0) return null;
+
+  return (
+    <FadeInSection delay={sectionDelay}>
+      <section className="container pb-10 md:pb-14">
+        <div className="flex items-center gap-2 mb-6">
+          {icon}
+          <h2 className="font-display font-bold text-xl md:text-2xl text-foreground">{title}</h2>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          {products.map((product, i) => (
+            <FadeInSection key={product.id} delay={i * 60} className="h-full">
+              <ProductCard product={product} index={i} />
+            </FadeInSection>
+          ))}
+        </div>
+      </section>
+    </FadeInSection>
+  );
+}
+
+const SIZES = [
+  { label: "Tamanho P", size: "P" },
+  { label: "Tamanho M", size: "M" },
+  { label: "Tamanho G", size: "G" },
+  { label: "Tamanho GG", size: "GG" },
+] as const;
 
 const Index = () => {
-  const { data: featured = [], isLoading: loadingFeatured } = useProducts({ featured: true });
-  const { data: allProducts = [], isLoading: loadingAll } = useProducts();
+  const { data: allProducts = [], isLoading } = useProducts();
   const { data: categoriesWithStock = [] } = useCategoriesWithStock();
+
+  const promoProducts = useMemo(() => filterPromo(allProducts), [allProducts]);
+  const sizeGroups = useMemo(
+    () => SIZES.map((s) => ({ ...s, products: filterBySize(allProducts, s.size) })),
+    [allProducts]
+  );
 
   return (
     <div>
       {/* Hero Carousel */}
-      <HeroCarousel />
-
-      {/* Trust bar */}
-
-
+      <FadeInSection>
+        <HeroCarousel />
+      </FadeInSection>
 
       {/* Categories */}
       {categoriesWithStock.length > 0 && (
-        <section className="container py-10 md:py-14">
-          <h2 className="font-display font-bold text-xl md:text-2xl text-foreground mb-6">Categorias</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-            {categoriesWithStock.map((cat) => (
-              <Link key={cat.slug} to={`/categoria/${cat.slug}`} className="group relative bg-secondary rounded-lg p-6 md:p-8 text-center hover:bg-accent hover:text-accent-foreground transition-all duration-300">
-                <h3 className="font-display font-semibold text-sm md:text-base">{cat.name}</h3>
-                <ArrowRight className="h-4 w-4 mx-auto mt-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </Link>
-            ))}
-          </div>
-        </section>
+        <FadeInSection>
+          <section className="container py-10 md:py-14">
+            <h2 className="font-display font-bold text-xl md:text-2xl text-foreground mb-6">Categorias</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+              {categoriesWithStock.map((cat, i) => (
+                <FadeInSection key={cat.slug} delay={i * 60}>
+                  <Link to={`/categoria/${cat.slug}`} className="group relative bg-secondary rounded-lg p-6 md:p-8 text-center hover:bg-accent hover:text-accent-foreground transition-all duration-300">
+                    <h3 className="font-display font-semibold text-sm md:text-base">{cat.name}</h3>
+                    <ArrowRight className="h-4 w-4 mx-auto mt-2 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </Link>
+                </FadeInSection>
+              ))}
+            </div>
+          </section>
+        </FadeInSection>
       )}
 
-      {/* Featured products */}
-      {featured.length > 0 && (
+      {/* Promoções da semana */}
+      <ProductSection
+        title="Promoções da semana 🔥"
+        icon={<Tag className="h-5 w-5 text-accent" />}
+        products={promoProducts}
+      />
+
+      {/* Size sections */}
+      {sizeGroups.map((group, gi) => (
+        <ProductSection
+          key={group.size}
+          title={group.label}
+          products={group.products}
+          sectionDelay={0}
+        />
+      ))}
+
+      {/* Loading skeleton */}
+      {isLoading && (
         <section className="container pb-10 md:pb-14">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="font-display font-bold text-xl md:text-2xl text-foreground">Destaques 🔥</h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-            {featured.map((product, i) => (
-              <ProductCard key={product.id} product={product} index={i} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* All products */}
-      <section className="container pb-10 md:pb-14">
-        <h2 className="font-display font-bold text-xl md:text-2xl text-foreground mb-6">Todos os produtos</h2>
-        {(loadingFeatured || loadingAll) ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
             {[...Array(4)].map((_, i) => (
               <div key={i} className="bg-card rounded-lg overflow-hidden animate-pulse">
@@ -63,16 +122,15 @@ const Index = () => {
               </div>
             ))}
           </div>
-        ) : allProducts.length === 0 ? (
+        </section>
+      )}
+
+      {/* Empty state */}
+      {!isLoading && allProducts.length === 0 && (
+        <section className="container pb-10 md:pb-14">
           <p className="text-muted-foreground text-center py-10">Nenhum produto disponível no momento.</p>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-            {allProducts.map((product, i) => (
-              <ProductCard key={product.id} product={product} index={i} />
-            ))}
-          </div>
-        )}
-      </section>
+        </section>
+      )}
     </div>
   );
 };
