@@ -37,9 +37,9 @@ function ProductSection({ title, icon, products, sectionDelay = 0 }: ProductSect
   return (
     <FadeInSection delay={sectionDelay}>
       <section className="container pb-10 md:pb-14">
-        <div className="flex items-center gap-2 mb-6">
+        <div className="flex items-center gap-3 mb-8">
           {icon}
-          <h2 className="font-display font-bold text-xl md:text-2xl text-foreground">{title}</h2>
+          <h2 className="font-display font-semibold text-lg md:text-xl text-foreground tracking-[0.05em]">{title}</h2>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 md:gap-3">
           {products.map((product, i) => (
@@ -99,37 +99,38 @@ const Index = () => {
         <HeroCarousel />
       </FadeInSection>
 
-      {/* Size / Promo Filter Buttons */}
+      {/* Size / Promo Filter Buttons — Luxury fashion style */}
       <FadeInSection>
-        <section className="container py-10 md:py-14">
-          <h2 className="font-display font-bold text-2xl md:text-3xl text-foreground mb-7 tracking-tight">
+        <section className="container py-12 md:py-16">
+          <p className="font-display text-[11px] md:text-xs font-medium tracking-[0.25em] uppercase text-muted-foreground mb-6">
             Filtrar por tamanho
-          </h2>
-          <div className="flex flex-wrap gap-3 md:gap-4">
+          </p>
+          <div className="flex flex-wrap gap-3 md:gap-3.5">
             {filters.map((f) => {
               const isActive = activeFilter === f.key;
               const hasPromo = f.key !== "todos" && f.key !== "promo" && sizesWithPromo.has(f.key);
+              const isPromoBtn = f.key === "promo";
               return (
                 <button
                   key={f.key}
                   onClick={() => setActiveFilter(f.key)}
-                  className={`group relative flex items-center justify-center gap-2.5 rounded-2xl text-base md:text-lg font-bold font-display tracking-wide transition-all duration-300 ease-out
-                    ${f.key === "promo"
-                      ? "px-7 py-4 md:px-9 md:py-5"
-                      : "px-7 py-4 md:px-10 md:py-5 min-w-[4rem] md:min-w-[5rem]"
+                  className={`group relative inline-flex items-center justify-center gap-2 font-display transition-all duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)]
+                    ${isPromoBtn
+                      ? "px-6 py-3 md:px-8 md:py-3.5 text-[12px] md:text-[13px] tracking-[0.15em] uppercase font-semibold rounded-none border"
+                      : "px-5 py-3 md:px-7 md:py-3.5 text-[13px] md:text-sm tracking-[0.2em] uppercase font-semibold rounded-none border min-w-[3.5rem] md:min-w-[4.5rem]"
                     }
                     ${isActive
-                      ? f.key === "promo"
-                        ? "bg-accent text-accent-foreground shadow-lg shadow-accent/25 scale-[1.02]"
-                        : "bg-foreground text-background shadow-lg shadow-foreground/20 scale-[1.02]"
-                      : "bg-card text-foreground border border-border/60 shadow-[var(--shadow-product)] hover:border-foreground/20 hover:shadow-[var(--shadow-md)] hover:scale-[1.03] active:scale-[0.98]"
+                      ? isPromoBtn
+                        ? "bg-foreground text-background border-foreground"
+                        : "bg-foreground text-background border-foreground"
+                      : "bg-transparent text-foreground border-border hover:border-foreground/60 hover:bg-foreground/[0.03]"
                     }`}
                 >
                   {f.icon}
                   <span>{f.label}</span>
-                  {/* Subtle promo dot indicator */}
+                  {/* Subtle promo indicator */}
                   {hasPromo && !isActive && (
-                    <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-accent shadow-sm shadow-accent/40" />
+                    <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-accent" />
                   )}
                 </button>
               );
@@ -151,20 +152,20 @@ const Index = () => {
       {!isLoading && filteredProducts.length > 0 && (
         <FadeInSection>
           <section className="container pb-10 md:pb-14">
-            <div className="flex items-center gap-2 mb-6">
+            <div className="flex items-center gap-3 mb-8">
               {activeFilter === "promo" ? (
-                <Flame className="h-5 w-5 text-accent" />
+                <Flame className="h-4 w-4 text-accent" strokeWidth={1.5} />
               ) : activeFilter !== "todos" ? (
-                <Sparkles className="h-5 w-5 text-accent" />
+                <Sparkles className="h-4 w-4 text-accent" strokeWidth={1.5} />
               ) : null}
-              <h2 className="font-display font-bold text-xl md:text-2xl text-foreground">
+              <h2 className="font-display font-semibold text-lg md:text-xl text-foreground tracking-[0.05em]">
                 {activeFilter === "todos"
                   ? "Todos os Produtos"
                   : activeFilter === "promo"
-                  ? "Promoções da Semana 🔥"
+                  ? "Promoções da Semana"
                   : `Tamanho ${activeFilter}`}
               </h2>
-              <span className="text-sm text-muted-foreground">({filteredProducts.length})</span>
+              <span className="text-xs text-muted-foreground font-medium tracking-wider">({filteredProducts.length})</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 md:gap-3">
               {filteredProducts.map((product, i) => (
