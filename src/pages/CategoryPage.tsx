@@ -14,19 +14,26 @@ export default function CategoryPage() {
   const [sort, setSort] = useState<SortOption>("best-sellers");
 
   const sizeFilter = searchParams.get("tamanho")?.toUpperCase() || "";
-
   const category = categories.find((c) => c.slug === slug);
+
+  // Available sizes in this category
+  const availableSizes = useMemo(() => {
+    const sizes = new Set<string>();
+    products.forEach(p => {
+      p.product_variants?.forEach(v => {
+        if (v.stock > 0) sizes.add(v.size.toUpperCase());
+      });
+    });
+    return SIZES.filter(s => sizes.has(s));
+  }, [products]);
 
   const sorted = useMemo(() => {
     let arr = [...products];
-
-    // Filter by size if param present
     if (sizeFilter && SIZES.includes(sizeFilter as any)) {
       arr = arr.filter(p =>
         p.product_variants?.some(v => v.size.toUpperCase() === sizeFilter && v.stock > 0)
       );
     }
-
     if (sort === "price-asc") arr.sort((a, b) => getProductPrice(a) - getProductPrice(b));
     else if (sort === "price-desc") arr.sort((a, b) => getProductPrice(b) - getProductPrice(a));
     else arr.sort((a, b) => b.sold_count - a.sold_count);
@@ -50,17 +57,6 @@ export default function CategoryPage() {
     );
   }
 
-  // Available sizes in this category
-  const availableSizes = useMemo(() => {
-    const sizes = new Set<string>();
-    products.forEach(p => {
-      p.product_variants?.forEach(v => {
-        if (v.stock > 0) sizes.add(v.size.toUpperCase());
-      });
-    });
-    return SIZES.filter(s => sizes.has(s));
-  }, [products]);
-
   return (
     <div className="container py-6 md:py-10">
       <div className="flex items-center justify-between mb-4">
@@ -72,7 +68,6 @@ export default function CategoryPage() {
         </select>
       </div>
 
-      {/* Size filter pills */}
       {availableSizes.length > 0 && (
         <div className="flex items-center gap-2 mb-6">
           <span className="text-sm text-muted-foreground mr-1">Tamanho:</span>
