@@ -1,19 +1,26 @@
-import { Link } from "react-router-dom";
-import { ArrowRight, Flame, Tag } from "lucide-react";
+import { useState, useMemo } from "react";
+import { ArrowRight, Flame, Tag, Sparkles } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
-import { useProducts, useCategoriesWithStock, DbProduct } from "@/hooks/useSupabaseData";
+import { useProducts, DbProduct } from "@/hooks/useSupabaseData";
 import { HeroCarousel } from "@/components/HeroCarousel";
 import { FadeInSection } from "@/components/FadeInSection";
-import { useMemo } from "react";
 
-/** Filter products that have stock in a given size */
+const SIZES = ["P", "M", "G", "GG"] as const;
+
+type FilterKey = "todos" | "P" | "M" | "G" | "GG" | "promo";
+
+function countBySize(products: DbProduct[], size: string): number {
+  return products.filter((p) =>
+    p.product_variants?.some((v) => v.size.toUpperCase() === size.toUpperCase() && v.stock > 0)
+  ).length;
+}
+
 function filterBySize(products: DbProduct[], size: string): DbProduct[] {
   return products.filter((p) =>
     p.product_variants?.some((v) => v.size.toUpperCase() === size.toUpperCase() && v.stock > 0)
   );
 }
 
-/** Filter products marked as weekly promotion */
 function filterWeeklyPromo(products: DbProduct[]): DbProduct[] {
   return products.filter((p) => (p as any).weekly_promotion === true);
 }
@@ -27,7 +34,6 @@ interface ProductSectionProps {
 
 function ProductSection({ title, icon, products, sectionDelay = 0 }: ProductSectionProps) {
   if (products.length === 0) return null;
-
   return (
     <FadeInSection delay={sectionDelay}>
       <section className="container pb-10 md:pb-14">
@@ -47,22 +53,31 @@ function ProductSection({ title, icon, products, sectionDelay = 0 }: ProductSect
   );
 }
 
-const SIZES = [
-  { label: "Tamanho P", size: "P" },
-  { label: "Tamanho M", size: "M" },
-  { label: "Tamanho G", size: "G" },
-  { label: "Tamanho GG", size: "GG" },
-] as const;
-
 const Index = () => {
   const { data: allProducts = [], isLoading } = useProducts();
-  const { data: categoriesWithStock = [] } = useCategoriesWithStock();
+  const [activeFilter, setActiveFilter] = useState<FilterKey>("todos");
 
   const promoProducts = useMemo(() => filterWeeklyPromo(allProducts), [allProducts]);
-  const sizeGroups = useMemo(
-    () => SIZES.map((s) => ({ ...s, products: filterBySize(allProducts, s.size) })),
-    [allProducts]
-  );
+
+  const sizeCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    SIZES.forEach((s) => {
+      counts[s] = countBySize(allProducts, s);
+    });
+    return counts;
+  }, [allProducts]);
+
+  const filteredProducts = useMemo(() => {
+    if (activeFilter === "todos") return allProducts;
+    if (activeFilter === "promo") return promoProducts;
+    return filterBySize(allProducts, activeFilter);
+  }, [allProducts, promoProducts, activeFilter]);
+
+  const filters: { key: FilterKey; label: string; count: number; icon?: React.ReactNode }[] = [
+    { key: "todos", label: "Todos", count: allProducts.length },
+    ...SIZES.map((s) => ({ key: s as FilterKey, label: s, count: sizeCounts[s] || 0 })),
+    { key: "promo", label: "Promoções", count: promoProducts.length, icon: <Flame className="h-3.5 w-3.5" /> },
+  ];
 
   return (
     <div>
@@ -71,46 +86,74 @@ const Index = () => {
         <HeroCarousel />
       </FadeInSection>
 
-      {/* Categories */}
-      {categoriesWithStock.length > 0 && (
+      {/* Size / Promo Filter Buttons */}
+      <FadeInSection>
+        <section className="container py-8 md:py-12">
+          <h2 className="font-display font-bold text-xl md:text-2xl text-foreground mb-5">Filtrar por tamanho</h2>
+          <div className="flex flex-wrap gap-2 md:gap-3">
+            {filters.map((f) => (
+              <button
+                key={f.key}
+                onClick={() => setActiveFilter(f.key)}
+                className={`group flex items-center gap-2 rounded-xl px-4 py-2.5 md:px-5 md:py-3 shadow-product hover:shadow-elevated hover:scale-[1.03] transition-all duration-300 border text-sm md:text-base font-semibold font-display ${
+                  activeFilter === f.key
+                    ? "bg-accent text-accent-foreground border-accent/60 shadow-elevated"
+                    : "bg-card text-foreground border-border/50 hover:border-accent/40"
+                }`}
+              >
+                {f.icon}
+                <span>{f.label}</span>
+                <span className={`text-xs font-normal rounded-full px-2 py-0.5 ${
+                  activeFilter === f.key
+                    ? "bg-accent-foreground/20 text-accent-foreground"
+                    : "bg-secondary text-muted-foreground"
+                }`}>
+                  {f.count}
+                </span>
+              </button>
+            ))}
+          </div>
+        </section>
+      </FadeInSection>
+
+      {/* Promoções da Semana dedicated section (always visible if products exist) */}
+      {activeFilter !== "promo" && promoProducts.length > 0 && (
+        <ProductSection
+          title="Promoções da Semana 🔥"
+          icon={<Tag className="h-5 w-5 text-accent" />}
+          products={promoProducts}
+        />
+      )}
+
+      {/* Filtered Products */}
+      {!isLoading && filteredProducts.length > 0 && (
         <FadeInSection>
-          <section className="container py-10 md:py-14">
-            <h2 className="font-display font-bold text-xl md:text-2xl text-foreground mb-6">Categorias</h2>
-            <div className="flex flex-wrap justify-center gap-3 md:gap-4">
-              {categoriesWithStock.map((cat, i) => (
-                <FadeInSection key={cat.slug} delay={i * 80}>
-                  <Link
-                    to={`/categoria/${cat.slug}`}
-                    className="group flex items-center gap-2.5 bg-card rounded-xl px-5 py-3.5 md:px-6 md:py-4 shadow-product hover:shadow-elevated hover:scale-[1.03] transition-all duration-300 border border-border/50 hover:border-accent/40 min-w-[140px] justify-center"
-                  >
-                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-accent transition-colors shrink-0" />
-                    <h3 className="font-display font-semibold text-sm md:text-base text-foreground group-hover:text-accent transition-colors whitespace-nowrap">
-                      {cat.name}
-                    </h3>
-                  </Link>
+          <section className="container pb-10 md:pb-14">
+            <div className="flex items-center gap-2 mb-6">
+              {activeFilter === "promo" ? (
+                <Flame className="h-5 w-5 text-accent" />
+              ) : activeFilter !== "todos" ? (
+                <Sparkles className="h-5 w-5 text-accent" />
+              ) : null}
+              <h2 className="font-display font-bold text-xl md:text-2xl text-foreground">
+                {activeFilter === "todos"
+                  ? "Todos os Produtos"
+                  : activeFilter === "promo"
+                  ? "Promoções da Semana 🔥"
+                  : `Tamanho ${activeFilter}`}
+              </h2>
+              <span className="text-sm text-muted-foreground">({filteredProducts.length})</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 md:gap-3">
+              {filteredProducts.map((product, i) => (
+                <FadeInSection key={product.id} delay={i * 40} className="h-full">
+                  <ProductCard product={product} index={i} />
                 </FadeInSection>
               ))}
             </div>
           </section>
         </FadeInSection>
       )}
-
-      {/* Promoções da semana */}
-      <ProductSection
-        title="Promoções da semana 🔥"
-        icon={<Tag className="h-5 w-5 text-accent" />}
-        products={promoProducts}
-      />
-
-      {/* Size sections */}
-      {sizeGroups.map((group, gi) => (
-        <ProductSection
-          key={group.size}
-          title={group.label}
-          products={group.products}
-          sectionDelay={0}
-        />
-      ))}
 
       {/* Loading skeleton */}
       {isLoading && (
@@ -131,9 +174,9 @@ const Index = () => {
       )}
 
       {/* Empty state */}
-      {!isLoading && allProducts.length === 0 && (
+      {!isLoading && filteredProducts.length === 0 && (
         <section className="container pb-10 md:pb-14">
-          <p className="text-muted-foreground text-center py-10">Nenhum produto disponível no momento.</p>
+          <p className="text-muted-foreground text-center py-10">Nenhum produto disponível para este filtro.</p>
         </section>
       )}
     </div>
