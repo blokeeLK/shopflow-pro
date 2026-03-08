@@ -178,6 +178,22 @@ export default function CheckoutPage() {
         return;
       }
 
+      // Track purchase
+      trackPurchase({
+        orderId: order.id,
+        value: total,
+        items: items.map((i) => ({ id: i.productId, name: i.name, quantity: i.quantity, price: i.price })),
+        email: user.email || "",
+        city: selectedAddress.city,
+        state: selectedAddress.state,
+      });
+      sendAdvancedMatching({
+        email: user.email || "",
+        city: selectedAddress.city,
+        state: selectedAddress.state,
+        cep: selectedAddress.cep,
+      });
+
       clearCart();
 
       if (paymentMethod === "pix" && (paymentData?.pix_qr_code || paymentData?.pix_qr_code_base64)) {
