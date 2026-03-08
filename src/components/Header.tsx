@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingBag, Menu, X, Search, User, Package, Truck, Shield, CreditCard, Zap, Tag, Heart, Star, Gift, Clock, MapPin, Phone } from "lucide-react";
+import { ShoppingBag, Menu, X, Search, User, Package, Truck, Shield, CreditCard, Zap, Tag, Heart, Star, Gift, Clock, MapPin, Phone, ChevronDown } from "lucide-react";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { useCategoriesWithStock, useSiteSettings } from "@/hooks/useSupabaseData";
@@ -7,12 +7,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency, getProductPrice } from "@/hooks/useSupabaseData";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePendingPixCount } from "@/hooks/usePendingPixCount";
+import { useQuery } from "@tanstack/react-query";
 
 const TOPBAR_ICONS: Record<string, React.ComponentType<any>> = {
   truck: Truck, shield: Shield, "credit-card": CreditCard, zap: Zap,
   tag: Tag, heart: Heart, star: Star, gift: Gift, clock: Clock,
   "map-pin": MapPin, phone: Phone,
 };
+
+const SIZES = ["P", "M", "G", "GG"] as const;
 
 interface SearchResult {
   id: string;
@@ -40,6 +43,9 @@ export function Header() {
   const [orderResults, setOrderResults] = useState<OrderResult[]>([]);
   const [searching, setSearching] = useState(false);
   const [searchTab, setSearchTab] = useState<"products" | "orders">("products");
+  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
+  const [expandedMobileCategory, setExpandedMobileCategory] = useState<string | null>(null);
+  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
@@ -51,6 +57,35 @@ export function Header() {
   const { data: siteSettings } = useSiteSettings();
   const logoUrl = siteSettings?.site_logo_url || "/images/logo-shopflow.png";
 
+  // Fetch available sizes per category
+  const { data: categorySizes = {} } = useQuery({
+    queryKey: ["category-sizes", categories.map(c => c.id).join(",")],
+    queryFn: async () => {
+      if (categories.length === 0) return {};
+      const { data, error } = await supabase
+        .from("products")
+        .select("category_id, product_variants(size, stock)")
+        .eq("active", true);
+      if (error) throw error;
+
+      const result: Record<string, string[]> = {};
+      for (const cat of categories) {
+        const catProducts = data?.filter((p: any) => p.category_id === cat.id) || [];
+        const availableSizes = new Set<string>();
+        catProducts.forEach((p: any) => {
+          (p.product_variants as any[])?.forEach((v: any) => {
+            if (v.stock > 0) availableSizes.add(v.size.toUpperCase());
+          });
+        });
+        const ordered = SIZES.filter(s => availableSizes.has(s));
+        if (ordered.length > 0) result[cat.slug] = ordered;
+      }
+      return result;
+    },
+    enabled: categories.length > 0,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const topbarEnabled = siteSettings?.topbar_enabled !== "false";
   const topbarItems = useMemo(() => {
     try {
@@ -59,7 +94,6 @@ export function Header() {
     } catch { return []; }
   }, [siteSettings?.topbar_items]);
 
-  // Close search on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
@@ -70,12 +104,10 @@ export function Header() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Focus input when search opens
   useEffect(() => {
     if (searchOpen) inputRef.current?.focus();
   }, [searchOpen]);
 
-  // Debounced search
   useEffect(() => {
     if (searchQuery.trim().length < 2) {
       setSearchResults([]);
@@ -129,6 +161,23 @@ export function Header() {
     navigate(`/produto/${slug}`);
   };
 
+  const handleCategoryMouseEnter = (slug: string) => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    setHoveredCategory(slug);
+  };
+
+  const handleCategoryMouseLeave = () => {
+    hoverTimeoutRef.current = setTimeout(() => setHoveredCategory(null), 150);
+  };
+
+  const handleMobileCategoryTap = (slug: string) => {
+    if (expandedMobileCategory === slug) {
+      setExpandedMobileCategory(null);
+    } else {
+      setExpandedMobileCategory(slug);
+    }
+  };
+
   return (
     <>
       {topbarEnabled && topbarItems.length > 0 && (
@@ -157,12 +206,54 @@ export function Header() {
             <img src={logoUrl} alt="ShopFlow" className="h-12 md:h-14 w-auto object-contain" />
           </Link>
 
+          {/* Desktop nav with hover dropdowns */}
           <nav className="hidden md:flex items-center gap-6">
-            {categories.map((cat) => (
-              <Link key={cat.slug} to={`/categoria/${cat.slug}`} className="text-sm font-medium text-white hover:text-white/80 transition-colors">
-                {cat.name}
-              </Link>
-            ))}
+            {categories.map((cat) => {
+              const sizes = categorySizes[cat.slug];
+              return (
+                <div
+                  key={cat.slug}
+                  className="relative"
+                  onMouseEnter={() => handleCategoryMouseEnter(cat.slug)}
+                  onMouseLeave={handleCategoryMouseLeave}
+                >
+                  <Link
+                    to={`/categoria/${cat.slug}`}
+                    className="text-sm font-medium text-white hover:text-white/80 transition-colors flex items-center gap-1"
+                  >
+                    {cat.name}
+                    {sizes && sizes.length > 0 && <ChevronDown className="h-3 w-3 opacity-60" />}
+                  </Link>
+
+                  {/* Size dropdown */}
+                  {hoveredCategory === cat.slug && sizes && sizes.length > 0 && (
+                    <div
+                      className="absolute left-0 top-full pt-2 z-50"
+                      onMouseEnter={() => handleCategoryMouseEnter(cat.slug)}
+                      onMouseLeave={handleCategoryMouseLeave}
+                    >
+                      <div className="bg-card border rounded-lg shadow-xl py-1.5 min-w-[100px] animate-in fade-in-0 zoom-in-95 duration-150">
+                        <Link
+                          to={`/categoria/${cat.slug}`}
+                          className="block px-4 py-2 text-sm text-foreground hover:bg-secondary transition-colors font-medium"
+                        >
+                          Todos
+                        </Link>
+                        {sizes.map(size => (
+                          <Link
+                            key={size}
+                            to={`/categoria/${cat.slug}?tamanho=${size}`}
+                            className="block px-4 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+                          >
+                            Tamanho {size}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
             <Link to="/atacado" className="text-sm font-bold text-success hover:text-success/80 transition-colors">
               Atacado
             </Link>
@@ -214,7 +305,6 @@ export function Header() {
                     <div className="p-4 text-center text-sm text-muted-foreground">Buscando...</div>
                   )}
 
-                  {/* Products tab */}
                   {searchTab === "products" && !searching && searchQuery.trim().length >= 2 && searchResults.length === 0 && (
                     <div className="p-4 text-center text-sm text-muted-foreground">Nenhum produto encontrado</div>
                   )}
@@ -243,7 +333,6 @@ export function Header() {
                     </div>
                   )}
 
-                  {/* Orders tab */}
                   {searchTab === "orders" && !searching && searchQuery.trim().length >= 2 && orderResults.length === 0 && (
                     <div className="p-4 text-center text-sm text-muted-foreground">Nenhum pedido encontrado</div>
                   )}
@@ -308,18 +397,53 @@ export function Header() {
           </div>
         </div>
 
+        {/* Mobile menu with size sub-menus */}
         {menuOpen && (
           <nav className="md:hidden bg-card border-t animate-fade-in-up">
-            <div className="container py-4 flex flex-col gap-3">
-              {categories.map((cat) => (
-                <Link key={cat.slug} to={`/categoria/${cat.slug}`} onClick={() => setMenuOpen(false)} className="text-sm font-medium text-foreground py-2 border-b border-border">
-                  {cat.name}
-                </Link>
-              ))}
-              <Link to="/atacado" onClick={() => setMenuOpen(false)} className="text-sm font-bold text-success py-2 border-b border-border">
+            <div className="container py-4 flex flex-col gap-0">
+              {categories.map((cat) => {
+                const sizes = categorySizes[cat.slug];
+                const isExpanded = expandedMobileCategory === cat.slug;
+                return (
+                  <div key={cat.slug}>
+                    <div className="flex items-center border-b border-border">
+                      <Link
+                        to={`/categoria/${cat.slug}`}
+                        onClick={() => setMenuOpen(false)}
+                        className="flex-1 text-sm font-medium text-foreground py-3"
+                      >
+                        {cat.name}
+                      </Link>
+                      {sizes && sizes.length > 0 && (
+                        <button
+                          onClick={() => handleMobileCategoryTap(cat.slug)}
+                          className="p-3 text-muted-foreground"
+                        >
+                          <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                        </button>
+                      )}
+                    </div>
+                    {isExpanded && sizes && (
+                      <div className="bg-secondary/30 border-b border-border">
+                        {sizes.map(size => (
+                          <Link
+                            key={size}
+                            to={`/categoria/${cat.slug}?tamanho=${size}`}
+                            onClick={() => setMenuOpen(false)}
+                            className="block pl-6 pr-4 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            Tamanho {size}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              <Link to="/atacado" onClick={() => setMenuOpen(false)} className="text-sm font-bold text-success py-3 border-b border-border">
                 💼 Atacado
               </Link>
-              <Link to="/conta" onClick={() => setMenuOpen(false)} className="text-sm font-medium text-foreground py-2 flex items-center gap-2">
+              <Link to="/conta" onClick={() => setMenuOpen(false)} className="text-sm font-medium text-foreground py-3 flex items-center gap-2">
                 <User className="h-4 w-4" /> Minha Conta
                 {pendingPixCount > 0 && (
                   <span className="bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full h-4 min-w-[1rem] px-1 flex items-center justify-center">
