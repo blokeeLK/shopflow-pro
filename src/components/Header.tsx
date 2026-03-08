@@ -196,18 +196,18 @@ export function Header() {
         </div>
       )}
 
-      <header className="sticky top-0 z-50 bg-[#0a0a14] backdrop-blur-xl border-b border-white/[0.04]">
+      <header className="sticky top-0 z-50 bg-[#0a0a14] backdrop-blur-xl border-b border-white/[0.06]">
         <div className="container flex items-center justify-between h-14 md:h-16">
-          <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden p-2.5 -ml-2 text-white/60 hover:text-white transition-all duration-500" aria-label="Menu">
-            {menuOpen ? <X className="h-[18px] w-[18px]" strokeWidth={1.25} /> : <Menu className="h-[18px] w-[18px]" strokeWidth={1.25} />}
+          <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden p-2.5 -ml-2 text-white hover:text-white/80 transition-all duration-300" aria-label="Menu">
+            {menuOpen ? <X className="h-5 w-5" strokeWidth={1.5} /> : <Menu className="h-5 w-5" strokeWidth={1.5} />}
           </button>
 
           <Link to="/" className="flex items-center">
             <img src={logoUrl} alt="ShopFlow" className="h-10 md:h-12 w-auto object-contain" />
           </Link>
 
-          {/* Desktop nav — Zara/Armani style */}
-          <nav className="hidden md:flex items-center gap-12">
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-10">
             {categories.map((cat) => {
               const sizes = categorySizes[cat.slug];
               const isHovered = hoveredCategory === cat.slug;
@@ -220,26 +220,26 @@ export function Header() {
                 >
                   <Link
                     to={`/categoria/${cat.slug}`}
-                    className="group relative text-[11px] font-medium text-white/60 hover:text-white transition-all duration-500 flex items-center gap-1.5 tracking-[0.25em] uppercase py-1"
+                    className="group relative text-[13px] font-semibold text-white hover:text-white/80 transition-all duration-300 flex items-center gap-1.5 tracking-[0.2em] uppercase py-1"
                   >
                     {cat.name}
                     {sizes && sizes.length > 0 && (
-                      <ChevronDown className={`h-2.5 w-2.5 opacity-30 transition-all duration-500 ${isHovered ? "rotate-180 opacity-60" : ""}`} strokeWidth={1.25} />
+                      <ChevronDown className={`h-3 w-3 opacity-60 transition-all duration-300 ${isHovered ? "rotate-180 opacity-90" : ""}`} strokeWidth={1.5} />
                     )}
-                    <span className={`absolute -bottom-px left-0 h-px bg-white transition-all duration-500 ease-out ${isHovered ? "w-full" : "w-0"}`} />
+                    <span className={`absolute -bottom-px left-0 h-[1.5px] bg-white transition-all duration-300 ease-out ${isHovered ? "w-full" : "w-0"}`} />
                   </Link>
 
-                  {/* Dropdown — minimal luxury */}
+                  {/* Dropdown */}
                   {isHovered && sizes && sizes.length > 0 && (
                     <div
-                      className="absolute left-1/2 -translate-x-1/2 top-full pt-5 z-50"
+                      className="absolute left-1/2 -translate-x-1/2 top-full pt-4 z-50"
                       onMouseEnter={() => handleCategoryMouseEnter(cat.slug)}
                       onMouseLeave={handleCategoryMouseLeave}
                     >
                       <div className="bg-white border border-border/20 shadow-[0_20px_60px_-15px_hsl(220_20%_6%/0.25)] py-4 min-w-[200px] animate-in fade-in-0 slide-in-from-top-2 duration-300">
                         <Link
                           to={`/categoria/${cat.slug}`}
-                          className="block px-8 py-2.5 text-[10px] font-medium text-foreground/80 hover:text-foreground hover:bg-secondary/30 transition-all duration-300 tracking-[0.2em] uppercase"
+                          className="block px-8 py-2.5 text-[11px] font-semibold text-foreground/80 hover:text-foreground hover:bg-secondary/30 transition-all duration-300 tracking-[0.18em] uppercase"
                         >
                           Ver todos
                         </Link>
@@ -248,7 +248,7 @@ export function Header() {
                           <Link
                             key={size}
                             to={`/categoria/${cat.slug}?tamanho=${size}`}
-                            className="block px-8 py-2.5 text-[10px] font-normal text-muted-foreground hover:text-foreground hover:bg-secondary/30 transition-all duration-300 tracking-[0.2em] uppercase"
+                            className="block px-8 py-2.5 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/30 transition-all duration-300 tracking-[0.18em] uppercase"
                           >
                             Tamanho {size}
                           </Link>
@@ -259,9 +259,9 @@ export function Header() {
                 </div>
               );
             })}
-            <Link to="/atacado" className="group relative text-[11px] font-medium text-white/60 hover:text-white transition-all duration-500 tracking-[0.25em] uppercase py-1">
+            <Link to="/atacado" className="group relative text-[13px] font-semibold text-white hover:text-white/80 transition-all duration-300 tracking-[0.2em] uppercase py-1">
               Atacado
-              <span className="absolute -bottom-px left-0 h-px bg-white transition-all duration-500 ease-out w-0 group-hover:w-full" />
+              <span className="absolute -bottom-px left-0 h-[1.5px] bg-white transition-all duration-300 ease-out w-0 group-hover:w-full" />
             </Link>
           </nav>
 
