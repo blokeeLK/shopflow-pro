@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { ShoppingBag, Menu, X, Search, User, Package, Truck, Shield, CreditCard, Zap, Tag, Heart, Star, Gift, Clock, MapPin, Phone, ChevronDown } from "lucide-react";
+import { AccountTooltip } from "@/components/AccountTooltip";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { useCategoriesWithStock, useSiteSettings } from "@/hooks/useSupabaseData";
