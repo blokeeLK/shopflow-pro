@@ -55,7 +55,9 @@ function ProductSection({ title, icon, products, sectionDelay = 0 }: ProductSect
 }
 
 const Index = () => {
+  const navigate = useNavigate();
   const { data: allProducts = [], isLoading } = useProducts();
+  const { data: categories = [] } = useCategories();
   const [activeFilter, setActiveFilter] = useState<FilterKey>("todos");
 
   const promoProducts = useMemo(() => filterWeeklyPromo(allProducts), [allProducts]);
