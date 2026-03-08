@@ -407,13 +407,27 @@ export default function AdminProducts() {
 
       {/* Bulk actions bar */}
       {selected.size > 0 && (
-        <div className="flex items-center gap-3 mb-4 p-3 bg-secondary/50 border rounded-lg flex-wrap">
+        <div className="flex items-center gap-2 mb-4 p-3 bg-secondary/50 border rounded-lg flex-wrap">
           <span className="text-sm font-medium text-foreground">{selected.size} selecionado(s)</span>
           <button
             onClick={() => setBulkModal(true)}
             className="text-sm px-3 py-1.5 bg-accent text-accent-foreground rounded-md hover:bg-accent/90 flex items-center gap-1.5"
           >
             <DollarSign className="h-3.5 w-3.5" /> Editar Preço/Parcelas
+          </button>
+          <button
+            onClick={() => bulkWeeklyPromo.mutate({ ids: Array.from(selected), value: true })}
+            disabled={bulkWeeklyPromo.isPending}
+            className="text-sm px-3 py-1.5 bg-orange-600 text-white rounded-md hover:bg-orange-700 flex items-center gap-1.5 disabled:opacity-50"
+          >
+            <Flame className="h-3.5 w-3.5" /> Promo Semana
+          </button>
+          <button
+            onClick={() => bulkWeeklyPromo.mutate({ ids: Array.from(selected), value: false })}
+            disabled={bulkWeeklyPromo.isPending}
+            className="text-sm px-3 py-1.5 bg-muted text-muted-foreground rounded-md hover:bg-muted/80 flex items-center gap-1.5 disabled:opacity-50"
+          >
+            <FlameKindling className="h-3.5 w-3.5" /> Remover Promo
           </button>
           <button
             onClick={() => { if (confirm(`Excluir ${selected.size} produto(s)?`)) bulkDelete.mutate(Array.from(selected)); }}
