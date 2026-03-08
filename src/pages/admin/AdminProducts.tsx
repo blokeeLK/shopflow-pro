@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/hooks/useSupabaseData";
 import { useAuth } from "@/contexts/AuthContext";
-import { Plus, Pencil, Trash2, Search, Eye, EyeOff, Star, Copy, CheckSquare, Square, XSquare, Save, DollarSign } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Eye, EyeOff, Star, Copy, CheckSquare, Square, XSquare, Save, DollarSign, Flame, FlameKindling } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
