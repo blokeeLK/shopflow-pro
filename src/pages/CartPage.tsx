@@ -1,8 +1,10 @@
+import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { formatCurrency } from "@/hooks/useSupabaseData";
 import { useAuth } from "@/contexts/AuthContext";
+import { trackCartAbandonment } from "@/lib/tracking";
 
 const FREE_SHIPPING_THRESHOLD = 130;
 
