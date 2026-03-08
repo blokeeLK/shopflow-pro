@@ -127,6 +127,7 @@ export default function CheckoutPage() {
   const handlePlaceOrder = async () => {
     if (!user || !selectedAddress) return;
     setSubmitting(true);
+    trackAddPaymentInfo(paymentMethod);
     try {
       const { data: order, error: orderErr } = await supabase.from("orders").insert({
         user_id: user.id, status: "criado", subtotal,
