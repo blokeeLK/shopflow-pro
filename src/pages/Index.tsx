@@ -152,20 +152,20 @@ const Index = () => {
       {!isLoading && filteredProducts.length > 0 && (
         <FadeInSection>
           <section className="container pb-10 md:pb-14">
-            <div className="flex items-center gap-2 mb-6">
+            <div className="flex items-center gap-3 mb-8">
               {activeFilter === "promo" ? (
-                <Flame className="h-5 w-5 text-accent" />
+                <Flame className="h-4 w-4 text-accent" strokeWidth={1.5} />
               ) : activeFilter !== "todos" ? (
-                <Sparkles className="h-5 w-5 text-accent" />
+                <Sparkles className="h-4 w-4 text-accent" strokeWidth={1.5} />
               ) : null}
-              <h2 className="font-display font-bold text-xl md:text-2xl text-foreground">
+              <h2 className="font-display font-semibold text-lg md:text-xl text-foreground tracking-[0.05em]">
                 {activeFilter === "todos"
                   ? "Todos os Produtos"
                   : activeFilter === "promo"
-                  ? "Promoções da Semana 🔥"
+                  ? "Promoções da Semana"
                   : `Tamanho ${activeFilter}`}
               </h2>
-              <span className="text-sm text-muted-foreground">({filteredProducts.length})</span>
+              <span className="text-xs text-muted-foreground font-medium tracking-wider">({filteredProducts.length})</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 md:gap-3">
               {filteredProducts.map((product, i) => (

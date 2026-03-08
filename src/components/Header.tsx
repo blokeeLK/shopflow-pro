@@ -384,18 +384,18 @@ export function Header() {
               )}
             </div>
 
-            <Link to="/conta" className="relative p-2.5 text-white/70 hover:text-white transition-all duration-300" aria-label="Conta">
-              <User className="h-[18px] w-[18px]" strokeWidth={1.5} />
+            <Link to="/conta" className="relative p-2.5 text-white/50 hover:text-white transition-all duration-500" aria-label="Conta">
+              <User className="h-[17px] w-[17px]" strokeWidth={1.25} />
               {pendingPixCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center animate-pulse">
+                <span className="absolute -top-0.5 -right-0.5 bg-accent text-accent-foreground text-[9px] font-bold rounded-full h-3.5 w-3.5 flex items-center justify-center">
                   {pendingPixCount}
                 </span>
               )}
             </Link>
-            <Link to="/carrinho" className="relative p-2.5 text-white/70 hover:text-white transition-all duration-300" aria-label="Carrinho">
-              <ShoppingBag className="h-[18px] w-[18px]" strokeWidth={1.5} />
+            <Link to="/carrinho" className="relative p-2.5 text-white/50 hover:text-white transition-all duration-500" aria-label="Carrinho">
+              <ShoppingBag className="h-[17px] w-[17px]" strokeWidth={1.25} />
               {totalItems > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-accent text-accent-foreground text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 bg-accent text-accent-foreground text-[9px] font-bold rounded-full h-3.5 w-3.5 flex items-center justify-center">
                   {totalItems}
                 </span>
               )}
