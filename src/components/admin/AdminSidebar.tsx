@@ -3,12 +3,13 @@ import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   LayoutDashboard, Package, FolderTree, ShoppingCart, Warehouse,
-  Image, Megaphone, BarChart3, ClipboardList, Users, LogOut, Menu, X, Store, Code, Settings, HelpCircle, Star
+  Image, Megaphone, BarChart3, ClipboardList, Users, LogOut, Menu, X, Store, Code, Settings, HelpCircle, Star, Flame
 } from "lucide-react";
 
 const navItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
   { title: "Produtos", url: "/admin/produtos", icon: Package },
+  { title: "Promoções", url: "/admin/promocoes", icon: Flame },
   { title: "Categorias", url: "/admin/categorias", icon: FolderTree },
   { title: "Pedidos", url: "/admin/pedidos", icon: ShoppingCart },
   { title: "Estoque", url: "/admin/estoque", icon: Warehouse },

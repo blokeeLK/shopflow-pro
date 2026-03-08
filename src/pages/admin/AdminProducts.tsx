@@ -3,10 +3,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/hooks/useSupabaseData";
 import { useAuth } from "@/contexts/AuthContext";
-import { Plus, Pencil, Trash2, Search, Eye, EyeOff, Star, Copy, CheckSquare, Square, XSquare, Save } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Eye, EyeOff, Star, Copy, CheckSquare, Square, XSquare, Save, DollarSign } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const SIZES = ["P", "M", "G", "GG"] as const;
 
@@ -18,8 +18,11 @@ export default function AdminProducts() {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [sizeTab, setSizeTab] = useState("todos");
-  // Inline edits: { [productId]: { price?, promo_price?, installment_count? } }
   const [edits, setEdits] = useState<Record<string, { price?: string; promo_price?: string; installment_count?: string }>>({});
+  const [bulkModal, setBulkModal] = useState(false);
+  const [bulkPrice, setBulkPrice] = useState("");
+  const [bulkPromoPrice, setBulkPromoPrice] = useState("");
+  const [bulkInstallments, setBulkInstallments] = useState("");
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ["admin-products"],
@@ -144,6 +147,43 @@ export default function AdminProducts() {
     onError: (err: any) => { toast({ title: "Erro ao salvar", description: err.message, variant: "destructive" }); },
   });
 
+  // Bulk update mutation
+  const bulkUpdateMutation = useMutation({
+    mutationFn: async ({ ids, data }: { ids: string[]; data: { price?: number; promo_price?: number | null; is_promo?: boolean; installment_count?: number } }) => {
+      for (const id of ids) {
+        const { error } = await supabase.from("products").update(data).eq("id", id);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      toast({ title: `${selected.size} produto(s) atualizado(s)` });
+      setBulkModal(false);
+      setBulkPrice("");
+      setBulkPromoPrice("");
+      setBulkInstallments("");
+    },
+    onError: (err: any) => { toast({ title: "Erro ao atualizar", description: err.message, variant: "destructive" }); },
+  });
+
+  const handleBulkUpdate = () => {
+    const ids = Array.from(selected);
+    if (ids.length === 0) return;
+    const data: any = {};
+    if (bulkPrice.trim()) data.price = parseFloat(bulkPrice);
+    if (bulkPromoPrice.trim()) {
+      const val = parseFloat(bulkPromoPrice);
+      data.promo_price = val > 0 ? val : null;
+      data.is_promo = val > 0;
+    }
+    if (bulkInstallments.trim()) data.installment_count = parseInt(bulkInstallments);
+    if (Object.keys(data).length === 0) {
+      toast({ title: "Preencha ao menos um campo", variant: "destructive" });
+      return;
+    }
+    bulkUpdateMutation.mutate({ ids, data });
+  };
+
   // Filter by search
   const searchFiltered = products.filter((p: any) => p.name.toLowerCase().includes(search.toLowerCase()));
 
@@ -233,7 +273,6 @@ export default function AdminProducts() {
               const isSelected = selected.has(p.id);
               const edit = getEdit(p.id);
               const hasEdits = Object.keys(edit).length > 0;
-              const displayPrice = p.is_promo && p.promo_price ? p.promo_price : p.price;
               return (
                 <tr key={p.id} className={`border-b last:border-0 hover:bg-secondary/30 ${!p.active ? "opacity-50" : ""} ${isSelected ? "bg-accent/5" : ""}`}>
                   <td className="p-3">
@@ -248,12 +287,14 @@ export default function AdminProducts() {
                       </div>
                       <div>
                         <p className="font-medium text-foreground line-clamp-1">{p.name}</p>
-                        {p.is_promo && <span className="text-[10px] bg-accent/10 text-accent px-1.5 py-0.5 rounded">PROMO</span>}
+                        <div className="flex gap-1">
+                          {p.is_promo && <span className="text-[10px] bg-accent/10 text-accent px-1.5 py-0.5 rounded">PROMO</span>}
+                          {p.is_featured && <span className="text-[10px] bg-warning/10 text-warning px-1.5 py-0.5 rounded">DESTAQUE</span>}
+                        </div>
                       </div>
                     </div>
                   </td>
                   <td className="p-3 text-muted-foreground hidden md:table-cell">{p.category?.name || "—"}</td>
-                  {/* Inline editable price */}
                   <td className="p-3 text-right">
                     <input
                       type="number"
@@ -263,7 +304,6 @@ export default function AdminProducts() {
                       onChange={(e) => setEdit(p.id, "price", e.target.value)}
                     />
                   </td>
-                  {/* Inline editable promo price */}
                   <td className="p-3 text-right hidden lg:table-cell">
                     <input
                       type="number"
@@ -274,7 +314,6 @@ export default function AdminProducts() {
                       onChange={(e) => setEdit(p.id, "promo_price", e.target.value)}
                     />
                   </td>
-                  {/* Inline editable installments */}
                   <td className="p-3 text-center hidden lg:table-cell">
                     <select
                       className="bg-transparent border border-transparent hover:border-border focus:border-accent rounded px-1.5 py-1 text-sm text-foreground focus:outline-none cursor-pointer"
@@ -368,8 +407,14 @@ export default function AdminProducts() {
 
       {/* Bulk actions bar */}
       {selected.size > 0 && (
-        <div className="flex items-center gap-3 mb-4 p-3 bg-secondary/50 border rounded-lg">
+        <div className="flex items-center gap-3 mb-4 p-3 bg-secondary/50 border rounded-lg flex-wrap">
           <span className="text-sm font-medium text-foreground">{selected.size} selecionado(s)</span>
+          <button
+            onClick={() => setBulkModal(true)}
+            className="text-sm px-3 py-1.5 bg-accent text-accent-foreground rounded-md hover:bg-accent/90 flex items-center gap-1.5"
+          >
+            <DollarSign className="h-3.5 w-3.5" /> Editar Preço/Parcelas
+          </button>
           <button
             onClick={() => { if (confirm(`Excluir ${selected.size} produto(s)?`)) bulkDelete.mutate(Array.from(selected)); }}
             disabled={bulkDelete.isPending}
@@ -387,6 +432,71 @@ export default function AdminProducts() {
           <button onClick={() => setSelected(new Set())} className="text-sm px-3 py-1.5 text-muted-foreground hover:text-foreground flex items-center gap-1.5">
             <XSquare className="h-3.5 w-3.5" /> Limpar
           </button>
+        </div>
+      )}
+
+      {/* Bulk Edit Modal */}
+      {bulkModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setBulkModal(false)}>
+          <div className="bg-card border rounded-xl shadow-xl p-6 w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
+            <h2 className="font-display text-lg font-bold text-foreground mb-1">Edição em Massa</h2>
+            <p className="text-sm text-muted-foreground mb-5">{selected.size} produto(s) selecionado(s). Preencha apenas os campos que deseja alterar.</p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">Preço (R$)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="Deixe vazio para não alterar"
+                  value={bulkPrice}
+                  onChange={(e) => setBulkPrice(e.target.value)}
+                  className="w-full bg-secondary border rounded-lg px-3 py-2 text-sm text-foreground"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">Preço Promocional (R$)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="Deixe vazio para não alterar"
+                  value={bulkPromoPrice}
+                  onChange={(e) => setBulkPromoPrice(e.target.value)}
+                  className="w-full bg-secondary border rounded-lg px-3 py-2 text-sm text-foreground"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Coloque 0 para remover a promoção</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">Parcelas</label>
+                <select
+                  value={bulkInstallments}
+                  onChange={(e) => setBulkInstallments(e.target.value)}
+                  className="w-full bg-secondary border rounded-lg px-3 py-2 text-sm text-foreground cursor-pointer"
+                >
+                  <option value="">Não alterar</option>
+                  {[1,2,3,4,5,6,7,8,9,10,11,12].map(n => (
+                    <option key={n} value={n}>{n}x</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setBulkModal(false)}
+                className="flex-1 text-sm px-4 py-2.5 border rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleBulkUpdate}
+                disabled={bulkUpdateMutation.isPending}
+                className="flex-1 text-sm px-4 py-2.5 bg-accent text-accent-foreground font-semibold rounded-lg hover:bg-accent/90 disabled:opacity-50"
+              >
+                {bulkUpdateMutation.isPending ? "Salvando..." : "Aplicar"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
