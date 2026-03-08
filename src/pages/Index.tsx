@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { ArrowRight, Flame, Tag, Sparkles } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
-import { useProducts, DbProduct } from "@/hooks/useSupabaseData";
+import { useProducts, useCategories, DbProduct } from "@/hooks/useSupabaseData";
 import { HeroCarousel } from "@/components/HeroCarousel";
 import { FadeInSection } from "@/components/FadeInSection";
 
