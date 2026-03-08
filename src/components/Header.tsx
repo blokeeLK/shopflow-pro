@@ -265,14 +265,14 @@ export function Header() {
             </Link>
           </nav>
 
-          <div className="flex items-center gap-0.5">
+          <div className="flex items-center gap-1.5">
             <div ref={searchRef} className="relative">
               <button
                 onClick={() => setSearchOpen(!searchOpen)}
-                className="p-2.5 text-white/50 hover:text-white transition-all duration-500"
+                className="p-2.5 text-white hover:text-white/70 transition-all duration-300"
                 aria-label="Buscar"
               >
-                <Search className="h-[17px] w-[17px]" strokeWidth={1.25} />
+                <Search className="h-5 w-5" strokeWidth={1.5} />
               </button>
 
               {searchOpen && (
