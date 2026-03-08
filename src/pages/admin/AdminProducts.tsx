@@ -47,6 +47,7 @@ export default function AdminProducts() {
 
   const deleteOneProduct = async (id: string) => {
     // Delete child records first to avoid FK constraint errors
+    await supabase.from("order_items").delete().eq("product_id", id);
     await supabase.from("product_images").delete().eq("product_id", id);
     await supabase.from("product_variants").delete().eq("product_id", id);
     await supabase.from("product_reviews").delete().eq("product_id", id);
