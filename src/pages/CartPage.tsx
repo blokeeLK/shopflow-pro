@@ -15,6 +15,13 @@ export default function CartPage() {
   const shippingProgress = Math.min((subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100);
   const remainingForFree = Math.max(FREE_SHIPPING_THRESHOLD - subtotal, 0);
 
+  // Track cart abandonment when leaving page with items
+  useEffect(() => {
+    return () => {
+      if (items.length > 0) trackCartAbandonment();
+    };
+  }, [items.length]);
+
   if (items.length === 0) {
     return (
       <div className="container py-20 text-center">
