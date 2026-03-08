@@ -13,9 +13,9 @@ function filterBySize(products: DbProduct[], size: string): DbProduct[] {
   );
 }
 
-/** Filter products that are on promo */
-function filterPromo(products: DbProduct[]): DbProduct[] {
-  return products.filter((p) => p.is_promo && p.promo_price != null && p.promo_price < p.price);
+/** Filter products marked as weekly promotion */
+function filterWeeklyPromo(products: DbProduct[]): DbProduct[] {
+  return products.filter((p) => (p as any).weekly_promotion === true);
 }
 
 interface ProductSectionProps {
