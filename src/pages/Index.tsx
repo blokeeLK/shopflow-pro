@@ -59,13 +59,6 @@ const Index = () => {
 
   const promoProducts = useMemo(() => filterWeeklyPromo(allProducts), [allProducts]);
 
-  const sizeCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    SIZES.forEach((s) => {
-      counts[s] = countBySize(allProducts, s);
-    });
-    return counts;
-  }, [allProducts]);
 
   const filteredProducts = useMemo(() => {
     if (activeFilter === "todos") return allProducts;
