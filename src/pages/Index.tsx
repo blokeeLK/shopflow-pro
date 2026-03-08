@@ -66,10 +66,19 @@ const Index = () => {
     return filterBySize(allProducts, activeFilter);
   }, [allProducts, promoProducts, activeFilter]);
 
+  // Only show sizes that have actual products with stock
+  const availableSizes = useMemo(() => {
+    return SIZES.filter((s) =>
+      allProducts.some((p) =>
+        p.product_variants?.some((v) => v.size.toUpperCase() === s && v.stock > 0)
+      )
+    );
+  }, [allProducts]);
+
   const filters: { key: FilterKey; label: string; icon?: React.ReactNode }[] = [
     { key: "todos", label: "Todos" },
-    ...SIZES.map((s) => ({ key: s as FilterKey, label: s })),
-    { key: "promo", label: "Promoções", icon: <Flame className="h-4 w-4" /> },
+    ...availableSizes.map((s) => ({ key: s as FilterKey, label: s })),
+    ...(promoProducts.length > 0 ? [{ key: "promo" as FilterKey, label: "Promoções", icon: <Flame className="h-4 w-4" /> }] : []),
   ];
 
   // Check which sizes have promo products

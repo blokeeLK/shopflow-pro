@@ -196,18 +196,18 @@ export function Header() {
         </div>
       )}
 
-      <header className="sticky top-0 z-50 bg-[#1a1a2e]/95 backdrop-blur-md border-b border-white/10">
-        <div className="container flex items-center justify-between h-14 md:h-16">
-          <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden p-2 -ml-2 text-white" aria-label="Menu">
-            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+      <header className="sticky top-0 z-50 bg-[#0d0d1a]/97 backdrop-blur-xl border-b border-white/[0.06]">
+        <div className="container flex items-center justify-between h-16 md:h-[4.5rem]">
+          <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden p-2.5 -ml-2 text-white/80 hover:text-white transition-colors" aria-label="Menu">
+            {menuOpen ? <X className="h-5 w-5" strokeWidth={1.5} /> : <Menu className="h-5 w-5" strokeWidth={1.5} />}
           </button>
 
           <Link to="/" className="flex items-center">
             <img src={logoUrl} alt="ShopFlow" className="h-12 md:h-14 w-auto object-contain" />
           </Link>
 
-          {/* Desktop nav with hover dropdowns */}
-          <nav className="hidden md:flex items-center gap-8">
+          {/* Desktop nav — luxury style */}
+          <nav className="hidden md:flex items-center gap-10">
             {categories.map((cat) => {
               const sizes = categorySizes[cat.slug];
               return (
@@ -219,34 +219,34 @@ export function Header() {
                 >
                   <Link
                     to={`/categoria/${cat.slug}`}
-                    className="text-[15px] font-semibold text-white/90 hover:text-white transition-all duration-200 flex items-center gap-1.5 tracking-wide uppercase"
+                    className="text-[13px] font-semibold text-white/75 hover:text-white transition-all duration-300 flex items-center gap-1.5 tracking-[0.18em] uppercase"
                   >
                     {cat.name}
                     {sizes && sizes.length > 0 && (
-                      <ChevronDown className={`h-3.5 w-3.5 opacity-50 transition-transform duration-200 ${hoveredCategory === cat.slug ? "rotate-180 opacity-80" : ""}`} />
+                      <ChevronDown className={`h-3 w-3 opacity-40 transition-all duration-300 ${hoveredCategory === cat.slug ? "rotate-180 opacity-70" : ""}`} strokeWidth={1.5} />
                     )}
                   </Link>
 
-                  {/* Premium size dropdown */}
+                  {/* Premium dropdown */}
                   {hoveredCategory === cat.slug && sizes && sizes.length > 0 && (
                     <div
-                      className="absolute left-1/2 -translate-x-1/2 top-full pt-3 z-50"
+                      className="absolute left-1/2 -translate-x-1/2 top-full pt-4 z-50"
                       onMouseEnter={() => handleCategoryMouseEnter(cat.slug)}
                       onMouseLeave={handleCategoryMouseLeave}
                     >
-                      <div className="bg-card border border-border/60 rounded-2xl shadow-[0_12px_40px_-8px_hsl(220_20%_12%/0.18)] py-2.5 min-w-[160px] animate-in fade-in-0 slide-in-from-top-2 zoom-in-95 duration-200">
+                      <div className="bg-card/95 backdrop-blur-xl border border-border/40 rounded-xl shadow-[0_16px_48px_-12px_hsl(220_20%_6%/0.3)] py-3 min-w-[180px] animate-in fade-in-0 slide-in-from-top-3 duration-300">
                         <Link
                           to={`/categoria/${cat.slug}`}
-                          className="block px-6 py-3 text-sm font-bold text-foreground hover:bg-secondary/60 transition-all duration-150 tracking-wide"
+                          className="block px-7 py-3 text-[12px] font-bold text-foreground hover:bg-secondary/40 transition-all duration-200 tracking-[0.15em] uppercase"
                         >
-                          Todos os tamanhos
+                          Ver todos
                         </Link>
-                        <div className="mx-4 border-t border-border/40 my-1" />
+                        <div className="mx-5 border-t border-border/30 my-1.5" />
                         {sizes.map(size => (
                           <Link
                             key={size}
                             to={`/categoria/${cat.slug}?tamanho=${size}`}
-                            className="block px-6 py-3 text-sm font-semibold text-muted-foreground hover:bg-secondary/60 hover:text-foreground transition-all duration-150 tracking-wide"
+                            className="block px-7 py-3 text-[12px] font-medium text-muted-foreground hover:bg-secondary/40 hover:text-foreground transition-all duration-200 tracking-[0.12em] uppercase"
                           >
                             Tamanho {size}
                           </Link>
@@ -257,47 +257,47 @@ export function Header() {
                 </div>
               );
             })}
-            <Link to="/atacado" className="text-[15px] font-bold text-success hover:text-success/80 transition-all duration-200 tracking-wide uppercase">
+            <Link to="/atacado" className="text-[13px] font-semibold text-success/90 hover:text-success transition-all duration-300 tracking-[0.18em] uppercase">
               Atacado
             </Link>
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <div ref={searchRef} className="relative">
               <button
                 onClick={() => setSearchOpen(!searchOpen)}
-                className="p-2 text-white hover:text-white/80 transition-colors"
+                className="p-2.5 text-white/70 hover:text-white transition-all duration-300"
                 aria-label="Buscar"
               >
-                <Search className="h-5 w-5" />
+                <Search className="h-[18px] w-[18px]" strokeWidth={1.5} />
               </button>
 
               {searchOpen && (
-                <div className="absolute right-0 top-full mt-2 w-80 md:w-96 bg-card border rounded-lg shadow-xl z-50 overflow-hidden">
+                <div className="absolute right-0 top-full mt-3 w-80 md:w-96 bg-card/95 backdrop-blur-xl border border-border/40 rounded-xl shadow-[0_16px_48px_-12px_hsl(220_20%_6%/0.3)] z-50 overflow-hidden">
                   {user && (
-                    <div className="flex border-b">
+                    <div className="flex border-b border-border/30">
                       <button
                         onClick={() => { setSearchTab("products"); setSearchQuery(""); }}
-                        className={`flex-1 text-xs font-medium py-2.5 transition-colors ${searchTab === "products" ? "text-accent border-b-2 border-accent" : "text-muted-foreground"}`}
+                        className={`flex-1 text-[11px] font-semibold py-3 transition-all duration-200 tracking-[0.1em] uppercase ${searchTab === "products" ? "text-accent border-b-2 border-accent" : "text-muted-foreground"}`}
                       >
                         Produtos
                       </button>
                       <button
                         onClick={() => { setSearchTab("orders"); setSearchQuery(""); }}
-                        className={`flex-1 text-xs font-medium py-2.5 transition-colors flex items-center justify-center gap-1 ${searchTab === "orders" ? "text-accent border-b-2 border-accent" : "text-muted-foreground"}`}
+                        className={`flex-1 text-[11px] font-semibold py-3 transition-all duration-200 tracking-[0.1em] uppercase flex items-center justify-center gap-1.5 ${searchTab === "orders" ? "text-accent border-b-2 border-accent" : "text-muted-foreground"}`}
                       >
-                        <Package className="h-3.5 w-3.5" /> Rastrear Pedido
+                        <Package className="h-3.5 w-3.5" strokeWidth={1.5} /> Rastrear
                       </button>
                     </div>
                   )}
-                  <div className="p-3 border-b">
+                  <div className="p-3.5 border-b border-border/30">
                     <input
                       ref={inputRef}
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder={searchTab === "products" ? "Buscar produtos..." : "Código de rastreio ou nº do pedido..."}
-                      className="w-full bg-secondary rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none"
+                      className="w-full bg-secondary/60 rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:bg-secondary"
                       onKeyDown={(e) => {
                         if (e.key === "Escape") setSearchOpen(false);
                       }}
@@ -318,12 +318,12 @@ export function Header() {
                         <button
                           key={r.id}
                           onClick={() => handleResultClick(r.slug)}
-                          className="w-full flex items-center gap-3 p-3 hover:bg-secondary/50 transition-colors text-left"
+                          className="w-full flex items-center gap-3 p-3.5 hover:bg-secondary/40 transition-all duration-200 text-left"
                         >
                           <img
                             src={r.image || "/placeholder.svg"}
                             alt={r.name}
-                            className="w-12 h-14 object-cover rounded"
+                            className="w-12 h-14 object-cover rounded-lg"
                           />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-foreground truncate">{r.name}</p>
@@ -353,7 +353,7 @@ export function Header() {
                           cancelado: "bg-destructive/10 text-destructive",
                         };
                         return (
-                          <div key={o.id} className="p-3 border-b last:border-0">
+                          <div key={o.id} className="p-3.5 border-b border-border/30 last:border-0">
                             <div className="flex items-center justify-between mb-1">
                               <p className="text-xs font-mono text-muted-foreground">#{o.id.slice(0, 8)}</p>
                               <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusColors[o.status] || "bg-muted text-muted-foreground"}`}>
@@ -369,7 +369,7 @@ export function Header() {
                                 rel="noopener noreferrer"
                                 className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-accent hover:underline"
                               >
-                                <Package className="h-3 w-3" /> Rastrear: {o.tracking_code}
+                                <Package className="h-3 w-3" strokeWidth={1.5} /> Rastrear: {o.tracking_code}
                               </a>
                             )}
                           </div>
@@ -381,16 +381,16 @@ export function Header() {
               )}
             </div>
 
-            <Link to="/conta" className="relative p-2 text-white hover:text-white/80 transition-colors" aria-label="Conta">
-              <User className="h-5 w-5" />
+            <Link to="/conta" className="relative p-2.5 text-white/70 hover:text-white transition-all duration-300" aria-label="Conta">
+              <User className="h-[18px] w-[18px]" strokeWidth={1.5} />
               {pendingPixCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center animate-pulse">
                   {pendingPixCount}
                 </span>
               )}
             </Link>
-            <Link to="/carrinho" className="relative p-2 text-white hover:text-white/80 transition-colors" aria-label="Carrinho">
-              <ShoppingBag className="h-5 w-5" />
+            <Link to="/carrinho" className="relative p-2.5 text-white/70 hover:text-white transition-all duration-300" aria-label="Carrinho">
+              <ShoppingBag className="h-[18px] w-[18px]" strokeWidth={1.5} />
               {totalItems > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 bg-accent text-accent-foreground text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
                   {totalItems}
@@ -400,47 +400,47 @@ export function Header() {
           </div>
         </div>
 
-        {/* Mobile menu with size sub-menus */}
+        {/* Mobile menu — luxury style */}
         {menuOpen && (
-          <nav className="md:hidden bg-card border-t border-border/40 animate-fade-in-up">
-            <div className="container py-3 flex flex-col gap-0">
+          <nav className="md:hidden bg-card/98 backdrop-blur-xl border-t border-border/20 animate-fade-in-up">
+            <div className="container py-4 flex flex-col gap-0">
               {categories.map((cat) => {
                 const sizes = categorySizes[cat.slug];
                 const isExpanded = expandedMobileCategory === cat.slug;
                 return (
                   <div key={cat.slug}>
-                    <div className="flex items-center border-b border-border/30">
+                    <div className="flex items-center border-b border-border/20">
                       <Link
                         to={`/categoria/${cat.slug}`}
                         onClick={() => setMenuOpen(false)}
-                        className="flex-1 text-[15px] font-semibold text-foreground py-4 tracking-wide"
+                        className="flex-1 text-[13px] font-semibold text-foreground py-4.5 tracking-[0.15em] uppercase"
                       >
                         {cat.name}
                       </Link>
                       {sizes && sizes.length > 0 && (
                         <button
                           onClick={() => handleMobileCategoryTap(cat.slug)}
-                          className="p-4 text-muted-foreground"
+                          className="p-4 text-muted-foreground/60"
                         >
-                          <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} />
+                          <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`} strokeWidth={1.5} />
                         </button>
                       )}
                     </div>
                     {isExpanded && sizes && (
-                      <div className="bg-secondary/20 border-b border-border/30">
+                      <div className="bg-secondary/15 border-b border-border/20">
                         <Link
                           to={`/categoria/${cat.slug}`}
                           onClick={() => setMenuOpen(false)}
-                          className="block pl-7 pr-4 py-3.5 text-[14px] font-bold text-foreground transition-colors"
+                          className="block pl-8 pr-4 py-4 text-[12px] font-bold text-foreground transition-colors tracking-[0.12em] uppercase"
                         >
-                          Todos
+                          Ver todos
                         </Link>
                         {sizes.map(size => (
                           <Link
                             key={size}
                             to={`/categoria/${cat.slug}?tamanho=${size}`}
                             onClick={() => setMenuOpen(false)}
-                            className="block pl-7 pr-4 py-3.5 text-[14px] font-semibold text-muted-foreground hover:text-foreground transition-all duration-150"
+                            className="block pl-8 pr-4 py-4 text-[12px] font-medium text-muted-foreground hover:text-foreground transition-all duration-200 tracking-[0.1em] uppercase"
                           >
                             Tamanho {size}
                           </Link>
@@ -450,11 +450,11 @@ export function Header() {
                   </div>
                 );
               })}
-              <Link to="/atacado" onClick={() => setMenuOpen(false)} className="text-[15px] font-bold text-success py-4 border-b border-border/30 tracking-wide">
-                💼 Atacado
+              <Link to="/atacado" onClick={() => setMenuOpen(false)} className="text-[13px] font-semibold text-success/90 py-4.5 border-b border-border/20 tracking-[0.15em] uppercase">
+                Atacado
               </Link>
-              <Link to="/conta" onClick={() => setMenuOpen(false)} className="text-[15px] font-semibold text-foreground py-4 flex items-center gap-2.5">
-                <User className="h-4.5 w-4.5" /> Minha Conta
+              <Link to="/conta" onClick={() => setMenuOpen(false)} className="text-[13px] font-semibold text-foreground py-4.5 flex items-center gap-3 tracking-[0.1em] uppercase">
+                <User className="h-4 w-4" strokeWidth={1.5} /> Minha Conta
                 {pendingPixCount > 0 && (
                   <span className="bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full h-4 min-w-[1rem] px-1 flex items-center justify-center">
                     {pendingPixCount}
