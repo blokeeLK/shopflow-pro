@@ -400,47 +400,47 @@ export function Header() {
           </div>
         </div>
 
-        {/* Mobile menu with size sub-menus */}
+        {/* Mobile menu — luxury style */}
         {menuOpen && (
-          <nav className="md:hidden bg-card border-t border-border/40 animate-fade-in-up">
-            <div className="container py-3 flex flex-col gap-0">
+          <nav className="md:hidden bg-card/98 backdrop-blur-xl border-t border-border/20 animate-fade-in-up">
+            <div className="container py-4 flex flex-col gap-0">
               {categories.map((cat) => {
                 const sizes = categorySizes[cat.slug];
                 const isExpanded = expandedMobileCategory === cat.slug;
                 return (
                   <div key={cat.slug}>
-                    <div className="flex items-center border-b border-border/30">
+                    <div className="flex items-center border-b border-border/20">
                       <Link
                         to={`/categoria/${cat.slug}`}
                         onClick={() => setMenuOpen(false)}
-                        className="flex-1 text-[15px] font-semibold text-foreground py-4 tracking-wide"
+                        className="flex-1 text-[13px] font-semibold text-foreground py-4.5 tracking-[0.15em] uppercase"
                       >
                         {cat.name}
                       </Link>
                       {sizes && sizes.length > 0 && (
                         <button
                           onClick={() => handleMobileCategoryTap(cat.slug)}
-                          className="p-4 text-muted-foreground"
+                          className="p-4 text-muted-foreground/60"
                         >
-                          <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} />
+                          <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`} strokeWidth={1.5} />
                         </button>
                       )}
                     </div>
                     {isExpanded && sizes && (
-                      <div className="bg-secondary/20 border-b border-border/30">
+                      <div className="bg-secondary/15 border-b border-border/20">
                         <Link
                           to={`/categoria/${cat.slug}`}
                           onClick={() => setMenuOpen(false)}
-                          className="block pl-7 pr-4 py-3.5 text-[14px] font-bold text-foreground transition-colors"
+                          className="block pl-8 pr-4 py-4 text-[12px] font-bold text-foreground transition-colors tracking-[0.12em] uppercase"
                         >
-                          Todos
+                          Ver todos
                         </Link>
                         {sizes.map(size => (
                           <Link
                             key={size}
                             to={`/categoria/${cat.slug}?tamanho=${size}`}
                             onClick={() => setMenuOpen(false)}
-                            className="block pl-7 pr-4 py-3.5 text-[14px] font-semibold text-muted-foreground hover:text-foreground transition-all duration-150"
+                            className="block pl-8 pr-4 py-4 text-[12px] font-medium text-muted-foreground hover:text-foreground transition-all duration-200 tracking-[0.1em] uppercase"
                           >
                             Tamanho {size}
                           </Link>
@@ -450,11 +450,11 @@ export function Header() {
                   </div>
                 );
               })}
-              <Link to="/atacado" onClick={() => setMenuOpen(false)} className="text-[15px] font-bold text-success py-4 border-b border-border/30 tracking-wide">
-                💼 Atacado
+              <Link to="/atacado" onClick={() => setMenuOpen(false)} className="text-[13px] font-semibold text-success/90 py-4.5 border-b border-border/20 tracking-[0.15em] uppercase">
+                Atacado
               </Link>
-              <Link to="/conta" onClick={() => setMenuOpen(false)} className="text-[15px] font-semibold text-foreground py-4 flex items-center gap-2.5">
-                <User className="h-4.5 w-4.5" /> Minha Conta
+              <Link to="/conta" onClick={() => setMenuOpen(false)} className="text-[13px] font-semibold text-foreground py-4.5 flex items-center gap-3 tracking-[0.1em] uppercase">
+                <User className="h-4 w-4" strokeWidth={1.5} /> Minha Conta
                 {pendingPixCount > 0 && (
                   <span className="bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full h-4 min-w-[1rem] px-1 flex items-center justify-center">
                     {pendingPixCount}
