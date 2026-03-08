@@ -58,7 +58,7 @@ const Index = () => {
   const { data: allProducts = [], isLoading } = useProducts();
   const { data: categoriesWithStock = [] } = useCategoriesWithStock();
 
-  const promoProducts = useMemo(() => filterPromo(allProducts), [allProducts]);
+  const promoProducts = useMemo(() => filterWeeklyPromo(allProducts), [allProducts]);
   const sizeGroups = useMemo(
     () => SIZES.map((s) => ({ ...s, products: filterBySize(allProducts, s.size) })),
     [allProducts]

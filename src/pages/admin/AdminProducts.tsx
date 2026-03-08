@@ -147,6 +147,24 @@ export default function AdminProducts() {
     onError: (err: any) => { toast({ title: "Erro ao salvar", description: err.message, variant: "destructive" }); },
   });
 
+  // Bulk weekly promotion toggle
+  const bulkWeeklyPromo = useMutation({
+    mutationFn: async ({ ids, value }: { ids: string[]; value: boolean }) => {
+      for (const id of ids) {
+        const { error } = await supabase.from("products").update({ weekly_promotion: value } as any).eq("id", id);
+        if (error) throw error;
+      }
+    },
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-products-promo"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast({ title: vars.value ? `${selected.size} produto(s) adicionado(s) à Promo da Semana` : `${selected.size} produto(s) removido(s) da Promo da Semana` });
+      setSelected(new Set());
+    },
+    onError: (err: any) => { toast({ title: "Erro", description: err.message, variant: "destructive" }); },
+  });
+
   // Bulk update mutation
   const bulkUpdateMutation = useMutation({
     mutationFn: async ({ ids, data }: { ids: string[]; data: { price?: number; promo_price?: number | null; is_promo?: boolean; installment_count?: number } }) => {
