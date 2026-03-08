@@ -1,8 +1,10 @@
+import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { formatCurrency } from "@/hooks/useSupabaseData";
 import { useAuth } from "@/contexts/AuthContext";
+import { trackCartAbandonment } from "@/lib/tracking";
 
 const FREE_SHIPPING_THRESHOLD = 130;
 
@@ -12,6 +14,13 @@ export default function CartPage() {
   const navigate = useNavigate();
   const shippingProgress = Math.min((subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100);
   const remainingForFree = Math.max(FREE_SHIPPING_THRESHOLD - subtotal, 0);
+
+  // Track cart abandonment when leaving page with items
+  useEffect(() => {
+    return () => {
+      if (items.length > 0) trackCartAbandonment();
+    };
+  }, [items.length]);
 
   if (items.length === 0) {
     return (

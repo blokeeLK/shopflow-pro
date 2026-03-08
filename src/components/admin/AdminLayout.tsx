@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { TrackingDebugPanel } from "@/components/admin/TrackingDebugPanel";
 import { useToast } from "@/hooks/use-toast";
 import { ShieldX } from "lucide-react";
 
@@ -45,6 +46,7 @@ export default function AdminLayout() {
       <main className="flex-1 overflow-auto">
         <Outlet />
       </main>
+      <TrackingDebugPanel />
     </div>
   );
 }

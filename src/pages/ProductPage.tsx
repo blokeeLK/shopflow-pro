@@ -7,6 +7,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { WholesaleCTA } from "@/components/WholesaleCTA";
 import { ProductReviews } from "@/components/ProductReviews";
 import { useToast } from "@/hooks/use-toast";
+import { trackViewContent, trackAddToCart, trackProductClick, setupProductPageEngagement } from "@/lib/tracking";
 
 export default function ProductPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -41,6 +42,17 @@ export default function ProductPage() {
     const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
   }, [product?.promo_end_date, product?.is_promo]);
+
+  // Track ViewContent + product engagement (must be before early returns)
+  useEffect(() => {
+    if (!product) return;
+    const price = getProductPrice(product);
+    const cat = (product.category as any)?.name || "";
+    trackViewContent({ id: product.id, name: product.name, price, category: cat });
+    trackProductClick();
+    const cleanEngagement = setupProductPageEngagement(product.id);
+    return cleanEngagement;
+  }, [product?.id]);
 
   if (isLoading) {
     return (
@@ -94,6 +106,7 @@ export default function ProductPage() {
       maxStock: sizeStock,
       quantity,
     });
+    trackAddToCart({ id: product.id, name: product.name, price: currentPrice, quantity, size: selectedSize });
     toast({ title: "Adicionado ao carrinho! 🛒" });
   };
 

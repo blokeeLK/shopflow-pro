@@ -6,6 +6,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useAddresses, formatCurrency } from "@/hooks/useSupabaseData";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { trackInitiateCheckout, trackAddPaymentInfo, trackPurchase, sendAdvancedMatching } from "@/lib/tracking";
 
 const STEPS = ["Endereço", "Frete", "Pagamento", "Confirmação"];
 
@@ -40,6 +41,16 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (!authLoading && !user) navigate("/login?redirect=/checkout");
   }, [user, authLoading, navigate]);
+
+  // Track InitiateCheckout
+  useEffect(() => {
+    if (items.length > 0) {
+      trackInitiateCheckout({
+        value: subtotal,
+        items: items.map((i) => ({ id: i.productId, name: i.name, quantity: i.quantity, price: i.price })),
+      });
+    }
+  }, []);
 
   useEffect(() => {
     if (items.length === 0 && !submitting && step < 3) navigate("/carrinho");
@@ -116,6 +127,7 @@ export default function CheckoutPage() {
   const handlePlaceOrder = async () => {
     if (!user || !selectedAddress) return;
     setSubmitting(true);
+    trackAddPaymentInfo(paymentMethod);
     try {
       const { data: order, error: orderErr } = await supabase.from("orders").insert({
         user_id: user.id, status: "criado", subtotal,
@@ -165,6 +177,22 @@ export default function CheckoutPage() {
         setSubmitting(false);
         return;
       }
+
+      // Track purchase
+      trackPurchase({
+        orderId: order.id,
+        value: total,
+        items: items.map((i) => ({ id: i.productId, name: i.name, quantity: i.quantity, price: i.price })),
+        email: user.email || "",
+        city: selectedAddress.city,
+        state: selectedAddress.state,
+      });
+      sendAdvancedMatching({
+        email: user.email || "",
+        city: selectedAddress.city,
+        state: selectedAddress.state,
+        cep: selectedAddress.cep,
+      });
 
       clearCart();
 
