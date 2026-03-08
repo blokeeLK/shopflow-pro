@@ -305,9 +305,10 @@ export default function AdminProducts() {
                       </div>
                       <div>
                         <p className="font-medium text-foreground line-clamp-1">{p.name}</p>
-                        <div className="flex gap-1">
+                        <div className="flex gap-1 flex-wrap">
                           {p.is_promo && <span className="text-[10px] bg-accent/10 text-accent px-1.5 py-0.5 rounded">PROMO</span>}
                           {p.is_featured && <span className="text-[10px] bg-warning/10 text-warning px-1.5 py-0.5 rounded">DESTAQUE</span>}
+                          {(p as any).weekly_promotion && <span className="text-[10px] bg-orange-500/10 text-orange-500 px-1.5 py-0.5 rounded">🔥 SEMANA</span>}
                         </div>
                       </div>
                     </div>
