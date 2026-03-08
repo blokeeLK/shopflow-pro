@@ -35,6 +35,7 @@ import AdminTopbar from "./pages/admin/AdminTopbar";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminFaq from "./pages/admin/AdminFaq";
 import AdminReviews from "./pages/admin/AdminReviews";
+import AdminPromotions from "./pages/admin/AdminPromotions";
 
 import FaqPage from "./pages/FaqPage";
 import AtacadoPage from "./pages/AtacadoPage";
