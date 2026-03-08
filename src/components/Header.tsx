@@ -265,7 +265,7 @@ export function Header() {
             </Link>
           </nav>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5">
             <div ref={searchRef} className="relative">
               <button
                 onClick={() => setSearchOpen(!searchOpen)}
