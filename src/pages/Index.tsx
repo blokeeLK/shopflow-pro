@@ -61,9 +61,19 @@ const Index = () => {
 
 
   const filteredProducts = useMemo(() => {
-    if (activeFilter === "todos") return allProducts;
     if (activeFilter === "promo") return promoProducts;
-    return filterBySize(allProducts, activeFilter);
+    if (activeFilter === "todos") {
+      // Promos first, then normal
+      const promoIds = new Set(promoProducts.map(p => p.id));
+      const normal = allProducts.filter(p => !promoIds.has(p.id));
+      return [...promoProducts, ...normal];
+    }
+    // Size filter: normal first, promos last
+    const sized = filterBySize(allProducts, activeFilter);
+    const promoIds = new Set(promoProducts.map(p => p.id));
+    const normal = sized.filter(p => !promoIds.has(p.id));
+    const promo = sized.filter(p => promoIds.has(p.id));
+    return [...normal, ...promo];
   }, [allProducts, promoProducts, activeFilter]);
 
   // Only show sizes that have actual products with stock
