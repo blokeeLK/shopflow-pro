@@ -402,38 +402,45 @@ export function Header() {
 
         {/* Mobile menu with size sub-menus */}
         {menuOpen && (
-          <nav className="md:hidden bg-card border-t animate-fade-in-up">
-            <div className="container py-4 flex flex-col gap-0">
+          <nav className="md:hidden bg-card border-t border-border/40 animate-fade-in-up">
+            <div className="container py-3 flex flex-col gap-0">
               {categories.map((cat) => {
                 const sizes = categorySizes[cat.slug];
                 const isExpanded = expandedMobileCategory === cat.slug;
                 return (
                   <div key={cat.slug}>
-                    <div className="flex items-center border-b border-border">
+                    <div className="flex items-center border-b border-border/30">
                       <Link
                         to={`/categoria/${cat.slug}`}
                         onClick={() => setMenuOpen(false)}
-                        className="flex-1 text-sm font-medium text-foreground py-3"
+                        className="flex-1 text-[15px] font-semibold text-foreground py-4 tracking-wide"
                       >
                         {cat.name}
                       </Link>
                       {sizes && sizes.length > 0 && (
                         <button
                           onClick={() => handleMobileCategoryTap(cat.slug)}
-                          className="p-3 text-muted-foreground"
+                          className="p-4 text-muted-foreground"
                         >
-                          <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                          <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} />
                         </button>
                       )}
                     </div>
                     {isExpanded && sizes && (
-                      <div className="bg-secondary/30 border-b border-border">
+                      <div className="bg-secondary/20 border-b border-border/30">
+                        <Link
+                          to={`/categoria/${cat.slug}`}
+                          onClick={() => setMenuOpen(false)}
+                          className="block pl-7 pr-4 py-3.5 text-[14px] font-bold text-foreground transition-colors"
+                        >
+                          Todos
+                        </Link>
                         {sizes.map(size => (
                           <Link
                             key={size}
                             to={`/categoria/${cat.slug}?tamanho=${size}`}
                             onClick={() => setMenuOpen(false)}
-                            className="block pl-6 pr-4 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                            className="block pl-7 pr-4 py-3.5 text-[14px] font-semibold text-muted-foreground hover:text-foreground transition-all duration-150"
                           >
                             Tamanho {size}
                           </Link>
@@ -443,11 +450,11 @@ export function Header() {
                   </div>
                 );
               })}
-              <Link to="/atacado" onClick={() => setMenuOpen(false)} className="text-sm font-bold text-success py-3 border-b border-border">
+              <Link to="/atacado" onClick={() => setMenuOpen(false)} className="text-[15px] font-bold text-success py-4 border-b border-border/30 tracking-wide">
                 💼 Atacado
               </Link>
-              <Link to="/conta" onClick={() => setMenuOpen(false)} className="text-sm font-medium text-foreground py-3 flex items-center gap-2">
-                <User className="h-4 w-4" /> Minha Conta
+              <Link to="/conta" onClick={() => setMenuOpen(false)} className="text-[15px] font-semibold text-foreground py-4 flex items-center gap-2.5">
+                <User className="h-4.5 w-4.5" /> Minha Conta
                 {pendingPixCount > 0 && (
                   <span className="bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full h-4 min-w-[1rem] px-1 flex items-center justify-center">
                     {pendingPixCount}
