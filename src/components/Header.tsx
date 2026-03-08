@@ -384,16 +384,16 @@ export function Header() {
               )}
             </div>
 
-            <Link to="/conta" className="relative p-2.5 text-white/50 hover:text-white transition-all duration-500" aria-label="Conta">
-              <User className="h-[17px] w-[17px]" strokeWidth={1.25} />
+            <Link to="/conta" className="relative p-2.5 text-white hover:text-white/70 transition-all duration-300" aria-label="Conta">
+              <User className="h-5 w-5" strokeWidth={1.5} />
               {pendingPixCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 bg-accent text-accent-foreground text-[9px] font-bold rounded-full h-3.5 w-3.5 flex items-center justify-center">
                   {pendingPixCount}
                 </span>
               )}
             </Link>
-            <Link to="/carrinho" className="relative p-2.5 text-white/50 hover:text-white transition-all duration-500" aria-label="Carrinho">
-              <ShoppingBag className="h-[17px] w-[17px]" strokeWidth={1.25} />
+            <Link to="/carrinho" className="relative p-2.5 text-white hover:text-white/70 transition-all duration-300" aria-label="Carrinho">
+              <ShoppingBag className="h-5 w-5" strokeWidth={1.5} />
               {totalItems > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 bg-accent text-accent-foreground text-[9px] font-bold rounded-full h-3.5 w-3.5 flex items-center justify-center">
                   {totalItems}
