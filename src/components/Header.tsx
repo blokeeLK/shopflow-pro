@@ -269,10 +269,10 @@ export function Header() {
             <div ref={searchRef} className="relative">
               <button
                 onClick={() => setSearchOpen(!searchOpen)}
-                className="p-2.5 text-white/70 hover:text-white transition-all duration-300"
+                className="p-2.5 text-white/50 hover:text-white transition-all duration-500"
                 aria-label="Buscar"
               >
-                <Search className="h-[18px] w-[18px]" strokeWidth={1.5} />
+                <Search className="h-[17px] w-[17px]" strokeWidth={1.25} />
               </button>
 
               {searchOpen && (
