@@ -129,15 +129,10 @@ const Index = () => {
                   onClick={() => {
                     if (f.key === "promo") {
                       setActiveFilter("promo");
+                    } else if (f.key === "todos") {
+                      navigate("/categoria/vestidos");
                     } else {
-                      // Navigate to category page, same as BLUSAS menu
-                      const mainCat = categories.find(c => c.active);
-                      const slug = mainCat?.slug || "blusas";
-                      if (f.key === "todos") {
-                        navigate(`/categoria/${slug}`);
-                      } else {
-                        navigate(`/categoria/${slug}?tamanho=${f.key}`);
-                      }
+                      navigate(`/categoria/vestidos?tamanho=${f.key}`);
                     }
                   }}
                   className={`group relative inline-flex items-center justify-center gap-2 font-display transition-all duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)]
