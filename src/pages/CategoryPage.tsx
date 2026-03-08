@@ -33,10 +33,24 @@ export default function CategoryPage() {
       arr = arr.filter(p =>
         p.product_variants?.some(v => v.size.toUpperCase() === sizeFilter && v.stock > 0)
       );
+      // Size filter: normal first, promos last
+      const normal = arr.filter(p => !(p as any).weekly_promotion);
+      const promo = arr.filter(p => (p as any).weekly_promotion === true);
+      arr = [...normal, ...promo];
+    } else {
+      // No size filter (Todos): promos first, normal after
+      const normal = arr.filter(p => !(p as any).weekly_promotion);
+      const promo = arr.filter(p => (p as any).weekly_promotion === true);
+      arr = [...promo, ...normal];
     }
     if (sort === "price-asc") arr.sort((a, b) => getProductPrice(a) - getProductPrice(b));
     else if (sort === "price-desc") arr.sort((a, b) => getProductPrice(b) - getProductPrice(a));
-    else arr.sort((a, b) => b.sold_count - a.sold_count);
+    else if (sort === "best-sellers") {
+      // Preserve promo ordering within best-sellers
+      const normal = arr.filter(p => !(p as any).weekly_promotion).sort((a, b) => b.sold_count - a.sold_count);
+      const promo = arr.filter(p => (p as any).weekly_promotion === true).sort((a, b) => b.sold_count - a.sold_count);
+      arr = sizeFilter ? [...normal, ...promo] : [...promo, ...normal];
+    }
     return arr;
   }, [products, sort, sizeFilter]);
 
