@@ -43,6 +43,17 @@ export default function ProductPage() {
     return () => clearInterval(interval);
   }, [product?.promo_end_date, product?.is_promo]);
 
+  // Track ViewContent + product engagement (must be before early returns)
+  useEffect(() => {
+    if (!product) return;
+    const price = getProductPrice(product);
+    const cat = (product.category as any)?.name || "";
+    trackViewContent({ id: product.id, name: product.name, price, category: cat });
+    trackProductClick();
+    const cleanEngagement = setupProductPageEngagement(product.id);
+    return cleanEngagement;
+  }, [product?.id]);
+
   if (isLoading) {
     return (
       <div className="container py-10">
@@ -75,15 +86,6 @@ export default function ProductPage() {
   const sizeStock = variants.find((v) => v.size === selectedSize)?.stock || 0;
   const categoryName = (product.category as any)?.name || "";
   const avgRating = reviews.length > 0 ? reviews.reduce((a, r) => a + r.rating, 0) / reviews.length : 0;
-
-  // Track ViewContent + product engagement
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  useEffect(() => {
-    trackViewContent({ id: product.id, name: product.name, price: currentPrice, category: categoryName });
-    trackProductClick();
-    const cleanEngagement = setupProductPageEngagement(product.id);
-    return cleanEngagement;
-  }, [product.id]);
 
   const filteredRelated = related.filter((p) => p.id !== product.id).slice(0, 4);
 
