@@ -76,6 +76,15 @@ export default function ProductPage() {
   const categoryName = (product.category as any)?.name || "";
   const avgRating = reviews.length > 0 ? reviews.reduce((a, r) => a + r.rating, 0) / reviews.length : 0;
 
+  // Track ViewContent + product engagement
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    trackViewContent({ id: product.id, name: product.name, price: currentPrice, category: categoryName });
+    trackProductClick();
+    const cleanEngagement = setupProductPageEngagement(product.id);
+    return cleanEngagement;
+  }, [product.id]);
+
   const filteredRelated = related.filter((p) => p.id !== product.id).slice(0, 4);
 
   const handleAddToCart = () => {
