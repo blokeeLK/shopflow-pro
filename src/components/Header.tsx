@@ -207,7 +207,7 @@ export function Header() {
           </Link>
 
           {/* Desktop nav with hover dropdowns */}
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className="hidden md:flex items-center gap-8">
             {categories.map((cat) => {
               const sizes = categorySizes[cat.slug];
               return (
@@ -219,31 +219,34 @@ export function Header() {
                 >
                   <Link
                     to={`/categoria/${cat.slug}`}
-                    className="text-sm font-medium text-white hover:text-white/80 transition-colors flex items-center gap-1"
+                    className="text-[15px] font-semibold text-white/90 hover:text-white transition-all duration-200 flex items-center gap-1.5 tracking-wide uppercase"
                   >
                     {cat.name}
-                    {sizes && sizes.length > 0 && <ChevronDown className="h-3 w-3 opacity-60" />}
+                    {sizes && sizes.length > 0 && (
+                      <ChevronDown className={`h-3.5 w-3.5 opacity-50 transition-transform duration-200 ${hoveredCategory === cat.slug ? "rotate-180 opacity-80" : ""}`} />
+                    )}
                   </Link>
 
-                  {/* Size dropdown */}
+                  {/* Premium size dropdown */}
                   {hoveredCategory === cat.slug && sizes && sizes.length > 0 && (
                     <div
-                      className="absolute left-0 top-full pt-2 z-50"
+                      className="absolute left-1/2 -translate-x-1/2 top-full pt-3 z-50"
                       onMouseEnter={() => handleCategoryMouseEnter(cat.slug)}
                       onMouseLeave={handleCategoryMouseLeave}
                     >
-                      <div className="bg-card border rounded-lg shadow-xl py-1.5 min-w-[100px] animate-in fade-in-0 zoom-in-95 duration-150">
+                      <div className="bg-card border border-border/60 rounded-2xl shadow-[0_12px_40px_-8px_hsl(220_20%_12%/0.18)] py-2.5 min-w-[160px] animate-in fade-in-0 slide-in-from-top-2 zoom-in-95 duration-200">
                         <Link
                           to={`/categoria/${cat.slug}`}
-                          className="block px-4 py-2 text-sm text-foreground hover:bg-secondary transition-colors font-medium"
+                          className="block px-6 py-3 text-sm font-bold text-foreground hover:bg-secondary/60 transition-all duration-150 tracking-wide"
                         >
-                          Todos
+                          Todos os tamanhos
                         </Link>
+                        <div className="mx-4 border-t border-border/40 my-1" />
                         {sizes.map(size => (
                           <Link
                             key={size}
                             to={`/categoria/${cat.slug}?tamanho=${size}`}
-                            className="block px-4 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+                            className="block px-6 py-3 text-sm font-semibold text-muted-foreground hover:bg-secondary/60 hover:text-foreground transition-all duration-150 tracking-wide"
                           >
                             Tamanho {size}
                           </Link>
@@ -254,7 +257,7 @@ export function Header() {
                 </div>
               );
             })}
-            <Link to="/atacado" className="text-sm font-bold text-success hover:text-success/80 transition-colors">
+            <Link to="/atacado" className="text-[15px] font-bold text-success hover:text-success/80 transition-all duration-200 tracking-wide uppercase">
               Atacado
             </Link>
           </nav>
@@ -399,38 +402,45 @@ export function Header() {
 
         {/* Mobile menu with size sub-menus */}
         {menuOpen && (
-          <nav className="md:hidden bg-card border-t animate-fade-in-up">
-            <div className="container py-4 flex flex-col gap-0">
+          <nav className="md:hidden bg-card border-t border-border/40 animate-fade-in-up">
+            <div className="container py-3 flex flex-col gap-0">
               {categories.map((cat) => {
                 const sizes = categorySizes[cat.slug];
                 const isExpanded = expandedMobileCategory === cat.slug;
                 return (
                   <div key={cat.slug}>
-                    <div className="flex items-center border-b border-border">
+                    <div className="flex items-center border-b border-border/30">
                       <Link
                         to={`/categoria/${cat.slug}`}
                         onClick={() => setMenuOpen(false)}
-                        className="flex-1 text-sm font-medium text-foreground py-3"
+                        className="flex-1 text-[15px] font-semibold text-foreground py-4 tracking-wide"
                       >
                         {cat.name}
                       </Link>
                       {sizes && sizes.length > 0 && (
                         <button
                           onClick={() => handleMobileCategoryTap(cat.slug)}
-                          className="p-3 text-muted-foreground"
+                          className="p-4 text-muted-foreground"
                         >
-                          <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                          <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} />
                         </button>
                       )}
                     </div>
                     {isExpanded && sizes && (
-                      <div className="bg-secondary/30 border-b border-border">
+                      <div className="bg-secondary/20 border-b border-border/30">
+                        <Link
+                          to={`/categoria/${cat.slug}`}
+                          onClick={() => setMenuOpen(false)}
+                          className="block pl-7 pr-4 py-3.5 text-[14px] font-bold text-foreground transition-colors"
+                        >
+                          Todos
+                        </Link>
                         {sizes.map(size => (
                           <Link
                             key={size}
                             to={`/categoria/${cat.slug}?tamanho=${size}`}
                             onClick={() => setMenuOpen(false)}
-                            className="block pl-6 pr-4 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                            className="block pl-7 pr-4 py-3.5 text-[14px] font-semibold text-muted-foreground hover:text-foreground transition-all duration-150"
                           >
                             Tamanho {size}
                           </Link>
@@ -440,11 +450,11 @@ export function Header() {
                   </div>
                 );
               })}
-              <Link to="/atacado" onClick={() => setMenuOpen(false)} className="text-sm font-bold text-success py-3 border-b border-border">
+              <Link to="/atacado" onClick={() => setMenuOpen(false)} className="text-[15px] font-bold text-success py-4 border-b border-border/30 tracking-wide">
                 💼 Atacado
               </Link>
-              <Link to="/conta" onClick={() => setMenuOpen(false)} className="text-sm font-medium text-foreground py-3 flex items-center gap-2">
-                <User className="h-4 w-4" /> Minha Conta
+              <Link to="/conta" onClick={() => setMenuOpen(false)} className="text-[15px] font-semibold text-foreground py-4 flex items-center gap-2.5">
+                <User className="h-4.5 w-4.5" /> Minha Conta
                 {pendingPixCount > 0 && (
                   <span className="bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full h-4 min-w-[1rem] px-1 flex items-center justify-center">
                     {pendingPixCount}

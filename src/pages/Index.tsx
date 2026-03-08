@@ -59,13 +59,6 @@ const Index = () => {
 
   const promoProducts = useMemo(() => filterWeeklyPromo(allProducts), [allProducts]);
 
-  const sizeCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    SIZES.forEach((s) => {
-      counts[s] = countBySize(allProducts, s);
-    });
-    return counts;
-  }, [allProducts]);
 
   const filteredProducts = useMemo(() => {
     if (activeFilter === "todos") return allProducts;
@@ -73,11 +66,22 @@ const Index = () => {
     return filterBySize(allProducts, activeFilter);
   }, [allProducts, promoProducts, activeFilter]);
 
-  const filters: { key: FilterKey; label: string; count: number; icon?: React.ReactNode }[] = [
-    { key: "todos", label: "Todos", count: allProducts.length },
-    ...SIZES.map((s) => ({ key: s as FilterKey, label: s, count: sizeCounts[s] || 0 })),
-    { key: "promo", label: "Promoções", count: promoProducts.length, icon: <Flame className="h-3.5 w-3.5" /> },
+  const filters: { key: FilterKey; label: string; icon?: React.ReactNode }[] = [
+    { key: "todos", label: "Todos" },
+    ...SIZES.map((s) => ({ key: s as FilterKey, label: s })),
+    { key: "promo", label: "Promoções", icon: <Flame className="h-4 w-4" /> },
   ];
+
+  // Check which sizes have promo products
+  const sizesWithPromo = useMemo(() => {
+    const set = new Set<string>();
+    promoProducts.forEach((p) => {
+      p.product_variants?.forEach((v) => {
+        if (v.stock > 0) set.add(v.size.toUpperCase());
+      });
+    });
+    return set;
+  }, [promoProducts]);
 
   return (
     <div>
@@ -88,30 +92,39 @@ const Index = () => {
 
       {/* Size / Promo Filter Buttons */}
       <FadeInSection>
-        <section className="container py-8 md:py-12">
-          <h2 className="font-display font-bold text-xl md:text-2xl text-foreground mb-5">Filtrar por tamanho</h2>
-          <div className="flex flex-wrap gap-2 md:gap-3">
-            {filters.map((f) => (
-              <button
-                key={f.key}
-                onClick={() => setActiveFilter(f.key)}
-                className={`group flex items-center gap-2 rounded-xl px-4 py-2.5 md:px-5 md:py-3 shadow-product hover:shadow-elevated hover:scale-[1.03] transition-all duration-300 border text-sm md:text-base font-semibold font-display ${
-                  activeFilter === f.key
-                    ? "bg-accent text-accent-foreground border-accent/60 shadow-elevated"
-                    : "bg-card text-foreground border-border/50 hover:border-accent/40"
-                }`}
-              >
-                {f.icon}
-                <span>{f.label}</span>
-                <span className={`text-xs font-normal rounded-full px-2 py-0.5 ${
-                  activeFilter === f.key
-                    ? "bg-accent-foreground/20 text-accent-foreground"
-                    : "bg-secondary text-muted-foreground"
-                }`}>
-                  {f.count}
-                </span>
-              </button>
-            ))}
+        <section className="container py-10 md:py-14">
+          <h2 className="font-display font-bold text-2xl md:text-3xl text-foreground mb-7 tracking-tight">
+            Filtrar por tamanho
+          </h2>
+          <div className="flex flex-wrap gap-3 md:gap-4">
+            {filters.map((f) => {
+              const isActive = activeFilter === f.key;
+              const hasPromo = f.key !== "todos" && f.key !== "promo" && sizesWithPromo.has(f.key);
+              return (
+                <button
+                  key={f.key}
+                  onClick={() => setActiveFilter(f.key)}
+                  className={`group relative flex items-center justify-center gap-2.5 rounded-2xl text-base md:text-lg font-bold font-display tracking-wide transition-all duration-300 ease-out
+                    ${f.key === "promo"
+                      ? "px-7 py-4 md:px-9 md:py-5"
+                      : "px-7 py-4 md:px-10 md:py-5 min-w-[4rem] md:min-w-[5rem]"
+                    }
+                    ${isActive
+                      ? f.key === "promo"
+                        ? "bg-accent text-accent-foreground shadow-lg shadow-accent/25 scale-[1.02]"
+                        : "bg-foreground text-background shadow-lg shadow-foreground/20 scale-[1.02]"
+                      : "bg-card text-foreground border border-border/60 shadow-[var(--shadow-product)] hover:border-foreground/20 hover:shadow-[var(--shadow-md)] hover:scale-[1.03] active:scale-[0.98]"
+                    }`}
+                >
+                  {f.icon}
+                  <span>{f.label}</span>
+                  {/* Subtle promo dot indicator */}
+                  {hasPromo && !isActive && (
+                    <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-accent shadow-sm shadow-accent/40" />
+                  )}
+                </button>
+              );
+            })}
           </div>
         </section>
       </FadeInSection>
