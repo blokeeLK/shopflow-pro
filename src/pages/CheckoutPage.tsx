@@ -42,6 +42,16 @@ export default function CheckoutPage() {
     if (!authLoading && !user) navigate("/login?redirect=/checkout");
   }, [user, authLoading, navigate]);
 
+  // Track InitiateCheckout
+  useEffect(() => {
+    if (items.length > 0) {
+      trackInitiateCheckout({
+        value: subtotal,
+        items: items.map((i) => ({ id: i.productId, name: i.name, quantity: i.quantity, price: i.price })),
+      });
+    }
+  }, []);
+
   useEffect(() => {
     if (items.length === 0 && !submitting && step < 3) navigate("/carrinho");
   }, [items, navigate, submitting, step]);
