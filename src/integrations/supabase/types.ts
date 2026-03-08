@@ -457,6 +457,7 @@ export type Database = {
           slug: string
           sold_count: number
           updated_at: string
+          weekly_promotion: boolean
           weight: number | null
           width: number | null
         }
@@ -482,6 +483,7 @@ export type Database = {
           slug: string
           sold_count?: number
           updated_at?: string
+          weekly_promotion?: boolean
           weight?: number | null
           width?: number | null
         }
@@ -507,6 +509,7 @@ export type Database = {
           slug?: string
           sold_count?: number
           updated_at?: string
+          weekly_promotion?: boolean
           weight?: number | null
           width?: number | null
         }

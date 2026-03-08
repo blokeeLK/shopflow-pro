@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/hooks/useSupabaseData";
 import { useAuth } from "@/contexts/AuthContext";
-import { Plus, Pencil, Trash2, Search, Eye, EyeOff, Star, Copy, CheckSquare, Square, XSquare, Save, DollarSign } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Eye, EyeOff, Star, Copy, CheckSquare, Square, XSquare, Save, DollarSign, Flame, FlameKindling } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -147,6 +147,24 @@ export default function AdminProducts() {
     onError: (err: any) => { toast({ title: "Erro ao salvar", description: err.message, variant: "destructive" }); },
   });
 
+  // Bulk weekly promotion toggle
+  const bulkWeeklyPromo = useMutation({
+    mutationFn: async ({ ids, value }: { ids: string[]; value: boolean }) => {
+      for (const id of ids) {
+        const { error } = await supabase.from("products").update({ weekly_promotion: value } as any).eq("id", id);
+        if (error) throw error;
+      }
+    },
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-products-promo"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast({ title: vars.value ? `${selected.size} produto(s) adicionado(s) à Promo da Semana` : `${selected.size} produto(s) removido(s) da Promo da Semana` });
+      setSelected(new Set());
+    },
+    onError: (err: any) => { toast({ title: "Erro", description: err.message, variant: "destructive" }); },
+  });
+
   // Bulk update mutation
   const bulkUpdateMutation = useMutation({
     mutationFn: async ({ ids, data }: { ids: string[]; data: { price?: number; promo_price?: number | null; is_promo?: boolean; installment_count?: number } }) => {
@@ -287,9 +305,10 @@ export default function AdminProducts() {
                       </div>
                       <div>
                         <p className="font-medium text-foreground line-clamp-1">{p.name}</p>
-                        <div className="flex gap-1">
+                        <div className="flex gap-1 flex-wrap">
                           {p.is_promo && <span className="text-[10px] bg-accent/10 text-accent px-1.5 py-0.5 rounded">PROMO</span>}
                           {p.is_featured && <span className="text-[10px] bg-warning/10 text-warning px-1.5 py-0.5 rounded">DESTAQUE</span>}
+                          {(p as any).weekly_promotion && <span className="text-[10px] bg-orange-500/10 text-orange-500 px-1.5 py-0.5 rounded">🔥 SEMANA</span>}
                         </div>
                       </div>
                     </div>
@@ -407,13 +426,27 @@ export default function AdminProducts() {
 
       {/* Bulk actions bar */}
       {selected.size > 0 && (
-        <div className="flex items-center gap-3 mb-4 p-3 bg-secondary/50 border rounded-lg flex-wrap">
+        <div className="flex items-center gap-2 mb-4 p-3 bg-secondary/50 border rounded-lg flex-wrap">
           <span className="text-sm font-medium text-foreground">{selected.size} selecionado(s)</span>
           <button
             onClick={() => setBulkModal(true)}
             className="text-sm px-3 py-1.5 bg-accent text-accent-foreground rounded-md hover:bg-accent/90 flex items-center gap-1.5"
           >
             <DollarSign className="h-3.5 w-3.5" /> Editar Preço/Parcelas
+          </button>
+          <button
+            onClick={() => bulkWeeklyPromo.mutate({ ids: Array.from(selected), value: true })}
+            disabled={bulkWeeklyPromo.isPending}
+            className="text-sm px-3 py-1.5 bg-orange-600 text-white rounded-md hover:bg-orange-700 flex items-center gap-1.5 disabled:opacity-50"
+          >
+            <Flame className="h-3.5 w-3.5" /> Promo Semana
+          </button>
+          <button
+            onClick={() => bulkWeeklyPromo.mutate({ ids: Array.from(selected), value: false })}
+            disabled={bulkWeeklyPromo.isPending}
+            className="text-sm px-3 py-1.5 bg-muted text-muted-foreground rounded-md hover:bg-muted/80 flex items-center gap-1.5 disabled:opacity-50"
+          >
+            <FlameKindling className="h-3.5 w-3.5" /> Remover Promo
           </button>
           <button
             onClick={() => { if (confirm(`Excluir ${selected.size} produto(s)?`)) bulkDelete.mutate(Array.from(selected)); }}

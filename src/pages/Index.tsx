@@ -13,9 +13,9 @@ function filterBySize(products: DbProduct[], size: string): DbProduct[] {
   );
 }
 
-/** Filter products that are on promo */
-function filterPromo(products: DbProduct[]): DbProduct[] {
-  return products.filter((p) => p.is_promo && p.promo_price != null && p.promo_price < p.price);
+/** Filter products marked as weekly promotion */
+function filterWeeklyPromo(products: DbProduct[]): DbProduct[] {
+  return products.filter((p) => (p as any).weekly_promotion === true);
 }
 
 interface ProductSectionProps {
@@ -58,7 +58,7 @@ const Index = () => {
   const { data: allProducts = [], isLoading } = useProducts();
   const { data: categoriesWithStock = [] } = useCategoriesWithStock();
 
-  const promoProducts = useMemo(() => filterPromo(allProducts), [allProducts]);
+  const promoProducts = useMemo(() => filterWeeklyPromo(allProducts), [allProducts]);
   const sizeGroups = useMemo(
     () => SIZES.map((s) => ({ ...s, products: filterBySize(allProducts, s.size) })),
     [allProducts]
