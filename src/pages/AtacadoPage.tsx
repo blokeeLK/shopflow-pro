@@ -72,7 +72,7 @@ export default function AtacadoPage() {
                   <br />
                   <span className="bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">DA FÁBRICA</span>
                 </h1>
-                <p className="text-base md:text-lg text-white/60 font-medium mb-5">
+                <p className="text-lg md:text-2xl text-white/70 font-semibold mb-5">
                   Camisas fio 30.1 com preço especial
                 </p>
               </FadeInSection>
