@@ -165,6 +165,9 @@
 }
 
 @keyframes atacado-pulse {
-  0%, 83%, 100% { transform: scale(1); }
-  91% { transform: scale(1.03); }
+  0% { transform: scale(1); }
+  47% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+  53% { transform: scale(1); }
+  100% { transform: scale(1); }
 }
