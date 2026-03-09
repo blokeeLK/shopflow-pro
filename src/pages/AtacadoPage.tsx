@@ -78,11 +78,11 @@ export default function AtacadoPage() {
               </FadeInSection>
 
               <FadeInSection delay={140}>
-                <p className="text-sm md:text-base text-white/75 leading-relaxed mb-1.5">
-                  Compre a partir de <strong className="text-white">8 peças</strong> e pague preço de atacado real.
+                <p className="text-base md:text-lg text-white/80 leading-relaxed mb-1.5">
+                  Compre a partir de <strong className="text-[#25D366]">8 peças</strong> e pague preço de atacado real.
                 </p>
-                <p className="text-xs md:text-sm text-white/50 mb-5">
-                  Ideal para <strong className="text-white/70">Revendedores</strong> · <strong className="text-white/70">Lojistas</strong> · <strong className="text-white/70">Quem quer comprar barato</strong>
+                <p className="text-sm md:text-base text-white/60 mb-5">
+                  Ideal para <strong className="text-white">Revendedores</strong> · <strong className="text-white">Lojistas</strong> · <strong className="text-white">Quem quer comprar barato</strong>
                 </p>
               </FadeInSection>
 
