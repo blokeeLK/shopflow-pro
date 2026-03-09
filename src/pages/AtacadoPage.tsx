@@ -120,14 +120,14 @@ export default function AtacadoPage() {
               <div className="flex flex-col gap-3">
                 {profitCards.map((card, i) => (
                   <FadeInSection key={card.label} delay={160 + i * 80}>
-                    <div className="relative rounded-2xl border border-white/[0.08] bg-white/[0.04] backdrop-blur-md p-5 md:p-6 flex items-center gap-4 hover:bg-white/[0.07] transition-colors duration-300">
-                      <div className="flex-shrink-0 rounded-xl bg-[#25D366]/10 p-3">
+                    <div className="relative rounded-2xl border border-white/10 bg-white p-5 md:p-6 flex items-center gap-4 hover:shadow-lg hover:shadow-[#25D366]/10 transition-all duration-300">
+                      <div className="flex-shrink-0 rounded-xl bg-[#25D366]/15 p-3">
                         <card.icon className="h-5 w-5 text-[#25D366]" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[11px] uppercase tracking-widest text-white/45 font-semibold mb-1">{card.label}</p>
+                        <p className="text-[11px] uppercase tracking-widest text-gray-500 font-semibold mb-1">{card.label}</p>
                         <p className="font-display text-2xl md:text-3xl font-extrabold text-[#25D366] leading-none">{card.value}</p>
-                        <p className="text-xs text-white/50 mt-0.5">{card.sub}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{card.sub}</p>
                       </div>
                     </div>
                   </FadeInSection>
