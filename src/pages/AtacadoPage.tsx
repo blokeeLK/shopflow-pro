@@ -129,7 +129,7 @@ export default function AtacadoPage() {
           <FadeInSection delay={100}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6 mb-8">
               {[
-                { label: "Compra no atacado", value: "R$29", sub: "por peça", color: "text-foreground" },
+                { label: "Compra no atacado", value: "R$19,99", sub: "por peça", color: "text-foreground" },
                 { label: "Revenda média", value: "R$59 a R$79", sub: "no varejo", color: "text-[#25D366]" },
                 { label: "Lucro possível", value: "até R$50", sub: "por peça", color: "text-[#25D366]" },
               ].map((item) => (
