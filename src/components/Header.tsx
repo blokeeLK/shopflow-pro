@@ -264,7 +264,7 @@ export function Header() {
               <span className="absolute -top-2.5 -right-3 bg-yellow-400 text-[8px] font-bold text-black px-1.5 py-0.5 rounded-sm tracking-wide uppercase leading-none z-10 shadow-sm">
                 PREÇO DE FÁBRICA
               </span>
-              <span className="flex items-center gap-1.5 bg-[#25d366] text-white text-[12px] font-bold px-4 py-2 rounded-full tracking-[0.15em] uppercase shadow-md transition-all duration-300 hover:scale-105 hover:shadow-[0_0_16px_rgba(37,211,102,0.4)] animate-[atacado-pulse_20s_ease-in-out_infinite]">
+              <span className="flex items-center gap-1.5 bg-[#25d366] text-white text-[12px] font-bold px-4 py-2 rounded-full tracking-[0.15em] uppercase shadow-md transition-[transform,box-shadow] duration-300 hover:scale-[1.02] hover:shadow-[0_0_10px_rgba(37,211,102,0.25)]">
                 📦 ATACADO
               </span>
             </Link>
