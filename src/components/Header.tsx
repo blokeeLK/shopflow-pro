@@ -260,9 +260,13 @@ export function Header() {
                 </div>
               );
             })}
-            <Link to="/atacado" className="group relative text-[13px] font-semibold text-white hover:text-white/80 transition-all duration-300 tracking-[0.2em] uppercase py-1">
-              Atacado
-              <span className="absolute -bottom-px left-0 h-[1.5px] bg-white transition-all duration-300 ease-out w-0 group-hover:w-full" />
+            <Link to="/atacado" className="relative group">
+              <span className="absolute -top-2.5 -right-3 bg-yellow-400 text-[8px] font-bold text-black px-1.5 py-0.5 rounded-sm tracking-wide uppercase leading-none z-10 shadow-sm">
+                PREÇO DE FÁBRICA
+              </span>
+              <span className="flex items-center gap-1.5 bg-[#25d366] text-white text-[12px] font-bold px-4 py-2 rounded-full tracking-[0.15em] uppercase shadow-md transition-all duration-300 hover:scale-105 hover:shadow-[0_0_16px_rgba(37,211,102,0.4)] animate-[atacado-pulse_7s_ease-in-out_infinite]">
+                📦 ATACADO
+              </span>
             </Link>
           </nav>
 
@@ -457,8 +461,13 @@ export function Header() {
                   </div>
                 );
               })}
-              <Link to="/atacado" onClick={() => setMenuOpen(false)} className="text-[11px] font-medium text-foreground/80 py-5 border-b border-border/10 tracking-[0.25em] uppercase">
-                Atacado
+              <Link to="/atacado" onClick={() => setMenuOpen(false)} className="my-3 mx-auto">
+                <span className="relative inline-flex items-center gap-2 bg-[#25d366] text-white text-[13px] font-bold px-8 py-3.5 rounded-full tracking-[0.15em] uppercase shadow-lg">
+                  <span className="absolute -top-2 -right-2 bg-yellow-400 text-[8px] font-bold text-black px-1.5 py-0.5 rounded-sm tracking-wide uppercase leading-none shadow-sm">
+                    PREÇO DE FÁBRICA
+                  </span>
+                  📦 ATACADO
+                </span>
               </Link>
               <Link to="/conta" onClick={() => setMenuOpen(false)} className="text-[11px] font-medium text-foreground/80 py-5 flex items-center gap-3 tracking-[0.2em] uppercase">
                 <User className="h-3.5 w-3.5" strokeWidth={1.25} /> Minha Conta
