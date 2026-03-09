@@ -163,3 +163,9 @@
   0% { left: -40%; }
   100% { left: 120%; }
 }
+
+@keyframes atacado-pulse {
+  0%, 85%, 100% { transform: scale(1); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+  90% { transform: scale(1.06); box-shadow: 0 0 20px rgba(37,211,102,0.35); }
+  95% { transform: scale(1); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+}
