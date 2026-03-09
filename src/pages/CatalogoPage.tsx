@@ -11,7 +11,7 @@ function useCatalogProducts() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, slug, product_images(url, position), product_variants(size, stock)")
+        .select("id, name, slug, image_fit_mode, image_position_x, image_position_y, image_zoom, product_images(url, position), product_variants(size, stock)")
         .eq("active", true);
       if (error) throw error;
       return data as unknown as DbProduct[];
@@ -22,18 +22,29 @@ function useCatalogProducts() {
 function CatalogCard({ product }: { product: DbProduct }) {
   const image = product.product_images?.sort((a, b) => (a.position || 0) - (b.position || 0))[0]?.url || "/placeholder.svg";
 
+  const fitMode = product.image_fit_mode || "contain";
+  const posX = product.image_position_x ?? 50;
+  const posY = product.image_position_y ?? 50;
+  const zoom = product.image_zoom ?? 1;
+  const isContain = fitMode === "contain";
+
+  const imageStyle: React.CSSProperties = isContain
+    ? { objectFit: "contain", objectPosition: "center" }
+    : { objectFit: "cover", objectPosition: `${posX}% ${posY}%`, transform: `scale(${zoom})` };
+
   return (
-    <div className="bg-card rounded-lg overflow-hidden shadow-sm">
-      <div className="aspect-[4/5] bg-secondary flex items-center justify-center overflow-hidden">
+    <div className="bg-card rounded-lg overflow-hidden shadow-product">
+      <div className="relative aspect-[4/5] bg-secondary overflow-hidden flex items-center justify-center">
         <img
           src={image}
           alt={product.name}
-          className="w-full h-full object-contain p-2"
+          className={`w-full h-full ${isContain ? "p-2" : ""}`}
+          style={imageStyle}
           loading="lazy"
         />
       </div>
-      <div className="p-3 text-center">
-        <h3 className="font-display font-semibold text-xs md:text-sm text-foreground line-clamp-2 mb-1 leading-tight">
+      <div className="p-2 md:p-3">
+        <h3 className="font-display font-semibold text-xs md:text-sm text-foreground line-clamp-2 mb-1.5 leading-tight">
           {product.name}
         </h3>
         <p className="text-base font-display font-bold text-foreground">
