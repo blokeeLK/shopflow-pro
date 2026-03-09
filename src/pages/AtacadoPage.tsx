@@ -102,7 +102,7 @@ export default function AtacadoPage() {
                   <Zap className="h-3 w-3" />
                   Atendimento rápido pelo WhatsApp · Tempo médio de resposta: menos de 5 min
                 </p>
-                <WhatsAppCTA className="animate-[pulse_6s_ease-in-out_infinite] w-full sm:w-auto text-center">
+                <WhatsAppCTA className="w-full sm:w-auto text-center">
                   FALAR COM ATENDENTE NO WHATSAPP
                 </WhatsAppCTA>
               </FadeInSection>
