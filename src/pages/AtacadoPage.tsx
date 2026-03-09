@@ -25,11 +25,6 @@ const proofs = [
   "Alta margem de revenda",
 ];
 
-const profitCards = [
-  { label: "Compra no atacado", value: "R$19,99", sub: "por peça", icon: ShoppingBag },
-  { label: "Revenda média", value: "R$59 a R$79", sub: "no varejo", icon: TrendingUp },
-  { label: "Lucro possível", value: "até R$50", sub: "por peça", icon: DollarSign },
-];
 
 const trustCards = [
   { icon: Package, title: "Pedido mínimo baixo", desc: "Comece no atacado com apenas 8 peças." },
@@ -118,25 +113,53 @@ export default function AtacadoPage() {
               </FadeInSection>
 
               <div className="flex flex-col gap-3">
-                {profitCards.map((card, i) => (
-                  <FadeInSection key={card.label} delay={160 + i * 80}>
-                    <div className="relative rounded-2xl border border-white/10 bg-white p-5 md:p-6 flex items-center gap-4 hover:shadow-lg hover:shadow-[#25D366]/10 transition-all duration-300">
-                      <div className="flex-shrink-0 rounded-xl bg-[#25D366]/15 p-3">
-                        <card.icon className="h-5 w-5 text-[#25D366]" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[11px] uppercase tracking-widest text-gray-500 font-semibold mb-1">{card.label}</p>
-                        <p className="font-display text-2xl md:text-3xl font-extrabold text-[#25D366] leading-none">{card.value}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">{card.sub}</p>
-                      </div>
+                {/* Card 1 — Preço de Atacado */}
+                <FadeInSection delay={160}>
+                  <div className="relative rounded-2xl border border-white/10 bg-white p-5 md:p-6 flex items-center gap-4 hover:shadow-lg hover:shadow-[#25D366]/10 transition-all duration-300">
+                    <div className="flex-shrink-0 rounded-xl bg-[#25D366]/15 p-3">
+                      <ShoppingBag className="h-5 w-5 text-[#25D366]" />
                     </div>
-                  </FadeInSection>
-                ))}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] uppercase tracking-widest text-gray-500 font-semibold mb-1">Preço de atacado</p>
+                      <p className="font-display text-3xl md:text-4xl font-extrabold text-[#25D366] leading-none">APENAS R$19,99</p>
+                      <p className="text-xs text-gray-500 mt-1">por peça</p>
+                      <p className="text-[11px] text-gray-400 mt-0.5 italic">Preço direto da fábrica</p>
+                    </div>
+                  </div>
+                </FadeInSection>
+
+                {/* Card 2 — Revenda Média */}
+                <FadeInSection delay={240}>
+                  <div className="relative rounded-2xl border border-white/10 bg-white p-5 md:p-6 flex items-center gap-4 hover:shadow-lg hover:shadow-[#25D366]/10 transition-all duration-300">
+                    <div className="flex-shrink-0 rounded-xl bg-[#25D366]/15 p-3">
+                      <TrendingUp className="h-5 w-5 text-[#25D366]" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] uppercase tracking-widest text-gray-500 font-semibold mb-1">Revenda média</p>
+                      <p className="font-display text-2xl md:text-3xl font-extrabold text-[#25D366] leading-none">R$59 a R$79</p>
+                      <p className="text-xs text-gray-400 mt-0.5">no varejo</p>
+                    </div>
+                  </div>
+                </FadeInSection>
+
+                {/* Card 3 — Lucro na Revenda */}
+                <FadeInSection delay={320}>
+                  <div className="relative rounded-2xl border-2 border-[#25D366]/30 bg-white p-5 md:p-6 flex items-center gap-4 hover:shadow-lg hover:shadow-[#25D366]/20 transition-all duration-300 shadow-sm shadow-[#25D366]/10">
+                    <div className="flex-shrink-0 rounded-xl bg-[#25D366]/20 p-3">
+                      <DollarSign className="h-6 w-6 text-[#25D366]" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] uppercase tracking-widest text-gray-500 font-semibold mb-1">💰 Lucro na revenda</p>
+                      <p className="font-display text-3xl md:text-4xl font-extrabold text-[#22c55e] leading-none">GANHE ATÉ R$50</p>
+                      <p className="text-xs text-gray-500 mt-1">de lucro por peça</p>
+                    </div>
+                  </div>
+                </FadeInSection>
               </div>
 
               <FadeInSection delay={420}>
                 <p className="text-sm md:text-base text-white font-bold mt-4 leading-relaxed">
-                  Perfeito para quem quer começar a revender ou aumentar a renda.
+                  Comece com apenas 8 peças e pague preço direto da fábrica.
                 </p>
               </FadeInSection>
 
