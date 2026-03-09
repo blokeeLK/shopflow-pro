@@ -141,9 +141,9 @@ export default function AtacadoPage() {
               </FadeInSection>
 
               <FadeInSection delay={460}>
-                <div className="flex items-center gap-2 mt-3 text-amber-400/80">
-                  <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
-                  <p className="text-[11px] font-semibold">
+                <div className="flex items-center gap-2 mt-3 text-amber-400">
+                  <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+                  <p className="text-sm font-bold">
                     Modelos mais procurados esgotam rápido no atacado.
                   </p>
                 </div>
