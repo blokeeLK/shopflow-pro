@@ -49,10 +49,11 @@ export default function AtacadoPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* ── HERO + PROFIT — ABOVE THE FOLD ── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#0a0f1e] via-[#111827] to-[#0f172a] text-white">
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#0f1629] via-[#1a1a2e] to-[#16213e] text-white">
         {/* Decorative elements */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(37,211,102,0.06),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(59,130,246,0.05),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(37,211,102,0.12),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(99,102,241,0.1),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(37,211,102,0.04),transparent_70%)]" />
 
         <div className="container relative z-10 py-10 md:py-16 lg:py-20 max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 items-start">
@@ -71,17 +72,17 @@ export default function AtacadoPage() {
                   <br />
                   <span className="bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">DA FÁBRICA</span>
                 </h1>
-                <p className="text-base md:text-lg text-white/60 font-medium mb-5">
+                <p className="text-lg md:text-2xl text-white/70 font-semibold mb-5">
                   Camisas fio 30.1 com preço especial
                 </p>
               </FadeInSection>
 
               <FadeInSection delay={140}>
-                <p className="text-sm md:text-base text-white/75 leading-relaxed mb-1.5">
-                  Compre a partir de <strong className="text-white">8 peças</strong> e pague preço de atacado real.
+                <p className="text-base md:text-lg text-white/80 leading-relaxed mb-1.5">
+                  Compre a partir de <strong className="text-[#25D366]">8 peças</strong> e pague preço de atacado real.
                 </p>
-                <p className="text-xs md:text-sm text-white/50 mb-5">
-                  Ideal para <strong className="text-white/70">Revendedores</strong> · <strong className="text-white/70">Lojistas</strong> · <strong className="text-white/70">Quem quer comprar barato</strong>
+                <p className="text-sm md:text-base text-white/60 mb-5">
+                  Ideal para <strong className="text-white">Revendedores</strong> · <strong className="text-white">Lojistas</strong> · <strong className="text-white">Quem quer comprar barato</strong>
                 </p>
               </FadeInSection>
 
@@ -101,7 +102,7 @@ export default function AtacadoPage() {
                   <Zap className="h-3 w-3" />
                   Atendimento rápido pelo WhatsApp · Tempo médio de resposta: menos de 5 min
                 </p>
-                <WhatsAppCTA className="animate-[pulse_3s_ease-in-out_infinite] w-full sm:w-auto text-center">
+                <WhatsAppCTA className="animate-[pulse_6s_ease-in-out_infinite] w-full sm:w-auto text-center">
                   FALAR COM ATENDENTE NO WHATSAPP
                 </WhatsAppCTA>
               </FadeInSection>
@@ -119,14 +120,14 @@ export default function AtacadoPage() {
               <div className="flex flex-col gap-3">
                 {profitCards.map((card, i) => (
                   <FadeInSection key={card.label} delay={160 + i * 80}>
-                    <div className="relative rounded-2xl border border-white/[0.08] bg-white/[0.04] backdrop-blur-md p-5 md:p-6 flex items-center gap-4 hover:bg-white/[0.07] transition-colors duration-300">
-                      <div className="flex-shrink-0 rounded-xl bg-[#25D366]/10 p-3">
+                    <div className="relative rounded-2xl border border-white/10 bg-white p-5 md:p-6 flex items-center gap-4 hover:shadow-lg hover:shadow-[#25D366]/10 transition-all duration-300">
+                      <div className="flex-shrink-0 rounded-xl bg-[#25D366]/15 p-3">
                         <card.icon className="h-5 w-5 text-[#25D366]" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[11px] uppercase tracking-widest text-white/45 font-semibold mb-1">{card.label}</p>
+                        <p className="text-[11px] uppercase tracking-widest text-gray-500 font-semibold mb-1">{card.label}</p>
                         <p className="font-display text-2xl md:text-3xl font-extrabold text-[#25D366] leading-none">{card.value}</p>
-                        <p className="text-xs text-white/50 mt-0.5">{card.sub}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{card.sub}</p>
                       </div>
                     </div>
                   </FadeInSection>
@@ -134,15 +135,15 @@ export default function AtacadoPage() {
               </div>
 
               <FadeInSection delay={420}>
-                <p className="text-xs text-white/40 mt-4 leading-relaxed">
+                <p className="text-sm md:text-base text-white font-bold mt-4 leading-relaxed">
                   Perfeito para quem quer começar a revender ou aumentar a renda.
                 </p>
               </FadeInSection>
 
               <FadeInSection delay={460}>
-                <div className="flex items-center gap-2 mt-3 text-amber-400/80">
-                  <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
-                  <p className="text-[11px] font-semibold">
+                <div className="flex items-center gap-2 mt-3 text-amber-400">
+                  <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+                  <p className="text-sm font-bold">
                     Modelos mais procurados esgotam rápido no atacado.
                   </p>
                 </div>
@@ -264,7 +265,7 @@ export default function AtacadoPage() {
               <Clock className="h-3 w-3" />
               Resposta em menos de 5 minutos
             </p>
-            <WhatsAppCTA className="animate-[pulse_3s_ease-in-out_infinite]">QUERO COMPRAR NO ATACADO</WhatsAppCTA>
+            <WhatsAppCTA className="animate-[pulse_6s_ease-in-out_infinite]">QUERO COMPRAR NO ATACADO</WhatsAppCTA>
           </FadeInSection>
         </div>
       </section>
