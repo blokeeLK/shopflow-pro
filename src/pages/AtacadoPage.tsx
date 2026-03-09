@@ -265,7 +265,7 @@ export default function AtacadoPage() {
               <Clock className="h-3 w-3" />
               Resposta em menos de 5 minutos
             </p>
-            <WhatsAppCTA className="animate-[pulse_6s_ease-in-out_infinite]">QUERO COMPRAR NO ATACADO</WhatsAppCTA>
+            <WhatsAppCTA>QUERO COMPRAR NO ATACADO</WhatsAppCTA>
           </FadeInSection>
         </div>
       </section>
