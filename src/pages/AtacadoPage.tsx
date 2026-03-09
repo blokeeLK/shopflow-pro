@@ -135,7 +135,7 @@ export default function AtacadoPage() {
               </div>
 
               <FadeInSection delay={420}>
-                <p className="text-xs text-white/40 mt-4 leading-relaxed">
+                <p className="text-sm md:text-base text-white font-bold mt-4 leading-relaxed">
                   Perfeito para quem quer começar a revender ou aumentar a renda.
                 </p>
               </FadeInSection>
