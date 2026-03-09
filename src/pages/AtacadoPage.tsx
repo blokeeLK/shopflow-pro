@@ -49,10 +49,11 @@ export default function AtacadoPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* ── HERO + PROFIT — ABOVE THE FOLD ── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#0a0f1e] via-[#111827] to-[#0f172a] text-white">
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#0f1629] via-[#1a1a2e] to-[#16213e] text-white">
         {/* Decorative elements */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(37,211,102,0.06),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(59,130,246,0.05),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(37,211,102,0.12),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(99,102,241,0.1),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(37,211,102,0.04),transparent_70%)]" />
 
         <div className="container relative z-10 py-10 md:py-16 lg:py-20 max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 items-start">
