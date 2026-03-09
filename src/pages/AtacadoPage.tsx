@@ -25,11 +25,6 @@ const proofs = [
   "Alta margem de revenda",
 ];
 
-const profitCards = [
-  { label: "Compra no atacado", value: "R$19,99", sub: "por peça", icon: ShoppingBag },
-  { label: "Revenda média", value: "R$59 a R$79", sub: "no varejo", icon: TrendingUp },
-  { label: "Lucro possível", value: "até R$50", sub: "por peça", icon: DollarSign },
-];
 
 const trustCards = [
   { icon: Package, title: "Pedido mínimo baixo", desc: "Comece no atacado com apenas 8 peças." },
