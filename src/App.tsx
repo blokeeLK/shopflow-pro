@@ -39,6 +39,7 @@ import AdminPromotions from "./pages/admin/AdminPromotions";
 
 import FaqPage from "./pages/FaqPage";
 import AtacadoPage from "./pages/AtacadoPage";
+import CatalogoPage from "./pages/CatalogoPage";
 
 const queryClient = new QueryClient();
 
