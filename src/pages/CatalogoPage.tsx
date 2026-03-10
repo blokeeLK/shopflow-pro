@@ -104,6 +104,19 @@ export default function CatalogoPage() {
               </section>
             );
           })}
+
+          {productsWithoutVariants.length > 0 && (
+            <section className="mb-12">
+              <h2 className="font-display text-lg md:text-xl font-bold text-foreground mb-4 border-b border-border pb-2">
+                Outros
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
+                {productsWithoutVariants.map((product) => (
+                  <CatalogCard key={product.id} product={product} />
+                ))}
+              </div>
+            </section>
+          )}
         </div>
       </div>
     </>
