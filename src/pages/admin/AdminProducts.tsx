@@ -184,58 +184,85 @@ export default function AdminProducts() {
     onError: (err: any) => { toast({ title: "Erro ao atualizar", description: err.message, variant: "destructive" }); },
   });
 
-  // Randomize sold_count for ALL products — grid-aware to avoid same value on adjacent cards
+  // Randomize sold_count — unique per size group, grid-neighbor aware
   const randomizeSoldCount = useMutation({
     mutationFn: async () => {
-      // Fetch ALL active products in the same order they appear on the site (sold_count desc)
+      // 1. Fetch all active products with their variants (to know sizes)
       const { data: allProducts, error: fetchErr } = await supabase
         .from("products")
-        .select("id")
+        .select("id, product_variants(size)")
         .eq("active", true)
         .order("sold_count", { ascending: false });
       if (fetchErr) throw fetchErr;
       if (!allProducts || allProducts.length === 0) return;
 
-      const n = allProducts.length;
-      // Common grid column counts across breakpoints: 2 (mobile), 3, 4, 5 (desktop)
-      const gridCols = [2, 3, 4, 5];
+      // 2. Group products by their primary size (first variant's size, uppercased)
+      const sizeGroups: Record<string, number[]> = {}; // size -> array of indices
+      allProducts.forEach((p: any, idx: number) => {
+        const sizes = (p.product_variants || []).map((v: any) => (v.size || "").toUpperCase());
+        const primary = sizes.find((s: string) => ["P", "M", "G", "GG"].includes(s)) || "OTHER";
+        if (!sizeGroups[primary]) sizeGroups[primary] = [];
+        sizeGroups[primary].push(idx);
+      });
 
-      // For a given index, get all indices that would be horizontal neighbors in ANY grid layout
-      const getNeighborIndices = (idx: number): number[] => {
-        const neighbors = new Set<number>();
-        for (const cols of gridCols) {
-          const col = idx % cols;
-          // left neighbor
-          if (col > 0) neighbors.add(idx - 1);
-          // right neighbor
-          if (col < cols - 1 && idx + 1 < n) neighbors.add(idx + 1);
+      // 3. For each size group, generate unique random values 0-15
+      const values: number[] = new Array(allProducts.length).fill(-1);
+      for (const size of Object.keys(sizeGroups)) {
+        const indices = sizeGroups[size];
+        const count = indices.length;
+        // Pick `count` unique numbers from 0..15
+        const pool: number[] = [];
+        for (let v = 0; v <= 15; v++) pool.push(v);
+        // Shuffle pool (Fisher-Yates)
+        for (let i = pool.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [pool[i], pool[j]] = [pool[j], pool[i]];
         }
-        return Array.from(neighbors);
-      };
-
-      // Generate values ensuring no horizontal neighbor collision in any grid layout
-      const values: number[] = new Array(n).fill(-1);
-      for (let i = 0; i < n; i++) {
-        const forbidden = new Set<number>();
-        for (const ni of getNeighborIndices(i)) {
-          if (values[ni] !== -1) forbidden.add(values[ni]);
+        const picked = pool.slice(0, count);
+        // Shuffle picked again for extra randomness
+        for (let i = picked.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [picked[i], picked[j]] = [picked[j], picked[i]];
         }
-
-        // Build pool of allowed values, apply ~25% weight toward 0 for natural look
-        let pool = [];
-        for (let v = 0; v <= 10; v++) {
-          if (!forbidden.has(v)) {
-            pool.push(v);
-            if (v === 0) { pool.push(0); pool.push(0); } // extra weight for 0
-          }
-        }
-        if (pool.length === 0) pool = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].filter(v => !forbidden.has(v));
-        if (pool.length === 0) pool = [Math.floor(Math.random() * 11)]; // fallback
-
-        values[i] = pool[Math.floor(Math.random() * pool.length)];
+        indices.forEach((productIdx, i) => {
+          values[productIdx] = picked[i];
+        });
       }
 
-      // Update all products
+      // 4. Grid-neighbor fix: ensure no two horizontally adjacent products share the same value
+      const n = allProducts.length;
+      const gridCols = [2, 3, 4, 5];
+      const getHorizontalNeighbors = (idx: number): number[] => {
+        const neighbors: number[] = [];
+        for (const cols of gridCols) {
+          const col = idx % cols;
+          if (col > 0) neighbors.push(idx - 1);
+          if (col < cols - 1 && idx + 1 < n) neighbors.push(idx + 1);
+        }
+        return neighbors;
+      };
+
+      // Resolve collisions with a few passes
+      for (let pass = 0; pass < 5; pass++) {
+        let changed = false;
+        for (let i = 0; i < n; i++) {
+          const neighborVals = getHorizontalNeighbors(i).map(ni => values[ni]);
+          if (neighborVals.includes(values[i])) {
+            // Find a replacement that doesn't collide with neighbors
+            const forbidden = new Set(neighborVals);
+            for (let v = 0; v <= 15; v++) {
+              if (!forbidden.has(v) && v !== values[i]) {
+                values[i] = v;
+                changed = true;
+                break;
+              }
+            }
+          }
+        }
+        if (!changed) break;
+      }
+
+      // 5. Update all products in DB
       for (let i = 0; i < n; i++) {
         const { error } = await supabase
           .from("products")
@@ -247,7 +274,7 @@ export default function AdminProducts() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      toast({ title: "Vendidos randomizados", description: "Todos os produtos foram atualizados com sucesso." });
+      toast({ title: "Vendidos randomizados", description: "Distribuição única por tamanho aplicada com sucesso." });
     },
     onError: (err: any) => {
       toast({ title: "Erro ao randomizar", description: err.message, variant: "destructive" });
