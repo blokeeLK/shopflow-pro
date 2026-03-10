@@ -60,15 +60,16 @@ export default function CatalogoPage() {
 
   const productsBySize = SIZES.reduce((acc, size) => {
     acc[size] = (products || []).filter((p) =>
-      p.product_variants?.some((v) => v.size === size)
+      p.product_variants?.some((v) => v.size.toUpperCase() === size)
     );
     return acc;
   }, {} as Record<string, DbProduct[]>);
 
-  // Products without any variant go into a separate "Outros" section
-  const productsWithoutVariants = (products || []).filter(
-    (p) => !p.product_variants || p.product_variants.length === 0
+  // Products without any variant matching known sizes
+  const assignedIds = new Set(
+    SIZES.flatMap((size) => (productsBySize[size] || []).map((p) => p.id))
   );
+  const unassignedProducts = (products || []).filter((p) => !assignedIds.has(p.id));
 
   return (
     <>
