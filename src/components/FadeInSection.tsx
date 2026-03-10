@@ -14,6 +14,13 @@ export function FadeInSection({ children, className = "", delay = 0 }: FadeInSec
     const el = ref.current;
     if (!el) return;
 
+    // Check if element is already in viewport on mount (above the fold)
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight + 40) {
+      setVisible(true);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
