@@ -233,7 +233,7 @@ export default function AdminProducts() {
     },
   });
 
-
+  const handleBulkUpdate = () => {
     const ids = Array.from(selected);
     if (ids.length === 0) return;
     const data: any = {};
