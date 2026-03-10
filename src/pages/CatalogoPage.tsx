@@ -60,10 +60,15 @@ export default function CatalogoPage() {
 
   const productsBySize = SIZES.reduce((acc, size) => {
     acc[size] = (products || []).filter((p) =>
-      p.product_variants?.some((v) => v.size === size && v.stock > 0)
+      p.product_variants?.some((v) => v.size === size)
     );
     return acc;
   }, {} as Record<string, DbProduct[]>);
+
+  // Products without any variant go into a separate "Outros" section
+  const productsWithoutVariants = (products || []).filter(
+    (p) => !p.product_variants || p.product_variants.length === 0
+  );
 
   return (
     <>
