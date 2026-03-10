@@ -184,7 +184,56 @@ export default function AdminProducts() {
     onError: (err: any) => { toast({ title: "Erro ao atualizar", description: err.message, variant: "destructive" }); },
   });
 
-  const handleBulkUpdate = () => {
+  // Randomize sold_count for ALL products
+  const randomizeSoldCount = useMutation({
+    mutationFn: async () => {
+      // Fetch ALL product IDs (not just filtered)
+      const { data: allProducts, error: fetchErr } = await supabase
+        .from("products")
+        .select("id")
+        .order("sold_count", { ascending: false });
+      if (fetchErr) throw fetchErr;
+      if (!allProducts || allProducts.length === 0) return;
+
+      // Generate random values 0-10 ensuring no two adjacent products share the same value
+      const values: number[] = [];
+      for (let i = 0; i < allProducts.length; i++) {
+        let v: number;
+        do {
+          v = Math.floor(Math.random() * 11); // 0..10
+        } while (i > 0 && v === values[i - 1]);
+        // ~30% chance of 0 to make it look natural
+        if (Math.random() < 0.3) {
+          const zero = 0;
+          if (i === 0 || values[i - 1] !== zero) v = zero;
+        }
+        // Re-check adjacency after potential zero override
+        if (i > 0 && v === values[i - 1]) {
+          do { v = Math.floor(Math.random() * 11); } while (v === values[i - 1]);
+        }
+        values.push(v);
+      }
+
+      // Update all products
+      for (let i = 0; i < allProducts.length; i++) {
+        const { error } = await supabase
+          .from("products")
+          .update({ sold_count: values[i] })
+          .eq("id", allProducts[i].id);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast({ title: "Vendidos randomizados", description: "Todos os produtos foram atualizados com sucesso." });
+    },
+    onError: (err: any) => {
+      toast({ title: "Erro ao randomizar", description: err.message, variant: "destructive" });
+    },
+  });
+
+
     const ids = Array.from(selected);
     if (ids.length === 0) return;
     const data: any = {};
