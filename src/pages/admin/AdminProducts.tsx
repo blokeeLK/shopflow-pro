@@ -184,38 +184,59 @@ export default function AdminProducts() {
     onError: (err: any) => { toast({ title: "Erro ao atualizar", description: err.message, variant: "destructive" }); },
   });
 
-  // Randomize sold_count for ALL products
+  // Randomize sold_count for ALL products — grid-aware to avoid same value on adjacent cards
   const randomizeSoldCount = useMutation({
     mutationFn: async () => {
-      // Fetch ALL product IDs (not just filtered)
+      // Fetch ALL active products in the same order they appear on the site (sold_count desc)
       const { data: allProducts, error: fetchErr } = await supabase
         .from("products")
         .select("id")
+        .eq("active", true)
         .order("sold_count", { ascending: false });
       if (fetchErr) throw fetchErr;
       if (!allProducts || allProducts.length === 0) return;
 
-      // Generate random values 0-10 ensuring no two adjacent products share the same value
-      const values: number[] = [];
-      for (let i = 0; i < allProducts.length; i++) {
-        let v: number;
-        do {
-          v = Math.floor(Math.random() * 11); // 0..10
-        } while (i > 0 && v === values[i - 1]);
-        // ~30% chance of 0 to make it look natural
-        if (Math.random() < 0.3) {
-          const zero = 0;
-          if (i === 0 || values[i - 1] !== zero) v = zero;
+      const n = allProducts.length;
+      // Common grid column counts across breakpoints: 2 (mobile), 3, 4, 5 (desktop)
+      const gridCols = [2, 3, 4, 5];
+
+      // For a given index, get all indices that would be horizontal neighbors in ANY grid layout
+      const getNeighborIndices = (idx: number): number[] => {
+        const neighbors = new Set<number>();
+        for (const cols of gridCols) {
+          const col = idx % cols;
+          // left neighbor
+          if (col > 0) neighbors.add(idx - 1);
+          // right neighbor
+          if (col < cols - 1 && idx + 1 < n) neighbors.add(idx + 1);
         }
-        // Re-check adjacency after potential zero override
-        if (i > 0 && v === values[i - 1]) {
-          do { v = Math.floor(Math.random() * 11); } while (v === values[i - 1]);
+        return Array.from(neighbors);
+      };
+
+      // Generate values ensuring no horizontal neighbor collision in any grid layout
+      const values: number[] = new Array(n).fill(-1);
+      for (let i = 0; i < n; i++) {
+        const forbidden = new Set<number>();
+        for (const ni of getNeighborIndices(i)) {
+          if (values[ni] !== -1) forbidden.add(values[ni]);
         }
-        values.push(v);
+
+        // Build pool of allowed values, apply ~25% weight toward 0 for natural look
+        let pool = [];
+        for (let v = 0; v <= 10; v++) {
+          if (!forbidden.has(v)) {
+            pool.push(v);
+            if (v === 0) { pool.push(0); pool.push(0); } // extra weight for 0
+          }
+        }
+        if (pool.length === 0) pool = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].filter(v => !forbidden.has(v));
+        if (pool.length === 0) pool = [Math.floor(Math.random() * 11)]; // fallback
+
+        values[i] = pool[Math.floor(Math.random() * pool.length)];
       }
 
       // Update all products
-      for (let i = 0; i < allProducts.length; i++) {
+      for (let i = 0; i < n; i++) {
         const { error } = await supabase
           .from("products")
           .update({ sold_count: values[i] })
