@@ -203,6 +203,13 @@ export function Header() {
             {menuOpen ? <X className="h-5 w-5" strokeWidth={1.5} /> : <Menu className="h-5 w-5" strokeWidth={1.5} />}
           </button>
 
+          {/* Mobile-only ATACADO button */}
+          <Link to="/atacado" className="md:hidden relative group flex-shrink-0">
+            <span className="flex items-center gap-1 bg-[#25d366] text-white text-[9px] font-bold px-2.5 py-1.5 rounded-full tracking-[0.12em] uppercase shadow-md transition-[transform,box-shadow] duration-300 hover:scale-[1.02] hover:shadow-[0_0_10px_rgba(37,211,102,0.25)]">
+              📦 ATACADO
+            </span>
+          </Link>
+
           <Link to="/" className="flex items-center">
             <img src={logoUrl} alt="ShopFlow" className="h-10 md:h-12 w-auto object-contain" />
           </Link>
