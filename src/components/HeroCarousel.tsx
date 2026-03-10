@@ -47,17 +47,11 @@ export function HeroCarousel() {
     return () => { emblaApi.off("select", onSelect); };
   }, [emblaApi, onSelect]);
 
-  // Fallback
+  // Show empty placeholder (same aspect ratio) while loading — never show old/cached banner
   if (slides.length === 0) {
     return (
       <section className="w-full">
-        <div className="w-full" style={{ aspectRatio: '1920/550' }}>
-          <img
-            src="/images/banner-nova-colecao.png"
-            alt="Nova Coleção - Estilo que fala por você"
-            className="block w-full h-full object-cover"
-          />
-        </div>
+        <div className="w-full bg-muted" style={{ aspectRatio: '1920/550' }} />
       </section>
     );
   }
