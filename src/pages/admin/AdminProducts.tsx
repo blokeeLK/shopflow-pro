@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/hooks/useSupabaseData";
 import { useAuth } from "@/contexts/AuthContext";
-import { Plus, Pencil, Trash2, Search, Eye, EyeOff, Star, Copy, CheckSquare, Square, XSquare, Save, DollarSign, Flame, FlameKindling } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Eye, EyeOff, Star, Copy, CheckSquare, Square, XSquare, Save, DollarSign, Flame, FlameKindling, Shuffle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -184,7 +184,56 @@ export default function AdminProducts() {
     onError: (err: any) => { toast({ title: "Erro ao atualizar", description: err.message, variant: "destructive" }); },
   });
 
-  const handleBulkUpdate = () => {
+  // Randomize sold_count for ALL products
+  const randomizeSoldCount = useMutation({
+    mutationFn: async () => {
+      // Fetch ALL product IDs (not just filtered)
+      const { data: allProducts, error: fetchErr } = await supabase
+        .from("products")
+        .select("id")
+        .order("sold_count", { ascending: false });
+      if (fetchErr) throw fetchErr;
+      if (!allProducts || allProducts.length === 0) return;
+
+      // Generate random values 0-10 ensuring no two adjacent products share the same value
+      const values: number[] = [];
+      for (let i = 0; i < allProducts.length; i++) {
+        let v: number;
+        do {
+          v = Math.floor(Math.random() * 11); // 0..10
+        } while (i > 0 && v === values[i - 1]);
+        // ~30% chance of 0 to make it look natural
+        if (Math.random() < 0.3) {
+          const zero = 0;
+          if (i === 0 || values[i - 1] !== zero) v = zero;
+        }
+        // Re-check adjacency after potential zero override
+        if (i > 0 && v === values[i - 1]) {
+          do { v = Math.floor(Math.random() * 11); } while (v === values[i - 1]);
+        }
+        values.push(v);
+      }
+
+      // Update all products
+      for (let i = 0; i < allProducts.length; i++) {
+        const { error } = await supabase
+          .from("products")
+          .update({ sold_count: values[i] })
+          .eq("id", allProducts[i].id);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast({ title: "Vendidos randomizados", description: "Todos os produtos foram atualizados com sucesso." });
+    },
+    onError: (err: any) => {
+      toast({ title: "Erro ao randomizar", description: err.message, variant: "destructive" });
+    },
+  });
+
+
     const ids = Array.from(selected);
     if (ids.length === 0) return;
     const data: any = {};
@@ -404,9 +453,22 @@ export default function AdminProducts() {
     <div className="p-6 md:p-8 max-w-7xl">
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-display text-2xl font-bold text-foreground">Produtos</h1>
-        <button onClick={() => navigate("/admin/produtos/novo")} className="bg-accent text-accent-foreground font-semibold text-sm px-4 py-2 rounded-lg hover:bg-accent/90 flex items-center gap-2">
-          <Plus className="h-4 w-4" /> Novo Produto
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              if (confirm("Isso vai randomizar a quantidade de 'vendidos' de TODOS os produtos. Continuar?")) {
+                randomizeSoldCount.mutate();
+              }
+            }}
+            disabled={randomizeSoldCount.isPending}
+            className="bg-secondary text-foreground font-semibold text-sm px-4 py-2 rounded-lg hover:bg-secondary/80 flex items-center gap-2 disabled:opacity-50"
+          >
+            <Shuffle className="h-4 w-4" /> {randomizeSoldCount.isPending ? "Randomizando..." : "Randomizar Vendidos"}
+          </button>
+          <button onClick={() => navigate("/admin/produtos/novo")} className="bg-accent text-accent-foreground font-semibold text-sm px-4 py-2 rounded-lg hover:bg-accent/90 flex items-center gap-2">
+            <Plus className="h-4 w-4" /> Novo Produto
+          </button>
+        </div>
       </div>
 
       <div className="relative mb-4">
