@@ -60,15 +60,16 @@ export default function CatalogoPage() {
 
   const productsBySize = SIZES.reduce((acc, size) => {
     acc[size] = (products || []).filter((p) =>
-      p.product_variants?.some((v) => v.size === size)
+      p.product_variants?.some((v) => v.size.toUpperCase() === size)
     );
     return acc;
   }, {} as Record<string, DbProduct[]>);
 
-  // Products without any variant go into a separate "Outros" section
-  const productsWithoutVariants = (products || []).filter(
-    (p) => !p.product_variants || p.product_variants.length === 0
+  // Products without any variant matching known sizes
+  const assignedIds = new Set(
+    SIZES.flatMap((size) => (productsBySize[size] || []).map((p) => p.id))
   );
+  const unassignedProducts = (products || []).filter((p) => !assignedIds.has(p.id));
 
   return (
     <>
@@ -105,13 +106,13 @@ export default function CatalogoPage() {
             );
           })}
 
-          {productsWithoutVariants.length > 0 && (
+          {unassignedProducts.length > 0 && (
             <section className="mb-12">
               <h2 className="font-display text-lg md:text-xl font-bold text-foreground mb-4 border-b border-border pb-2">
                 Outros
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
-                {productsWithoutVariants.map((product) => (
+                {unassignedProducts.map((product) => (
                   <CatalogCard key={product.id} product={product} />
                 ))}
               </div>
