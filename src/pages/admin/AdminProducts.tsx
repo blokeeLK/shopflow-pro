@@ -453,9 +453,22 @@ export default function AdminProducts() {
     <div className="p-6 md:p-8 max-w-7xl">
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-display text-2xl font-bold text-foreground">Produtos</h1>
-        <button onClick={() => navigate("/admin/produtos/novo")} className="bg-accent text-accent-foreground font-semibold text-sm px-4 py-2 rounded-lg hover:bg-accent/90 flex items-center gap-2">
-          <Plus className="h-4 w-4" /> Novo Produto
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              if (confirm("Isso vai randomizar a quantidade de 'vendidos' de TODOS os produtos. Continuar?")) {
+                randomizeSoldCount.mutate();
+              }
+            }}
+            disabled={randomizeSoldCount.isPending}
+            className="bg-secondary text-foreground font-semibold text-sm px-4 py-2 rounded-lg hover:bg-secondary/80 flex items-center gap-2 disabled:opacity-50"
+          >
+            <Shuffle className="h-4 w-4" /> {randomizeSoldCount.isPending ? "Randomizando..." : "Randomizar Vendidos"}
+          </button>
+          <button onClick={() => navigate("/admin/produtos/novo")} className="bg-accent text-accent-foreground font-semibold text-sm px-4 py-2 rounded-lg hover:bg-accent/90 flex items-center gap-2">
+            <Plus className="h-4 w-4" /> Novo Produto
+          </button>
+        </div>
       </div>
 
       <div className="relative mb-4">
