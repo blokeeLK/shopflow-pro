@@ -392,6 +392,7 @@ export default function OportunidadePage() {
             href={WA_URL}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackClickWhatsApp({ phone: "553791000090", page: "/oportunidade", context: "oportunidade", is_wholesale: true })}
             className="flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#1ebe5d] text-white font-extrabold text-sm py-4 rounded-xl shadow-lg transition-all"
           >
             <MessageCircle className="h-5 w-5" />
