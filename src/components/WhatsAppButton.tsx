@@ -11,6 +11,10 @@ export function WhatsAppButton() {
       phone,
       page: window.location.pathname,
       context: "floating",
+      position: "floating",
+      intent_level: "curious",
+      button_text: "WhatsApp",
+      message_type: "general",
     });
   };
 

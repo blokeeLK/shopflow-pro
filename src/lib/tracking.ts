@@ -63,6 +63,8 @@ export type {
   TrackingSearch,
   TrackingSizeSelect,
   TrackingLead,
+  WhatsAppIntentLevel,
+  WhatsAppButtonPosition,
   DebugLogEntry,
   UTMData,
   SessionData,
