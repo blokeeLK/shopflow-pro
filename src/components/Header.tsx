@@ -128,17 +128,17 @@ export function Header() {
           .limit(6);
 
         if (data) {
-          setSearchResults(
-            data.map((p: any) => ({
-              id: p.id,
-              name: p.name,
-              slug: p.slug,
-              price: p.price,
-              promo_price: p.promo_price,
-              is_promo: p.is_promo,
-              image: p.product_images?.sort((a: any, b: any) => (a.position || 0) - (b.position || 0))[0]?.url,
-            }))
-          );
+          const results = data.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            slug: p.slug,
+            price: p.price,
+            promo_price: p.promo_price,
+            is_promo: p.is_promo,
+            image: p.product_images?.sort((a: any, b: any) => (a.position || 0) - (b.position || 0))[0]?.url,
+          }));
+          setSearchResults(results);
+          trackSearch({ query: searchQuery.trim(), results_count: results.length });
         }
       } else if (searchTab === "orders" && user) {
         const query = searchQuery.trim();
