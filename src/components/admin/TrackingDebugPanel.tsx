@@ -8,6 +8,7 @@ import {
   getOrCreateSession,
   enableDebug,
   trackEvent,
+  initPixel,
 } from "@/lib/tracking";
 import type { DebugLogEntry } from "@/lib/tracking";
 import { X, Bug, Trash2, RefreshCw, ChevronDown, ChevronRight, Zap, Filter, MessageCircle } from "lucide-react";
