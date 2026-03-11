@@ -1,5 +1,5 @@
 /**
- * ShopFlow Tracking — Type definitions
+ * ShopFlow Tracking — Type definitions (v2 Professional)
  */
 
 // ── Base event structure ──
@@ -16,6 +16,9 @@ export interface TrackingEventBase {
   first_touch_utm: Partial<UTMData>;
   last_touch_utm: Partial<UTMData>;
   fbclid?: string;
+  gclid?: string;
+  intent_score: number;
+  intent_level: string;
 }
 
 export interface TrackingEventPayload extends TrackingEventBase {
@@ -48,6 +51,9 @@ export interface DebugLogEntry {
   first_touch_utm: Partial<UTMData>;
   last_touch_utm: Partial<UTMData>;
   fbclid?: string;
+  gclid?: string;
+  intent_score: number;
+  intent_level: string;
   blocked_reason?: string;
 }
 
@@ -138,7 +144,6 @@ export interface TrackingWhatsAppClick {
   button_text?: string;
   is_wholesale?: boolean;
   intent_level: WhatsAppIntentLevel;
-  /** Wholesale-specific context */
   wholesale_entry_page?: string;
   wholesale_cta_type?: "catalog" | "video_call" | "contact_seller" | "price_table" | "general";
   catalog_viewed?: boolean;
@@ -190,6 +195,13 @@ export interface TrackingLead {
   value?: number;
 }
 
+// ── Filter products payload ──
+export interface TrackingFilterProducts {
+  filters: Record<string, string>;
+  category?: string;
+  results_count?: number;
+}
+
 // ── Session data ──
 export interface SessionData {
   session_id: string;
@@ -220,11 +232,8 @@ export interface QueuedEvent {
 // ── Tracking options ──
 export interface TrackEventOptions {
   dedupId?: string;
-  /** Block duplicate within this many ms (default 3000) */
   dedupWindowMs?: number;
-  /** Only fire once per session */
   oncePerSession?: boolean;
-  /** Only fire once ever (permanent, e.g. Purchase per orderId) */
   oncePermanent?: boolean;
   permanentKey?: string;
 }
