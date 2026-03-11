@@ -1,5 +1,5 @@
 /**
- * ShopFlow Tracking — Storage & persistence utilities
+ * ShopFlow Tracking — Storage & persistence utilities (v2 Professional)
  */
 import type { UTMData, SessionData, AttributionData, QueuedEvent, DebugLogEntry } from "./types";
 
@@ -162,14 +162,12 @@ export function generateEventId(): string {
 // DEDUPLICATION
 // ══════════════════════════════════════════════════════════════
 
-// In-memory dedup cache for rapid-fire protection
 const recentEvents = new Map<string, number>();
 
 export function isDuplicateRecent(key: string, windowMs = 3000): boolean {
   const last = recentEvents.get(key);
   if (last && Date.now() - last < windowMs) return true;
   recentEvents.set(key, Date.now());
-  // Cleanup old entries periodically
   if (recentEvents.size > 200) {
     const now = Date.now();
     for (const [k, v] of recentEvents) {

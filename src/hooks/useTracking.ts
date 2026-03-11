@@ -1,21 +1,17 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import {
-  initPixel,
-  captureUTMs,
-  trackPageView,
-  trackViewHome,
-  trackViewCategory,
-  trackOpenWholesalePage,
-  trackVisitorType,
-  setupScrollTracking,
-  setupTimeOnPage,
+  initPixel, captureUTMs, trackPageView, trackViewHome, trackViewCategory,
+  trackOpenWholesalePage, trackVisitorType, setupScrollTracking, setupTimeOnPage,
+  setupProductPageEngagement, setupCheckoutEngagement,
+  trackUserBecameWarm, trackUserBecameHot,
+  getScoreState,
 } from "@/lib/tracking";
 
 /**
  * Global tracking hook — place in StoreLayout or App root.
- * Handles pixel init, PageView on real route change, scroll & time tracking.
- * Deduplication is handled by the tracking core.
+ * Handles pixel init, PageView on real route change, scroll & time tracking,
+ * and intent level transitions (warm/hot).
  */
 export function useTracking() {
   const location = useLocation();
@@ -49,13 +45,32 @@ export function useTracking() {
       trackOpenWholesalePage({ page: "/atacado" });
     }
 
+    // Check intent transitions after score updates
+    const scoreState = getScoreState();
+    if (scoreState.level === "warm_user" && scoreState.became_warm) {
+      trackUserBecameWarm();
+    }
+    if (scoreState.level === "hot_user" && scoreState.became_hot) {
+      trackUserBecameHot();
+    }
+
     // Scroll & time tracking per page
     const cleanScroll = setupScrollTracking();
     const cleanTime = setupTimeOnPage();
 
-    return () => {
-      cleanScroll();
-      cleanTime();
-    };
+    // Page-specific engagement timers
+    const cleanups: (() => void)[] = [cleanScroll, cleanTime];
+
+    if (currentPath.startsWith("/produto/")) {
+      // Extract product slug for engagement tracking
+      const slug = currentPath.replace("/produto/", "");
+      cleanups.push(setupProductPageEngagement(slug));
+    }
+
+    if (currentPath === "/checkout") {
+      cleanups.push(setupCheckoutEngagement());
+    }
+
+    return () => cleanups.forEach((fn) => fn());
   }, [location.pathname]);
 }

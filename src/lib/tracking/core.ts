@@ -1,6 +1,10 @@
 /**
- * ShopFlow Tracking — Core engine
- * Handles pixel dispatch, deduplication, debug logging, queue flushing
+ * ShopFlow Tracking — Core engine (v2 Professional)
+ * Handles pixel dispatch, deduplication, debug logging, queue flushing.
+ * 
+ * CAPI Integration Points:
+ * - sendBrowserEvent() → current pixel dispatch (UTMify)
+ * - sendServerEvent() → future edge function with same event_id for dedup
  */
 import type {
   TrackEventOptions,
@@ -22,6 +26,7 @@ import {
   dequeueAll,
   appendDebugLog,
 } from "./storage";
+import { getIntentScore, getIntentLevel } from "./score";
 
 // ── Constants ──
 const PIXEL_ID = "69add314ca90986027a3c6c5";
@@ -31,10 +36,10 @@ const MAX_RETRIES = 3;
 let debugEnabled = false;
 export function enableDebug(on: boolean) { debugEnabled = on; }
 
-// ── Build common envelope ──
+// ── Build common envelope with score & UTMs ──
 function buildEnvelope(eventName: string, data: Record<string, any>) {
   const sessionId = getSessionId();
-  const eventId = generateEventId();
+  const eventId = data.event_id || generateEventId();
   const firstTouch = getFirstTouch();
   const lastTouch = getLastTouch();
   const utms = getStoredUTMs();
@@ -52,8 +57,10 @@ function buildEnvelope(eventName: string, data: Record<string, any>) {
     first_touch_utm: firstTouch,
     last_touch_utm: lastTouch,
     fbclid: utms.fbclid || "",
+    gclid: utms.gclid || "",
+    intent_score: getIntentScore(),
+    intent_level: getIntentLevel(),
     ...data,
-    // Merge UTMs into payload for pixel
     ...utms,
   };
 }
@@ -67,6 +74,7 @@ function logDebug(
   blockedReason?: string,
 ) {
   const sessionId = getSessionId();
+  const utms = getStoredUTMs();
   const entry: DebugLogEntry = {
     event,
     event_id: eventId,
@@ -79,7 +87,10 @@ function logDebug(
     referrer: document.referrer,
     first_touch_utm: getFirstTouch(),
     last_touch_utm: getLastTouch(),
-    fbclid: getStoredUTMs().fbclid,
+    fbclid: utms.fbclid,
+    gclid: utms.gclid,
+    intent_score: getIntentScore(),
+    intent_level: getIntentLevel(),
     blocked_reason: blockedReason,
   };
   appendDebugLog(entry);
@@ -89,14 +100,14 @@ function logDebug(
   }
 }
 
-// ── Send event via UTMify pixel ──
-function sendPixelEvent(event: string, payload: Record<string, any>): boolean {
+// ── Send event via UTMify pixel (sendBrowserEvent) ──
+function sendBrowserEvent(event: string, payload: Record<string, any>): boolean {
   try {
     if (typeof (window as any).utmify_event === "function") {
       (window as any).utmify_event(event, payload);
       return true;
     }
-    // Fallback: push to dataLayer
+    // Fallback: push to internal event store
     (window as any).__sfEvents = (window as any).__sfEvents || [];
     (window as any).__sfEvents.push({ event, ...payload, timestamp: Date.now() });
     return true;
@@ -105,18 +116,20 @@ function sendPixelEvent(event: string, payload: Record<string, any>): boolean {
   }
 }
 
+/**
+ * Future CAPI integration point.
+ * Will call an edge function with the same event_id for server-side dedup.
+ */
+// export async function sendServerEvent(event: string, payload: Record<string, any>): Promise<boolean> {
+//   // TODO: POST to edge function /functions/v1/track-event
+//   // payload should include event_id for dedup with browser event
+//   return false;
+// }
+
 // ══════════════════════════════════════════════════════════════
 // PUBLIC: trackEvent — the single entry point
 // ══════════════════════════════════════════════════════════════
 
-/**
- * Central tracking dispatch with deduplication, envelope building, debug logging.
- * All specific track* functions call this.
- *
- * Future CAPI integration point:
- * - sendBrowserEvent() → current pixel dispatch
- * - sendServerEvent() → future edge function call with same event_id for dedup
- */
 export function trackEvent(
   eventName: string,
   data: Record<string, any> = {},
@@ -124,54 +137,59 @@ export function trackEvent(
 ) {
   if (typeof window === "undefined") return;
 
-  const {
-    dedupId,
-    dedupWindowMs = 3000,
-    oncePerSession = false,
-    oncePermanent = false,
-    permanentKey,
-  } = opts;
+  try {
+    const {
+      dedupId,
+      dedupWindowMs = 3000,
+      oncePerSession = false,
+      oncePermanent = false,
+      permanentKey,
+    } = opts;
 
-  const dedupKey = dedupId ? `${eventName}:${dedupId}` : eventName;
-  const eventId = generateEventId();
+    const dedupKey = dedupId ? `${eventName}:${dedupId}` : eventName;
+    const eventId = generateEventId();
 
-  // 1) Rapid-fire dedup (in-memory)
-  if (isDuplicateRecent(dedupKey, dedupWindowMs)) {
-    logDebug(eventName, eventId, data, "blocked", "rapid_fire_duplicate");
-    return;
-  }
-
-  // 2) Session dedup
-  if (oncePerSession && hasSessionEventFired(eventName, dedupId)) {
-    logDebug(eventName, eventId, data, "blocked", "once_per_session");
-    return;
-  }
-
-  // 3) Permanent dedup
-  if (oncePermanent) {
-    const pKey = permanentKey || `sf_perm_${eventName}_${dedupId || "g"}`;
-    if (hasPermanentEventFired(pKey)) {
-      logDebug(eventName, eventId, data, "blocked", "permanent_duplicate");
+    // 1) Rapid-fire dedup
+    if (isDuplicateRecent(dedupKey, dedupWindowMs)) {
+      logDebug(eventName, eventId, data, "blocked", "rapid_fire_duplicate");
       return;
     }
-    markPermanentEventFired(pKey);
+
+    // 2) Session dedup
+    if (oncePerSession && hasSessionEventFired(eventName, dedupId)) {
+      logDebug(eventName, eventId, data, "blocked", "once_per_session");
+      return;
+    }
+
+    // 3) Permanent dedup
+    if (oncePermanent) {
+      const pKey = permanentKey || `sf_perm_${eventName}_${dedupId || "g"}`;
+      if (hasPermanentEventFired(pKey)) {
+        logDebug(eventName, eventId, data, "blocked", "permanent_duplicate");
+        return;
+      }
+      markPermanentEventFired(pKey);
+    }
+
+    // Build envelope
+    const envelope = buildEnvelope(eventName, { ...data, event_id: eventId });
+
+    // Send via browser pixel
+    const success = sendBrowserEvent(eventName, envelope);
+
+    if (success) {
+      logDebug(eventName, eventId, data, "sent");
+    } else {
+      logDebug(eventName, eventId, data, "queued");
+      enqueueEvent({ event: eventName, data: envelope, event_id: eventId, timestamp: Date.now(), retries: 0 });
+    }
+
+    // Mark session fired
+    if (oncePerSession) markSessionEventFired(eventName, dedupId);
+  } catch (err) {
+    // Tracking should NEVER break the site
+    if (debugEnabled) console.error("[SF] trackEvent error:", err);
   }
-
-  // Build full envelope
-  const envelope = buildEnvelope(eventName, { ...data, event_id: eventId });
-
-  // Send via browser pixel (sendBrowserEvent)
-  const success = sendPixelEvent(eventName, envelope);
-
-  if (success) {
-    logDebug(eventName, eventId, data, "sent");
-  } else {
-    logDebug(eventName, eventId, data, "queued");
-    enqueueEvent({ event: eventName, data: envelope, event_id: eventId, timestamp: Date.now(), retries: 0 });
-  }
-
-  // Mark session fired
-  if (oncePerSession) markSessionEventFired(eventName, dedupId);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -182,7 +200,7 @@ export function flushEventQueue() {
   const queue = dequeueAll();
   queue.forEach((evt) => {
     if ((evt.retries || 0) < MAX_RETRIES) {
-      const success = sendPixelEvent(evt.event, evt.data || {});
+      const success = sendBrowserEvent(evt.event, evt.data || {});
       if (!success) {
         enqueueEvent({ ...evt, retries: (evt.retries || 0) + 1 });
       }

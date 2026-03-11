@@ -1,9 +1,12 @@
 /**
- * ShopFlow Tracking — All specific event functions
- * Each function wraps trackEvent with proper payload and dedup options.
+ * ShopFlow Tracking — All event functions (v2 Professional)
+ * Each function wraps trackEvent with proper payload, dedup, and score.
  */
 import { trackEvent } from "./core";
 import { incrementVisitCount, incrementPagesViewed } from "./storage";
+import { addScore, recordPageView, recordProductView, getIntentScore, getIntentLevel, markPaidTraffic, getScoreState, POINTS } from "./score";
+import { parseUTMCampaign } from "./utm-parser";
+import { getStoredUTMs } from "./storage";
 import type {
   TrackingProduct,
   TrackingCartItem,
@@ -16,19 +19,44 @@ import type {
   TrackingSearch,
   TrackingSizeSelect,
   TrackingLead,
+  TrackingFilterProducts,
 } from "./types";
+
+// ── Helper: get parsed campaign data for enriching events ──
+function getCampaignData() {
+  return parseUTMCampaign(getStoredUTMs());
+}
+
+function getScorePayload() {
+  return {
+    intent_score: getIntentScore(),
+    intent_level: getIntentLevel(),
+  };
+}
+
+// ── Helper: check if user came from paid traffic ──
+function checkPaidTraffic() {
+  const utms = getStoredUTMs();
+  if (utms.utm_source || utms.fbclid || utms.gclid) {
+    markPaidTraffic();
+  }
+}
 
 // ══════════════════════════════════════════════════════════════
 // PAGE VIEWS
 // ══════════════════════════════════════════════════════════════
 
-/** Track page view — call only on actual route change */
 export function trackPageView(path: string) {
   incrementPagesViewed();
+  recordPageView();
+  addScore(POINTS.SITE_ENTRY, "page_view", `pv_${path}`);
+  checkPaidTraffic();
+  
   trackEvent("PageView", {
     url: window.location.href,
     path,
     title: document.title,
+    ...getScorePayload(),
   }, {
     dedupId: path,
     dedupWindowMs: 2000,
@@ -36,13 +64,16 @@ export function trackPageView(path: string) {
 }
 
 export function trackViewHome() {
-  trackEvent("ViewHome", {}, { oncePerSession: true });
+  trackEvent("ViewHome", { ...getScorePayload() }, { oncePerSession: true });
 }
 
 export function trackViewCategory(category: { name: string; slug: string }) {
+  addScore(POINTS.VIEW_CATEGORY, "view_category", `vcat_${category.slug}`);
   trackEvent("ViewCategory", {
     category_name: category.name,
     category_slug: category.slug,
+    ...getScorePayload(),
+    ...getCampaignData(),
   }, {
     dedupId: `cat_${category.slug}`,
     dedupWindowMs: 5000,
@@ -54,6 +85,34 @@ export function trackViewCategory(category: { name: string; slug: string }) {
 // ══════════════════════════════════════════════════════════════
 
 export function trackViewContent(product: TrackingProduct) {
+  const { isReturn, totalProductsViewed } = recordProductView(product.id);
+  addScore(POINTS.VIEW_PRODUCT_PAGE, "view_product", `vprod_${product.id}`);
+
+  // Check for return to product
+  if (isReturn) {
+    addScore(POINTS.RETURN_TO_PRODUCT, "return_to_product", `ret_${product.id}`);
+    trackEvent("ReturnToProduct", {
+      product_id: product.id,
+      product_name: product.name,
+      ...getScorePayload(),
+    }, {
+      dedupId: `ret_${product.id}`,
+      dedupWindowMs: 30000,
+    });
+  }
+
+  // Multiple product views
+  if (totalProductsViewed >= 3) {
+    addScore(POINTS.MULTIPLE_PRODUCT_VIEWS, "multiple_products", "multi_prod");
+    trackEvent("MultipleProductViews", {
+      total_products: totalProductsViewed,
+      ...getScorePayload(),
+    }, {
+      dedupId: "multi_prod",
+      oncePerSession: true,
+    });
+  }
+
   trackEvent("ViewContent", {
     content_ids: [product.id],
     content_name: product.name,
@@ -67,6 +126,8 @@ export function trackViewContent(product: TrackingProduct) {
     variant: product.variant || "",
     available: product.available !== false,
     slug: product.slug || "",
+    ...getScorePayload(),
+    ...getCampaignData(),
   }, {
     dedupId: product.id,
     oncePerSession: true,
@@ -74,11 +135,13 @@ export function trackViewContent(product: TrackingProduct) {
 }
 
 export function trackSelectProduct(product: TrackingProduct) {
+  addScore(POINTS.CLICK_PRODUCT, "select_product", `sel_${product.id}`);
   trackEvent("SelectProduct", {
     product_id: product.id,
     product_name: product.name,
     price: product.price,
     category: product.category || "",
+    ...getScorePayload(),
   }, {
     dedupId: `sel_${product.id}`,
     dedupWindowMs: 5000,
@@ -86,10 +149,12 @@ export function trackSelectProduct(product: TrackingProduct) {
 }
 
 export function trackSelectSize(payload: TrackingSizeSelect) {
+  addScore(POINTS.SELECT_SIZE, "select_size", `size_${payload.product_id}_${payload.size}`);
   trackEvent("SelectSize", {
     product_id: payload.product_id,
     product_name: payload.product_name,
     size: payload.size,
+    ...getScorePayload(),
   }, {
     dedupId: `size_${payload.product_id}_${payload.size}`,
     dedupWindowMs: 3000,
@@ -97,6 +162,7 @@ export function trackSelectSize(payload: TrackingSizeSelect) {
 }
 
 export function trackAddToCart(item: TrackingCartItem & { size?: string; category?: string }) {
+  addScore(POINTS.ADD_TO_CART, "add_to_cart", `atc_${item.id}`);
   trackEvent("AddToCart", {
     product_id: item.id,
     product_name: item.name,
@@ -106,25 +172,35 @@ export function trackAddToCart(item: TrackingCartItem & { size?: string; categor
     category: item.category || "",
     value: item.price * item.quantity,
     currency: "BRL",
+    ...getScorePayload(),
+    ...getCampaignData(),
   });
 }
 
 export function trackBuyNow(product: TrackingProduct) {
+  addScore(POINTS.BUY_NOW, "buy_now", `bn_${product.id}`);
   trackEvent("BuyNow", {
     product_id: product.id,
     product_name: product.name,
     price: product.price,
     currency: "BRL",
+    ...getScorePayload(),
   });
 }
 
 export function trackInitiateCheckout(checkout: TrackingCheckout) {
+  const scoreState = getScoreState();
+  const extraPoints = scoreState.is_paid_traffic ? POINTS.PAID_TRAFFIC_CHECKOUT : 0;
+  addScore(POINTS.INITIATE_CHECKOUT + extraPoints, "initiate_checkout", "checkout");
+
   trackEvent("InitiateCheckout", {
     value: checkout.value,
     num_items: checkout.items.length,
     products: checkout.items,
     currency: "BRL",
     coupon: checkout.coupon || "",
+    ...getScorePayload(),
+    ...getCampaignData(),
   }, {
     oncePerSession: true,
   });
@@ -133,6 +209,7 @@ export function trackInitiateCheckout(checkout: TrackingCheckout) {
 export function trackAddPaymentInfo(method: string) {
   trackEvent("AddPaymentInfo", {
     payment_method: method,
+    ...getScorePayload(),
   }, {
     oncePerSession: true,
   });
@@ -153,6 +230,8 @@ export function trackPurchase(order: TrackingPurchase) {
     customer_email: order.email || "",
     city: order.city || "",
     state: order.state || "",
+    ...getScorePayload(),
+    ...getCampaignData(),
   }, {
     oncePermanent: true,
     permanentKey,
@@ -182,21 +261,26 @@ function buildWhatsAppPayload(payload: TrackingWhatsAppClick): Record<string, an
     button_text: payload.button_text || "",
     is_wholesale: payload.is_wholesale || false,
     intent_level: payload.intent_level,
+    intent_click_level: payload.intent_level,
     wholesale_entry_page: payload.wholesale_entry_page || "",
     wholesale_cta_type: payload.wholesale_cta_type || "",
     catalog_viewed: payload.catalog_viewed ?? false,
+    ...getScorePayload(),
+    ...getCampaignData(),
   };
 }
 
-/** Generic WhatsApp click — any button */
 export function trackClickWhatsApp(payload: TrackingWhatsAppClick) {
+  const scoreState = getScoreState();
+  const extraPoints = scoreState.is_paid_traffic ? POINTS.PAID_TRAFFIC_WHATSAPP : 0;
+  addScore(POINTS.CLICK_WHATSAPP + extraPoints, "click_whatsapp", `wa_${payload.position}`);
+
   trackEvent("ClickWhatsApp", buildWhatsAppPayload(payload), {
     dedupId: `wa_${payload.position}_${payload.page}`,
     dedupWindowMs: 5000,
   });
 }
 
-/** WhatsApp lead — click with clear commercial intent */
 export function trackWhatsAppLead(payload: TrackingWhatsAppClick) {
   trackClickWhatsApp(payload);
   trackLead({
@@ -207,16 +291,16 @@ export function trackWhatsAppLead(payload: TrackingWhatsAppClick) {
   });
 }
 
-/** WhatsApp conversation start — strong intent to buy/negotiate */
 export function trackWhatsAppConversationStart(payload: TrackingWhatsAppClick) {
+  addScore(POINTS.CONTACT_SELLER, "wa_conversation", `wa_conv_${payload.position}`);
   trackEvent("WhatsAppConversationStart", buildWhatsAppPayload(payload), {
     dedupId: `wa_conv_${payload.position}_${payload.page}`,
     dedupWindowMs: 10000,
   });
 }
 
-/** WhatsApp click from a product page — attaches product context */
 export function trackWhatsAppProductIntent(payload: TrackingWhatsAppClick) {
+  addScore(POINTS.CLICK_WHATSAPP, "wa_product_intent", `wa_prod_${payload.product_id}`);
   trackEvent("WhatsAppProductIntent", buildWhatsAppPayload(payload), {
     dedupId: `wa_prod_${payload.product_id}_${payload.page}`,
     dedupWindowMs: 5000,
@@ -229,8 +313,8 @@ export function trackWhatsAppProductIntent(payload: TrackingWhatsAppClick) {
   });
 }
 
-/** WhatsApp click from wholesale context */
 export function trackWhatsAppWholesaleIntent(payload: TrackingWhatsAppClick) {
+  addScore(POINTS.CLICK_WHOLESALE, "wa_wholesale_intent", `wa_ws_${payload.position}`);
   trackEvent("WhatsAppWholesaleIntent", buildWhatsAppPayload(payload), {
     dedupId: `wa_wholesale_${payload.position}_${payload.page}`,
     dedupWindowMs: 5000,
@@ -247,18 +331,24 @@ export function trackWhatsAppWholesaleIntent(payload: TrackingWhatsAppClick) {
 // ══════════════════════════════════════════════════════════════
 
 export function trackOpenWholesalePage(payload?: TrackingWholesalePayload) {
+  addScore(POINTS.CLICK_WHOLESALE, "open_wholesale", "open_ws");
   trackEvent("OpenWholesalePage", {
     page: payload?.page || window.location.pathname,
+    ...getScorePayload(),
+    ...getCampaignData(),
   }, {
     oncePerSession: true,
   });
 }
 
 export function trackWholesaleCTA(payload: TrackingWholesalePayload) {
+  addScore(POINTS.CLICK_CTA, "wholesale_cta", `wcta_${payload.cta_position}`);
   trackEvent("WholesaleCTA", {
     page: payload.page,
     cta_text: payload.cta_text || "",
     cta_position: payload.cta_position || "",
+    ...getScorePayload(),
+    ...getCampaignData(),
   }, {
     dedupId: `wcta_${payload.cta_position}`,
     dedupWindowMs: 5000,
@@ -266,10 +356,13 @@ export function trackWholesaleCTA(payload: TrackingWholesalePayload) {
 }
 
 export function trackWholesaleLead(payload: TrackingWholesalePayload) {
+  addScore(POINTS.GENERATE_LEAD, "wholesale_lead", `wlead_${payload.cta_position}`);
   trackEvent("WholesaleLead", {
     page: payload.page,
     cta_text: payload.cta_text || "",
     cta_position: payload.cta_position || "",
+    ...getScorePayload(),
+    ...getCampaignData(),
   }, {
     dedupId: `wlead_${payload.cta_position}`,
     dedupWindowMs: 10000,
@@ -278,7 +371,8 @@ export function trackWholesaleLead(payload: TrackingWholesalePayload) {
 }
 
 export function trackViewWholesaleCatalog() {
-  trackEvent("ViewWholesaleCatalog", {}, { oncePerSession: true });
+  addScore(POINTS.OPEN_PRIVATE_CATALOG, "view_wholesale_catalog", "vwc");
+  trackEvent("ViewWholesaleCatalog", { ...getScorePayload() }, { oncePerSession: true });
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -286,11 +380,14 @@ export function trackViewWholesaleCatalog() {
 // ══════════════════════════════════════════════════════════════
 
 export function trackLead(payload: TrackingLead) {
+  addScore(POINTS.GENERATE_LEAD, "lead", `lead_${payload.type}_${payload.page}`);
   trackEvent("Lead", {
     lead_type: payload.type,
     page: payload.page,
     product_id: payload.product_id || "",
     value: payload.value || 0,
+    ...getScorePayload(),
+    ...getCampaignData(),
   }, {
     dedupId: `lead_${payload.type}_${payload.page}`,
     dedupWindowMs: 10000,
@@ -302,12 +399,14 @@ export function trackLead(payload: TrackingLead) {
 // ══════════════════════════════════════════════════════════════
 
 export function trackBannerClick(payload: TrackingBannerClick) {
+  addScore(POINTS.VIEW_PROMO_BANNER, "banner_click", `banner_${payload.banner_id}`);
   trackEvent("BannerClick", {
     banner_id: payload.banner_id || "",
     banner_title: payload.banner_title || "",
     banner_type: payload.banner_type || "other",
     link: payload.link || "",
     position: payload.position ?? 0,
+    ...getScorePayload(),
   }, {
     dedupId: `banner_${payload.banner_id}`,
     dedupWindowMs: 5000,
@@ -315,11 +414,13 @@ export function trackBannerClick(payload: TrackingBannerClick) {
 }
 
 export function trackCTA(payload: TrackingCTAClick) {
+  addScore(POINTS.CLICK_CTA, "cta_click", `cta_${payload.cta_type}_${payload.page}`);
   trackEvent("CTA_Click", {
     cta_text: payload.cta_text,
     cta_type: payload.cta_type,
     page: payload.page,
     product_id: payload.product_id || "",
+    ...getScorePayload(),
   }, {
     dedupId: `cta_${payload.cta_type}_${payload.page}`,
     dedupWindowMs: 5000,
@@ -330,14 +431,28 @@ export function trackSearch(payload: TrackingSearch) {
   trackEvent("Search", {
     query: payload.query,
     results_count: payload.results_count ?? 0,
+    ...getScorePayload(),
   }, {
     dedupId: `search_${payload.query}`,
     dedupWindowMs: 3000,
   });
 }
 
+export function trackFilterProducts(payload: TrackingFilterProducts) {
+  addScore(POINTS.USE_FILTER, "filter_products", `filter_${JSON.stringify(payload.filters)}`);
+  trackEvent("FilterProducts", {
+    filters: payload.filters,
+    category: payload.category || "",
+    results_count: payload.results_count ?? 0,
+    ...getScorePayload(),
+  }, {
+    dedupId: `filter_${JSON.stringify(payload.filters)}`,
+    dedupWindowMs: 5000,
+  });
+}
+
 // ══════════════════════════════════════════════════════════════
-// BEHAVIORAL
+// BEHAVIORAL & ENGAGEMENT
 // ══════════════════════════════════════════════════════════════
 
 export function setupScrollTracking() {
@@ -371,21 +486,40 @@ export function setupTimeOnPage() {
   return () => timers.forEach(clearTimeout);
 }
 
-export function setupProductPageEngagement(productId: string) {
+export function setupProductPageEngagement(productId: string, productName?: string) {
+  // Long engagement: 25 seconds on product page
   const timer = setTimeout(() => {
-    trackEvent("ProductEngagement", {
-      type: "40s_on_product",
+    addScore(POINTS.LONG_ENGAGEMENT, "long_engagement_product", `lep_${productId}`);
+    trackEvent("LongEngagementOnProduct", {
       product_id: productId,
+      product_name: productName || "",
+      seconds: 25,
+      ...getScorePayload(),
     }, {
-      dedupId: `pe40_${productId}`,
+      dedupId: `lep_${productId}`,
       oncePerSession: true,
     });
-  }, 40000);
+  }, 25000);
+  return () => clearTimeout(timer);
+}
+
+export function setupCheckoutEngagement() {
+  // Long engagement: 18 seconds on checkout
+  const timer = setTimeout(() => {
+    addScore(POINTS.LONG_ENGAGEMENT, "long_engagement_checkout", "lec");
+    trackEvent("LongEngagementOnCheckout", {
+      seconds: 18,
+      ...getScorePayload(),
+    }, {
+      dedupId: "lec",
+      oncePerSession: true,
+    });
+  }, 18000);
   return () => clearTimeout(timer);
 }
 
 export function trackCartAbandonment() {
-  trackEvent("CartAbandonment", {}, {
+  trackEvent("CartAbandonment", { ...getScorePayload() }, {
     dedupId: "cart_abandon",
     oncePerSession: true,
   });
@@ -394,13 +528,77 @@ export function trackCartAbandonment() {
 export function trackVisitorType() {
   const count = incrementVisitCount();
   if (count > 1) {
-    trackEvent("ReturningVisitor", { visit_count: count }, { oncePerSession: true });
+    trackEvent("ReturningVisitor", { visit_count: count, ...getScorePayload() }, { oncePerSession: true });
   }
-  trackEvent("StoreVisitor", {}, { oncePerSession: true });
+  trackEvent("StoreVisitor", { ...getScorePayload() }, { oncePerSession: true });
 }
 
 // ══════════════════════════════════════════════════════════════
-// CUSTOM EVENTS — easy to extend
+// INTENT EVENTS
+// ══════════════════════════════════════════════════════════════
+
+export function trackUserBecameWarm() {
+  const scoreState = getScoreState();
+  trackEvent("UserBecameWarm", {
+    ...getScorePayload(),
+    products_viewed: scoreState.products_viewed,
+    last_product: scoreState.last_product,
+    last_action: scoreState.last_strong_action,
+    pages_viewed: scoreState.pages_viewed,
+    is_paid_traffic: scoreState.is_paid_traffic,
+    ...getCampaignData(),
+  }, {
+    oncePerSession: true,
+    dedupId: "warm",
+  });
+}
+
+export function trackUserBecameHot() {
+  const scoreState = getScoreState();
+  trackEvent("UserBecameHot", {
+    ...getScorePayload(),
+    products_viewed: scoreState.products_viewed,
+    last_product: scoreState.last_product,
+    last_action: scoreState.last_strong_action,
+    pages_viewed: scoreState.pages_viewed,
+    is_paid_traffic: scoreState.is_paid_traffic,
+    ...getCampaignData(),
+  }, {
+    oncePerSession: true,
+    dedupId: "hot",
+  });
+}
+
+export function trackHighIntentAction(action: string, details?: Record<string, any>) {
+  trackEvent("HighIntentAction", {
+    action,
+    ...getScorePayload(),
+    ...getCampaignData(),
+    ...details,
+  }, {
+    dedupId: `hia_${action}`,
+    dedupWindowMs: 10000,
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// ADDITIONAL INTERACTION EVENTS
+// ══════════════════════════════════════════════════════════════
+
+export function trackOpenCart() {
+  trackEvent("OpenCart", { ...getScorePayload() }, { dedupId: "open_cart", dedupWindowMs: 5000 });
+}
+
+export function trackOpenLogin() {
+  trackEvent("OpenLogin", { ...getScorePayload() }, { dedupId: "open_login", dedupWindowMs: 5000 });
+}
+
+export function trackApplyCoupon(coupon: string) {
+  trackEvent("ApplyCoupon", { coupon, ...getScorePayload() }, { dedupId: `coupon_${coupon}`, dedupWindowMs: 5000 });
+}
+
+// ══════════════════════════════════════════════════════════════
+// CUSTOM EVENTS
 // ══════════════════════════════════════════════════════════════
 
 export function trackCustomEvent(eventName: string, data: Record<string, any> = {}, opts?: {
@@ -408,5 +606,5 @@ export function trackCustomEvent(eventName: string, data: Record<string, any> = 
   dedupWindowMs?: number;
   oncePerSession?: boolean;
 }) {
-  trackEvent(eventName, data, opts);
+  trackEvent(eventName, { ...data, ...getScorePayload() }, opts);
 }
