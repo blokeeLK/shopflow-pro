@@ -1,5 +1,6 @@
 import { MessageCircle, Package, Palette, Ruler, TrendingUp, AlertTriangle, Clock, CheckCircle2, Truck, Users, Zap, DollarSign, ShoppingBag, Sparkles } from "lucide-react";
 import { FadeInSection } from "@/components/FadeInSection";
+import { useExitIntent } from "@/hooks/useExitIntent";
 
 const whatsappUrl =
   "https://wa.me/553791000090?text=Ol%C3%A1!%20Vim%20pelo%20site%20e%20quero%20comprar%20no%20ATACADO%20a%20partir%20de%208%20pe%C3%A7as.%20Gostaria%20de%20ver%20os%20modelos%20dispon%C3%ADveis%20e%20os%20pre%C3%A7os%20exclusivos.";
