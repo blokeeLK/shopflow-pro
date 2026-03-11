@@ -10,7 +10,7 @@ import {
   trackEvent,
 } from "@/lib/tracking";
 import type { DebugLogEntry } from "@/lib/tracking";
-import { X, Bug, Trash2, RefreshCw, ChevronDown, ChevronRight, Zap, Filter } from "lucide-react";
+import { X, Bug, Trash2, RefreshCw, ChevronDown, ChevronRight, Zap, Filter, MessageCircle } from "lucide-react";
 
 const STATUS_STYLES: Record<string, string> = {
   sent: "bg-green-500/10 text-green-600",
@@ -19,12 +19,18 @@ const STATUS_STYLES: Record<string, string> = {
   queued: "bg-yellow-500/10 text-yellow-600",
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  sent: "✅ Enviado",
-  error: "❌ Erro",
-  blocked: "🚫 Bloqueado",
-  queued: "📦 Na fila",
+const INTENT_STYLES: Record<string, string> = {
+  curious: "bg-blue-500/10 text-blue-600",
+  lead: "bg-amber-500/10 text-amber-600",
+  strong_lead: "bg-green-500/10 text-green-700",
 };
+
+const WA_EVENTS = new Set([
+  "ClickWhatsApp",
+  "WhatsAppConversationStart",
+  "WhatsAppProductIntent",
+  "WhatsAppWholesaleIntent",
+]);
 
 function TestButtons() {
   return (
@@ -36,13 +42,25 @@ function TestButtons() {
         ▶ PageView
       </button>
       <button
-        onClick={() => trackEvent("ClickWhatsApp_TEST", { context: "test", page: "/admin" })}
+        onClick={() => trackEvent("ClickWhatsApp_TEST", { context: "test", page: "/admin", position: "floating", intent_level: "curious", button_text: "Test Button", message_type: "general" })}
         className="text-[10px] bg-muted hover:bg-muted/80 px-2.5 py-1.5 rounded font-medium"
       >
-        ▶ WhatsApp
+        ▶ ClickWhatsApp
       </button>
       <button
-        onClick={() => trackEvent("Lead_TEST", { type: "test", page: "/admin" })}
+        onClick={() => trackEvent("WhatsAppProductIntent_TEST", { context: "product", page: "/admin", position: "product_page", intent_level: "strong_lead", product_id: "test-123", product_name: "Camiseta Teste", product_price: 19.99, message_type: "product" })}
+        className="text-[10px] bg-muted hover:bg-muted/80 px-2.5 py-1.5 rounded font-medium"
+      >
+        ▶ WA Product
+      </button>
+      <button
+        onClick={() => trackEvent("WhatsAppWholesaleIntent_TEST", { context: "wholesale", page: "/atacado", position: "wholesale_page", intent_level: "strong_lead", is_wholesale: true, wholesale_cta_type: "catalog", message_type: "wholesale" })}
+        className="text-[10px] bg-muted hover:bg-muted/80 px-2.5 py-1.5 rounded font-medium"
+      >
+        ▶ WA Wholesale
+      </button>
+      <button
+        onClick={() => trackEvent("Lead_TEST", { type: "whatsapp", page: "/admin", intent_level: "lead" })}
         className="text-[10px] bg-muted hover:bg-muted/80 px-2.5 py-1.5 rounded font-medium"
       >
         ▶ Lead
@@ -65,6 +83,9 @@ function TestButtons() {
 
 function EventRow({ entry }: { entry: DebugLogEntry }) {
   const [expanded, setExpanded] = useState(false);
+  const isWA = WA_EVENTS.has(entry.event) || entry.event.includes("WhatsApp");
+  const intentLevel = entry.data?.intent_level;
+  const position = entry.data?.position;
 
   return (
     <div className="border-b border-border/20 py-2">
@@ -76,7 +97,18 @@ function EventRow({ entry }: { entry: DebugLogEntry }) {
         <span className={`shrink-0 px-1.5 py-0.5 rounded font-mono text-[10px] ${STATUS_STYLES[entry.status] || "bg-muted"}`}>
           {entry.status}
         </span>
+        {isWA && <MessageCircle className="h-3 w-3 text-green-500 shrink-0" />}
         <span className="font-semibold shrink-0 text-foreground">{entry.event}</span>
+        {intentLevel && (
+          <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono shrink-0 ${INTENT_STYLES[intentLevel] || "bg-muted"}`}>
+            {intentLevel}
+          </span>
+        )}
+        {position && (
+          <span className="text-[10px] text-muted-foreground/60 font-mono shrink-0">
+            @{position}
+          </span>
+        )}
         {entry.blocked_reason && (
           <span className="text-[10px] text-orange-500 shrink-0">({entry.blocked_reason})</span>
         )}
@@ -94,6 +126,41 @@ function EventRow({ entry }: { entry: DebugLogEntry }) {
             <div><span className="text-muted-foreground">referrer:</span> <span className="font-mono text-foreground truncate block">{entry.referrer || "(vazio)"}</span></div>
             <div><span className="text-muted-foreground">fbclid:</span> <span className="font-mono text-foreground">{entry.fbclid || "(nenhum)"}</span></div>
           </div>
+          {/* WhatsApp-specific fields */}
+          {isWA && entry.data && (
+            <div className="border-t border-border/30 pt-2 mt-2 space-y-1">
+              <p className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider">WhatsApp Details</p>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                {entry.data.intent_level && (
+                  <div><span className="text-muted-foreground">intent:</span> <span className={`font-mono px-1 rounded ${INTENT_STYLES[entry.data.intent_level] || ""}`}>{entry.data.intent_level}</span></div>
+                )}
+                {entry.data.position && (
+                  <div><span className="text-muted-foreground">position:</span> <span className="font-mono text-foreground">{entry.data.position}</span></div>
+                )}
+                {entry.data.button_text && (
+                  <div className="col-span-2"><span className="text-muted-foreground">button:</span> <span className="font-mono text-foreground">{entry.data.button_text}</span></div>
+                )}
+                {entry.data.product_name && (
+                  <div><span className="text-muted-foreground">product:</span> <span className="font-mono text-foreground">{entry.data.product_name}</span></div>
+                )}
+                {entry.data.product_price != null && (
+                  <div><span className="text-muted-foreground">price:</span> <span className="font-mono text-foreground">R${entry.data.product_price}</span></div>
+                )}
+                {entry.data.context && (
+                  <div><span className="text-muted-foreground">context:</span> <span className="font-mono text-foreground">{entry.data.context}</span></div>
+                )}
+                {entry.data.message_type && (
+                  <div><span className="text-muted-foreground">msg_type:</span> <span className="font-mono text-foreground">{entry.data.message_type}</span></div>
+                )}
+                {entry.data.prefilled_message && (
+                  <div className="col-span-2"><span className="text-muted-foreground">prefilled:</span> <span className="font-mono text-foreground text-[10px]">{entry.data.prefilled_message}</span></div>
+                )}
+                {entry.data.wholesale_cta_type && (
+                  <div><span className="text-muted-foreground">wholesale_type:</span> <span className="font-mono text-foreground">{entry.data.wholesale_cta_type}</span></div>
+                )}
+              </div>
+            </div>
+          )}
           {entry.first_touch_utm && Object.keys(entry.first_touch_utm).length > 0 && (
             <div>
               <span className="text-muted-foreground">first_touch:</span>
@@ -147,7 +214,6 @@ export function TrackingDebugPanel() {
     if (open) refresh();
   }, [open]);
 
-  // Auto-refresh every 3s when open
   useEffect(() => {
     if (!open) return;
     const interval = setInterval(refresh, 3000);
@@ -163,6 +229,11 @@ export function TrackingDebugPanel() {
   const sentCount = log.filter((e) => e.status === "sent").length;
   const blockedCount = log.filter((e) => e.status === "blocked").length;
   const errorCount = log.filter((e) => e.status === "error").length;
+
+  // WhatsApp-specific counters
+  const waEvents = log.filter((e) => e.status === "sent" && (WA_EVENTS.has(e.event) || e.event.includes("WhatsApp")));
+  const waClickCount = waEvents.length;
+  const waStrongLeads = waEvents.filter((e) => e.data?.intent_level === "strong_lead").length;
 
   if (!open) {
     return (
@@ -202,7 +273,7 @@ export function TrackingDebugPanel() {
         </div>
 
         {/* Status cards */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-7 gap-3">
           <div className="bg-card border border-border rounded-lg p-3">
             <p className="text-[10px] text-muted-foreground uppercase font-semibold mb-1">Pixel</p>
             <div className="flex items-center gap-2">
@@ -225,6 +296,17 @@ export function TrackingDebugPanel() {
           <div className="bg-card border border-border rounded-lg p-3">
             <p className="text-[10px] text-muted-foreground uppercase font-semibold mb-1">Erros</p>
             <p className="text-lg font-bold text-red-500">{errorCount}</p>
+          </div>
+          {/* WhatsApp counters */}
+          <div className="bg-card border border-green-500/20 rounded-lg p-3">
+            <p className="text-[10px] text-muted-foreground uppercase font-semibold mb-1 flex items-center gap-1">
+              <MessageCircle className="h-3 w-3 text-green-500" /> WA Cliques
+            </p>
+            <p className="text-lg font-bold text-green-600">{waClickCount}</p>
+          </div>
+          <div className="bg-card border border-green-500/20 rounded-lg p-3">
+            <p className="text-[10px] text-muted-foreground uppercase font-semibold mb-1">WA Strong Leads</p>
+            <p className="text-lg font-bold text-green-700">{waStrongLeads}</p>
           </div>
         </div>
 
