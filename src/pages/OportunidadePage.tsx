@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { trackClickWhatsApp, trackWholesaleLead, trackCustomEvent } from "@/lib/tracking";
+import { trackClickWhatsApp, trackWhatsAppWholesaleIntent, trackWholesaleLead, trackCustomEvent } from "@/lib/tracking";
 import {
   MessageCircle,
   Factory,
@@ -36,18 +36,28 @@ const socialNames = [
 ];
 
 function WhatsAppCTA({ children, className = "", pulse = false, ctaPosition = "unknown" }: { children: React.ReactNode; className?: string; pulse?: boolean; ctaPosition?: string }) {
+  const buttonText = typeof children === "string" ? children : "WhatsApp CTA";
+  const prefilledMsg = "Olá, vim pelo site e quero receber os modelos disponíveis de camisetas com preço de atacado. Pode me enviar as opções?";
   const handleClick = () => {
-    trackClickWhatsApp({
+    trackWhatsAppWholesaleIntent({
       phone: "553791000090",
       page: "/oportunidade",
       context: "oportunidade",
+      position: (ctaPosition as any) || "oportunidade_main",
       is_wholesale: true,
+      intent_level: "strong_lead",
       message_text: "modelos atacado",
+      prefilled_message: prefilledMsg,
+      message_type: "wholesale",
+      button_text: buttonText,
+      wholesale_cta_type: "catalog",
+      wholesale_entry_page: "/oportunidade",
     });
     trackWholesaleLead({
       page: "/oportunidade",
-      cta_text: typeof children === "string" ? children : "WhatsApp CTA",
+      cta_text: buttonText,
       cta_position: ctaPosition,
+      wholesale_cta_type: "catalog",
     });
   };
   return (
@@ -377,7 +387,7 @@ export default function OportunidadePage() {
           href={WA_URL}
           target="_blank"
           rel="noopener noreferrer"
-          onClick={() => trackClickWhatsApp({ phone: "553791000090", page: "/oportunidade", context: "oportunidade", is_wholesale: true })}
+          onClick={() => trackClickWhatsApp({ phone: "553791000090", page: "/oportunidade", context: "oportunidade", position: "oportunidade_floating", is_wholesale: true, intent_level: "lead", button_text: "Comprar no atacado", message_type: "wholesale" })}
           className="fixed bottom-4 right-4 z-50 inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-bold text-sm px-5 py-3 rounded-full shadow-lg hover:scale-105 transition-all"
         >
           <MessageCircle className="h-5 w-5" />
@@ -392,7 +402,7 @@ export default function OportunidadePage() {
             href={WA_URL}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={() => trackClickWhatsApp({ phone: "553791000090", page: "/oportunidade", context: "oportunidade", is_wholesale: true })}
+            onClick={() => trackClickWhatsApp({ phone: "553791000090", page: "/oportunidade", context: "oportunidade", position: "oportunidade_mobile_bar", is_wholesale: true, intent_level: "strong_lead", button_text: "VER MODELOS DE ATACADO NO WHATSAPP", message_type: "wholesale" })}
             className="flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#1ebe5d] text-white font-extrabold text-sm py-4 rounded-xl shadow-lg transition-all"
           >
             <MessageCircle className="h-5 w-5" />
@@ -440,7 +450,7 @@ export default function OportunidadePage() {
             href={WA_URL}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={() => trackClickWhatsApp({ phone: "553791000090", page: "/oportunidade", context: "oportunidade", is_wholesale: true })}
+            onClick={() => trackClickWhatsApp({ phone: "553791000090", page: "/oportunidade", context: "oportunidade", position: "oportunidade_popup", is_wholesale: true, intent_level: "strong_lead", button_text: "Receber catálogo no WhatsApp", message_type: "catalog" })}
             className="inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-bold text-sm px-6 py-3 rounded-xl transition-all hover:scale-[1.03]"
           >
             <MessageCircle className="h-5 w-5" />

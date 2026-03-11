@@ -1,6 +1,6 @@
 import { MessageCircle } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSupabaseData";
-import { trackClickWhatsApp, trackWholesaleLead } from "@/lib/tracking";
+import { trackWhatsAppProductIntent, trackWholesaleLead } from "@/lib/tracking";
 
 export function WholesaleCTA() {
   const { data: settings } = useSiteSettings();
@@ -9,23 +9,29 @@ export function WholesaleCTA() {
   if (!isEnabled) return null;
 
   const phone = settings?.whatsapp_number || "5511999999999";
-  const message = encodeURIComponent(
-    "Olá, vim pelo site e tenho interesse em comprar no atacado para revenda. Poderia me enviar as informações e tabela de preços?"
-  );
+  const prefilledMsg = "Olá, vim pelo site e tenho interesse em comprar no atacado para revenda. Poderia me enviar as informações e tabela de preços?";
+  const message = encodeURIComponent(prefilledMsg);
   const whatsappUrl = `https://wa.me/${phone}?text=${message}`;
 
   const handleClick = () => {
-    trackClickWhatsApp({
+    trackWhatsAppProductIntent({
       phone,
       message_text: "atacado revenda",
+      prefilled_message: prefilledMsg,
+      message_type: "wholesale",
       page: window.location.pathname,
       context: "wholesale",
+      position: "product_wholesale_block",
       is_wholesale: true,
+      intent_level: "strong_lead",
+      button_text: "Falar no WhatsApp sobre Atacado",
+      wholesale_cta_type: "contact_seller",
     });
     trackWholesaleLead({
       page: window.location.pathname,
       cta_text: "Falar no WhatsApp sobre Atacado",
       cta_position: "product_page_wholesale_block",
+      wholesale_cta_type: "contact_seller",
     });
   };
 

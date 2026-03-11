@@ -96,16 +96,52 @@ export interface TrackingCheckout {
   coupon?: string;
 }
 
+// ── WhatsApp intent level ──
+export type WhatsAppIntentLevel = "curious" | "lead" | "strong_lead";
+
+// ── WhatsApp button position ──
+export type WhatsAppButtonPosition =
+  | "floating"
+  | "header"
+  | "footer"
+  | "product_page"
+  | "category_page"
+  | "banner"
+  | "checkout"
+  | "wholesale_page"
+  | "oportunidade_hero"
+  | "oportunidade_main"
+  | "oportunidade_final"
+  | "oportunidade_mobile_bar"
+  | "oportunidade_popup"
+  | "oportunidade_floating"
+  | "wholesale_hero"
+  | "wholesale_final"
+  | "product_wholesale_block"
+  | "other";
+
 // ── WhatsApp click payload ──
 export interface TrackingWhatsAppClick {
   phone?: string;
   message_text?: string;
+  prefilled_message?: string;
+  message_type?: "product" | "wholesale" | "general" | "support" | "catalog";
   page: string;
   product_id?: string;
   product_name?: string;
+  product_price?: number;
+  product_size?: string;
+  product_variant?: string;
   category?: string;
   context: "header" | "floating" | "product" | "checkout" | "wholesale" | "oportunidade" | "footer" | "cta" | "other";
+  position: WhatsAppButtonPosition;
+  button_text?: string;
   is_wholesale?: boolean;
+  intent_level: WhatsAppIntentLevel;
+  /** Wholesale-specific context */
+  wholesale_entry_page?: string;
+  wholesale_cta_type?: "catalog" | "video_call" | "contact_seller" | "price_table" | "general";
+  catalog_viewed?: boolean;
 }
 
 // ── Wholesale payload ──
@@ -113,6 +149,7 @@ export interface TrackingWholesalePayload {
   page: string;
   cta_text?: string;
   cta_position?: string;
+  wholesale_cta_type?: "catalog" | "video_call" | "contact_seller" | "price_table" | "general";
 }
 
 // ── Banner click payload ──

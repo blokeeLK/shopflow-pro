@@ -161,29 +161,82 @@ export function trackPurchase(order: TrackingPurchase) {
 }
 
 // ══════════════════════════════════════════════════════════════
-// WHATSAPP
+// WHATSAPP — Advanced tracking layer
 // ══════════════════════════════════════════════════════════════
 
-export function trackClickWhatsApp(payload: TrackingWhatsAppClick) {
-  trackEvent("ClickWhatsApp", {
+function buildWhatsAppPayload(payload: TrackingWhatsAppClick): Record<string, any> {
+  return {
     phone: payload.phone || "",
     message_text: payload.message_text || "",
+    prefilled_message: payload.prefilled_message || "",
+    message_type: payload.message_type || "general",
     page: payload.page,
     product_id: payload.product_id || "",
     product_name: payload.product_name || "",
+    product_price: payload.product_price ?? null,
+    product_size: payload.product_size || "",
+    product_variant: payload.product_variant || "",
     category: payload.category || "",
     context: payload.context,
+    position: payload.position,
+    button_text: payload.button_text || "",
     is_wholesale: payload.is_wholesale || false,
-  }, {
-    dedupId: `wa_${payload.context}_${payload.page}`,
+    intent_level: payload.intent_level,
+    wholesale_entry_page: payload.wholesale_entry_page || "",
+    wholesale_cta_type: payload.wholesale_cta_type || "",
+    catalog_viewed: payload.catalog_viewed ?? false,
+  };
+}
+
+/** Generic WhatsApp click — any button */
+export function trackClickWhatsApp(payload: TrackingWhatsAppClick) {
+  trackEvent("ClickWhatsApp", buildWhatsAppPayload(payload), {
+    dedupId: `wa_${payload.position}_${payload.page}`,
     dedupWindowMs: 5000,
   });
 }
 
+/** WhatsApp lead — click with clear commercial intent */
 export function trackWhatsAppLead(payload: TrackingWhatsAppClick) {
   trackClickWhatsApp(payload);
   trackLead({
     type: payload.is_wholesale ? "wholesale" : "whatsapp",
+    page: payload.page,
+    product_id: payload.product_id,
+    value: payload.product_price,
+  });
+}
+
+/** WhatsApp conversation start — strong intent to buy/negotiate */
+export function trackWhatsAppConversationStart(payload: TrackingWhatsAppClick) {
+  trackEvent("WhatsAppConversationStart", buildWhatsAppPayload(payload), {
+    dedupId: `wa_conv_${payload.position}_${payload.page}`,
+    dedupWindowMs: 10000,
+  });
+}
+
+/** WhatsApp click from a product page — attaches product context */
+export function trackWhatsAppProductIntent(payload: TrackingWhatsAppClick) {
+  trackEvent("WhatsAppProductIntent", buildWhatsAppPayload(payload), {
+    dedupId: `wa_prod_${payload.product_id}_${payload.page}`,
+    dedupWindowMs: 5000,
+  });
+  trackLead({
+    type: "whatsapp",
+    page: payload.page,
+    product_id: payload.product_id,
+    value: payload.product_price,
+  });
+}
+
+/** WhatsApp click from wholesale context */
+export function trackWhatsAppWholesaleIntent(payload: TrackingWhatsAppClick) {
+  trackEvent("WhatsAppWholesaleIntent", buildWhatsAppPayload(payload), {
+    dedupId: `wa_wholesale_${payload.position}_${payload.page}`,
+    dedupWindowMs: 5000,
+  });
+  trackLead({
+    type: "wholesale",
     page: payload.page,
     product_id: payload.product_id,
   });
