@@ -48,8 +48,16 @@ export default function ProductPage() {
     if (!product) return;
     const price = getProductPrice(product);
     const cat = (product.category as any)?.name || "";
-    trackViewContent({ id: product.id, name: product.name, price, category: cat });
-    trackProductClick();
+    trackViewContent({
+      id: product.id,
+      name: product.name,
+      price,
+      category: cat,
+      promo_price: product.promo_price,
+      image: (product.product_images as any)?.[0]?.url,
+      slug: product.slug,
+    });
+    trackSelectProduct({ id: product.id, name: product.name, price, category: cat });
     const cleanEngagement = setupProductPageEngagement(product.id);
     return cleanEngagement;
   }, [product?.id]);
