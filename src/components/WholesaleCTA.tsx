@@ -1,10 +1,10 @@
 import { MessageCircle } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSupabaseData";
+import { trackClickWhatsApp, trackWholesaleLead } from "@/lib/tracking";
 
 export function WholesaleCTA() {
   const { data: settings } = useSiteSettings();
 
-  // Check if wholesale block is disabled via admin settings
   const isEnabled = settings?.wholesale_block_enabled !== "false";
   if (!isEnabled) return null;
 
@@ -13,6 +13,21 @@ export function WholesaleCTA() {
     "Olá, vim pelo site e tenho interesse em comprar no atacado para revenda. Poderia me enviar as informações e tabela de preços?"
   );
   const whatsappUrl = `https://wa.me/${phone}?text=${message}`;
+
+  const handleClick = () => {
+    trackClickWhatsApp({
+      phone,
+      message_text: "atacado revenda",
+      page: window.location.pathname,
+      context: "wholesale",
+      is_wholesale: true,
+    });
+    trackWholesaleLead({
+      page: window.location.pathname,
+      cta_text: "Falar no WhatsApp sobre Atacado",
+      cta_position: "product_page_wholesale_block",
+    });
+  };
 
   return (
     <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 md:p-6">
@@ -29,6 +44,7 @@ export function WholesaleCTA() {
         href={whatsappUrl}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={handleClick}
         className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white font-semibold text-sm px-5 py-3 rounded-lg transition-all duration-200 hover:scale-[1.03] hover:shadow-lg"
       >
         <MessageCircle className="h-5 w-5" />

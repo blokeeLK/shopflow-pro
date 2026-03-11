@@ -1,14 +1,13 @@
 /**
- * ShopFlow Tracking System — Backward compatibility re-export
- * All logic has been moved to src/lib/tracking/ modules.
- * This file re-exports everything so existing imports continue to work.
+ * ShopFlow Tracking — Public API
+ * Single import point for all tracking functionality.
  */
+
+// Core
+export { initPixel, trackEvent, flushEventQueue, enableDebug, sendAdvancedMatching } from "./core";
+
+// Storage (for debug panel + hooks)
 export {
-  initPixel,
-  trackEvent,
-  flushEventQueue,
-  enableDebug,
-  sendAdvancedMatching,
   captureUTMs,
   getStoredUTMs,
   getFirstTouch,
@@ -19,6 +18,10 @@ export {
   getDebugLog,
   clearDebugLog,
   getVisitCount,
+} from "./storage";
+
+// All events
+export {
   trackPageView,
   trackViewHome,
   trackViewCategory,
@@ -46,8 +49,9 @@ export {
   setupScrollTracking,
   setupTimeOnPage,
   setupProductPageEngagement,
-} from "./tracking/index";
+} from "./events";
 
+// Types — re-export for consumers
 export type {
   TrackingProduct,
   TrackingCartItem,
@@ -64,4 +68,4 @@ export type {
   UTMData,
   SessionData,
   AttributionData,
-} from "./tracking/index";
+} from "./types";

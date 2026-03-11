@@ -9,6 +9,7 @@ import { formatCurrency, getProductPrice } from "@/hooks/useSupabaseData";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePendingPixCount } from "@/hooks/usePendingPixCount";
 import { useQuery } from "@tanstack/react-query";
+import { trackSearch } from "@/lib/tracking";
 
 const TOPBAR_ICONS: Record<string, React.ComponentType<any>> = {
   truck: Truck, shield: Shield, "credit-card": CreditCard, zap: Zap,
@@ -127,17 +128,17 @@ export function Header() {
           .limit(6);
 
         if (data) {
-          setSearchResults(
-            data.map((p: any) => ({
-              id: p.id,
-              name: p.name,
-              slug: p.slug,
-              price: p.price,
-              promo_price: p.promo_price,
-              is_promo: p.is_promo,
-              image: p.product_images?.sort((a: any, b: any) => (a.position || 0) - (b.position || 0))[0]?.url,
-            }))
-          );
+          const results = data.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            slug: p.slug,
+            price: p.price,
+            promo_price: p.promo_price,
+            is_promo: p.is_promo,
+            image: p.product_images?.sort((a: any, b: any) => (a.position || 0) - (b.position || 0))[0]?.url,
+          }));
+          setSearchResults(results);
+          trackSearch({ query: searchQuery.trim(), results_count: results.length });
         }
       } else if (searchTab === "orders" && user) {
         const query = searchQuery.trim();

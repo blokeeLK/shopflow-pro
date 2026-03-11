@@ -7,7 +7,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { WholesaleCTA } from "@/components/WholesaleCTA";
 import { ProductReviews } from "@/components/ProductReviews";
 import { useToast } from "@/hooks/use-toast";
-import { trackViewContent, trackAddToCart, trackProductClick, setupProductPageEngagement } from "@/lib/tracking";
+import { trackViewContent, trackAddToCart, trackSelectProduct, trackSelectSize, setupProductPageEngagement, trackClickWhatsApp } from "@/lib/tracking";
 
 export default function ProductPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -48,8 +48,16 @@ export default function ProductPage() {
     if (!product) return;
     const price = getProductPrice(product);
     const cat = (product.category as any)?.name || "";
-    trackViewContent({ id: product.id, name: product.name, price, category: cat });
-    trackProductClick();
+    trackViewContent({
+      id: product.id,
+      name: product.name,
+      price,
+      category: cat,
+      promo_price: product.promo_price,
+      image: (product.product_images as any)?.[0]?.url,
+      slug: product.slug,
+    });
+    trackSelectProduct({ id: product.id, name: product.name, price, category: cat });
     const cleanEngagement = setupProductPageEngagement(product.id);
     return cleanEngagement;
   }, [product?.id]);
@@ -106,7 +114,7 @@ export default function ProductPage() {
       maxStock: sizeStock,
       quantity,
     });
-    trackAddToCart({ id: product.id, name: product.name, price: currentPrice, quantity, size: selectedSize });
+    trackAddToCart({ id: product.id, name: product.name, price: currentPrice, quantity, size: selectedSize, category: categoryName });
     toast({ title: "Adicionado ao carrinho! 🛒" });
   };
 
@@ -193,7 +201,7 @@ export default function ProductPage() {
             <p className="text-sm font-medium text-foreground mb-2">Tamanho</p>
             <div className="flex flex-wrap gap-2">
               {variants.map((v) => (
-                <button key={v.id} disabled={v.stock <= 0} onClick={() => { setSelectedSize(v.size); setQuantity(1); }}
+                <button key={v.id} disabled={v.stock <= 0} onClick={() => { setSelectedSize(v.size); setQuantity(1); trackSelectSize({ product_id: product.id, product_name: product.name, size: v.size }); }}
                   className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
                     selectedSize === v.size ? "bg-primary text-primary-foreground border-primary"
                       : v.stock > 0 ? "bg-card text-foreground border-border hover:border-primary"

@@ -4,7 +4,7 @@ import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { formatCurrency } from "@/hooks/useSupabaseData";
 import { useAuth } from "@/contexts/AuthContext";
-import { trackCartAbandonment } from "@/lib/tracking";
+import { trackCartAbandonment, trackCustomEvent } from "@/lib/tracking";
 
 const FREE_SHIPPING_THRESHOLD = 130;
 

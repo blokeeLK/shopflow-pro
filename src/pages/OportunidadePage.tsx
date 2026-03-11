@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { trackClickWhatsApp, trackWholesaleLead, trackCustomEvent } from "@/lib/tracking";
 import {
   MessageCircle,
   Factory,
@@ -34,12 +35,27 @@ const socialNames = [
   { name: "Camila", city: "Porto Alegre", action: "está escolhendo modelos para revenda" },
 ];
 
-function WhatsAppCTA({ children, className = "", pulse = false }: { children: React.ReactNode; className?: string; pulse?: boolean }) {
+function WhatsAppCTA({ children, className = "", pulse = false, ctaPosition = "unknown" }: { children: React.ReactNode; className?: string; pulse?: boolean; ctaPosition?: string }) {
+  const handleClick = () => {
+    trackClickWhatsApp({
+      phone: "553791000090",
+      page: "/oportunidade",
+      context: "oportunidade",
+      is_wholesale: true,
+      message_text: "modelos atacado",
+    });
+    trackWholesaleLead({
+      page: "/oportunidade",
+      cta_text: typeof children === "string" ? children : "WhatsApp CTA",
+      cta_position: ctaPosition,
+    });
+  };
   return (
     <a
       href={WA_URL}
       target="_blank"
       rel="noopener noreferrer"
+      onClick={handleClick}
       className={`inline-flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-extrabold text-base md:text-lg px-8 py-4 md:px-10 md:py-5 rounded-2xl transition-all duration-300 hover:scale-[1.04] hover:shadow-[0_8px_30px_rgba(37,211,102,0.4)] shadow-lg ${pulse ? "animate-[pulse_2s_ease-in-out_infinite]" : ""} ${className}`}
     >
       <MessageCircle className="h-6 w-6" />
@@ -361,6 +377,7 @@ export default function OportunidadePage() {
           href={WA_URL}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => trackClickWhatsApp({ phone: "553791000090", page: "/oportunidade", context: "oportunidade", is_wholesale: true })}
           className="fixed bottom-4 right-4 z-50 inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-bold text-sm px-5 py-3 rounded-full shadow-lg hover:scale-105 transition-all"
         >
           <MessageCircle className="h-5 w-5" />
@@ -375,6 +392,7 @@ export default function OportunidadePage() {
             href={WA_URL}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackClickWhatsApp({ phone: "553791000090", page: "/oportunidade", context: "oportunidade", is_wholesale: true })}
             className="flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#1ebe5d] text-white font-extrabold text-sm py-4 rounded-xl shadow-lg transition-all"
           >
             <MessageCircle className="h-5 w-5" />
@@ -422,6 +440,7 @@ export default function OportunidadePage() {
             href={WA_URL}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackClickWhatsApp({ phone: "553791000090", page: "/oportunidade", context: "oportunidade", is_wholesale: true })}
             className="inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-bold text-sm px-6 py-3 rounded-xl transition-all hover:scale-[1.03]"
           >
             <MessageCircle className="h-5 w-5" />

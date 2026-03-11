@@ -4,6 +4,7 @@ import Autoplay from "embla-carousel-autoplay";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
+import { trackBannerClick } from "@/lib/tracking";
 
 interface Slide {
   id: string;
@@ -82,7 +83,7 @@ export function HeroCarousel() {
               style={{ opacity: i === selectedIndex ? 1 : 0.4 }}
             >
               {slide.link ? (
-                <Link to={slide.link}>
+                <Link to={slide.link} onClick={() => trackBannerClick({ banner_id: slide.id, banner_type: "hero", link: slide.link || "", position: i })}>
                   <SlideImage slide={slide} />
                 </Link>
               ) : (
