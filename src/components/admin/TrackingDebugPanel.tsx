@@ -199,6 +199,7 @@ export function TrackingDebugPanel() {
   const [eventFilter, setEventFilter] = useState("");
 
   useEffect(() => {
+    initPixel();
     enableDebug(true);
     return () => enableDebug(false);
   }, []);
