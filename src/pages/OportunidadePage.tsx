@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { trackClickWhatsApp, trackWholesaleLead, trackCustomEvent } from "@/lib/tracking";
 import {
   MessageCircle,
   Factory,
