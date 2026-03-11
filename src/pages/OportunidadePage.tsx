@@ -36,18 +36,28 @@ const socialNames = [
 ];
 
 function WhatsAppCTA({ children, className = "", pulse = false, ctaPosition = "unknown" }: { children: React.ReactNode; className?: string; pulse?: boolean; ctaPosition?: string }) {
+  const buttonText = typeof children === "string" ? children : "WhatsApp CTA";
+  const prefilledMsg = "Olá, vim pelo site e quero receber os modelos disponíveis de camisetas com preço de atacado. Pode me enviar as opções?";
   const handleClick = () => {
-    trackClickWhatsApp({
+    trackWhatsAppWholesaleIntent({
       phone: "553791000090",
       page: "/oportunidade",
       context: "oportunidade",
+      position: (ctaPosition as any) || "oportunidade_main",
       is_wholesale: true,
+      intent_level: "strong_lead",
       message_text: "modelos atacado",
+      prefilled_message: prefilledMsg,
+      message_type: "wholesale",
+      button_text: buttonText,
+      wholesale_cta_type: "catalog",
+      wholesale_entry_page: "/oportunidade",
     });
     trackWholesaleLead({
       page: "/oportunidade",
-      cta_text: typeof children === "string" ? children : "WhatsApp CTA",
+      cta_text: buttonText,
       cta_position: ctaPosition,
+      wholesale_cta_type: "catalog",
     });
   };
   return (
