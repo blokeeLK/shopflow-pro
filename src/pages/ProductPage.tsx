@@ -201,7 +201,7 @@ export default function ProductPage() {
             <p className="text-sm font-medium text-foreground mb-2">Tamanho</p>
             <div className="flex flex-wrap gap-2">
               {variants.map((v) => (
-                <button key={v.id} disabled={v.stock <= 0} onClick={() => { setSelectedSize(v.size); setQuantity(1); }}
+                <button key={v.id} disabled={v.stock <= 0} onClick={() => { setSelectedSize(v.size); setQuantity(1); trackSelectSize({ product_id: product.id, product_name: product.name, size: v.size }); }}
                   className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
                     selectedSize === v.size ? "bg-primary text-primary-foreground border-primary"
                       : v.stock > 0 ? "bg-card text-foreground border-border hover:border-primary"
