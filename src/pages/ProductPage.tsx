@@ -114,7 +114,7 @@ export default function ProductPage() {
       maxStock: sizeStock,
       quantity,
     });
-    trackAddToCart({ id: product.id, name: product.name, price: currentPrice, quantity, size: selectedSize });
+    trackAddToCart({ id: product.id, name: product.name, price: currentPrice, quantity, size: selectedSize, category: categoryName });
     toast({ title: "Adicionado ao carrinho! 🛒" });
   };
 
