@@ -9,6 +9,7 @@ import { formatCurrency, getProductPrice } from "@/hooks/useSupabaseData";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePendingPixCount } from "@/hooks/usePendingPixCount";
 import { useQuery } from "@tanstack/react-query";
+import { trackSearch } from "@/lib/tracking";
 
 const TOPBAR_ICONS: Record<string, React.ComponentType<any>> = {
   truck: Truck, shield: Shield, "credit-card": CreditCard, zap: Zap,
