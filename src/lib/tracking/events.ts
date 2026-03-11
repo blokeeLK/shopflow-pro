@@ -129,8 +129,8 @@ export function trackViewContent(product: TrackingProduct) {
     ...getScorePayload(),
     ...getCampaignData(),
   }, {
-    dedupId: product.id,
-    oncePerSession: true,
+    dedupId: `vc_${product.id}`,
+    dedupWindowMs: 30000,
   });
 }
 
@@ -174,6 +174,9 @@ export function trackAddToCart(item: TrackingCartItem & { size?: string; categor
     currency: "BRL",
     ...getScorePayload(),
     ...getCampaignData(),
+  }, {
+    dedupId: `atc_${item.id}_${item.size || ""}`,
+    dedupWindowMs: 5000,
   });
 }
 
@@ -185,6 +188,9 @@ export function trackBuyNow(product: TrackingProduct) {
     price: product.price,
     currency: "BRL",
     ...getScorePayload(),
+  }, {
+    dedupId: `bn_${product.id}`,
+    dedupWindowMs: 5000,
   });
 }
 

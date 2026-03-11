@@ -58,14 +58,44 @@ const POINTS = {
 // ── In-memory score state (per session) ──
 const SESSION_KEY = "sf_score_state";
 
-// Anti-inflation: track recently scored actions
+// Anti-inflation: track recently scored actions with per-action cooldowns
 const recentScoreActions = new Map<string, number>();
-const SCORE_COOLDOWN_MS = 10000; // 10 seconds
+const DEFAULT_SCORE_COOLDOWN_MS = 10000; // 10 seconds default
+
+// Stronger cooldowns for actions that can repeat
+const ACTION_COOLDOWNS: Record<string, number> = {
+  page_view: 5000,
+  view_category: 15000,
+  view_product: 30000,
+  select_product: 10000,
+  select_size: 5000,
+  add_to_cart: 8000,
+  buy_now: 10000,
+  click_whatsapp: 15000,
+  return_to_product: 60000,
+  long_engagement_product: 60000,
+  long_engagement_checkout: 60000,
+  filter_products: 10000,
+  banner_click: 10000,
+  cta_click: 10000,
+};
+
+// Max times each action can score per session
+const actionScoreCounts = new Map<string, number>();
+const MAX_SCORE_PER_ACTION = 5;
 
 function canScore(actionKey: string): boolean {
+  // Check max per session
+  const count = actionScoreCounts.get(actionKey) || 0;
+  if (count >= MAX_SCORE_PER_ACTION) return false;
+
+  // Check cooldown
+  const cooldown = ACTION_COOLDOWNS[actionKey] || DEFAULT_SCORE_COOLDOWN_MS;
   const last = recentScoreActions.get(actionKey);
-  if (last && Date.now() - last < SCORE_COOLDOWN_MS) return false;
+  if (last && Date.now() - last < cooldown) return false;
+
   recentScoreActions.set(actionKey, Date.now());
+  actionScoreCounts.set(actionKey, count + 1);
   return true;
 }
 
