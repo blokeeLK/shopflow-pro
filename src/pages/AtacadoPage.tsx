@@ -6,12 +6,27 @@ import { trackClickWhatsApp, trackWholesaleCTA } from "@/lib/tracking";
 const whatsappUrl =
   "https://wa.me/553791000090?text=Ol%C3%A1!%20Vim%20pelo%20site%20e%20quero%20comprar%20no%20ATACADO%20a%20partir%20de%208%20pe%C3%A7as.%20Gostaria%20de%20ver%20os%20modelos%20dispon%C3%ADveis%20e%20os%20pre%C3%A7os%20exclusivos.";
 
-function WhatsAppCTA({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function WhatsAppCTA({ children, className = "", ctaPosition = "unknown" }: { children: React.ReactNode; className?: string; ctaPosition?: string }) {
+  const handleClick = () => {
+    trackClickWhatsApp({
+      phone: "553791000090",
+      page: "/atacado",
+      context: "wholesale",
+      is_wholesale: true,
+      message_text: "atacado 8 peças",
+    });
+    trackWholesaleCTA({
+      page: "/atacado",
+      cta_text: typeof children === "string" ? children : "WhatsApp CTA",
+      cta_position: ctaPosition,
+    });
+  };
   return (
     <a
       href={whatsappUrl}
       target="_blank"
       rel="noopener noreferrer"
+      onClick={handleClick}
       className={`inline-flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-extrabold text-base md:text-lg px-8 py-4 md:px-10 md:py-5 rounded-2xl transition-all duration-300 hover:scale-[1.04] hover:shadow-[0_8px_30px_rgba(37,211,102,0.4)] shadow-lg ${className}`}
     >
       <MessageCircle className="h-6 w-6" />
