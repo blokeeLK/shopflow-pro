@@ -42,6 +42,7 @@ const steps = [
 ];
 
 export default function AtacadoPage() {
+  useExitIntent();
   return (
     <div className="min-h-screen bg-background">
       {/* ── HERO + PROFIT — ABOVE THE FOLD ── */}
