@@ -129,8 +129,8 @@ export function trackViewContent(product: TrackingProduct) {
     ...getScorePayload(),
     ...getCampaignData(),
   }, {
-    dedupId: product.id,
-    oncePerSession: true,
+    dedupId: `vc_${product.id}`,
+    dedupWindowMs: 30000,
   });
 }
 
