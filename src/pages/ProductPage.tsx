@@ -7,7 +7,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { WholesaleCTA } from "@/components/WholesaleCTA";
 import { ProductReviews } from "@/components/ProductReviews";
 import { useToast } from "@/hooks/use-toast";
-import { trackViewContent, trackAddToCart, trackProductClick, setupProductPageEngagement } from "@/lib/tracking";
+import { trackViewContent, trackAddToCart, trackSelectProduct, trackSelectSize, setupProductPageEngagement, trackClickWhatsApp } from "@/lib/tracking";
 
 export default function ProductPage() {
   const { slug } = useParams<{ slug: string }>();
