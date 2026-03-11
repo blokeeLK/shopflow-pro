@@ -174,6 +174,9 @@ export function trackAddToCart(item: TrackingCartItem & { size?: string; categor
     currency: "BRL",
     ...getScorePayload(),
     ...getCampaignData(),
+  }, {
+    dedupId: `atc_${item.id}_${item.size || ""}`,
+    dedupWindowMs: 5000,
   });
 }
 
