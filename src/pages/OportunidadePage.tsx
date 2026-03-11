@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   MessageCircle,
   Factory,
@@ -14,10 +15,12 @@ import {
   Clock,
   CheckCircle2,
   HelpCircle,
+  Eye,
+  ShoppingBag,
 } from "lucide-react";
 
 const WA_URL =
-  "https://wa.me/553791000090?text=Ol%C3%A1%2C%20vim%20pelo%20site%20e%20quero%20comprar%20camisas%20com%20pre%C3%A7o%20de%20atacado.";
+  "https://wa.me/553791000090?text=Ol%C3%A1%2C%20vim%20pelo%20site%20e%20quero%20receber%20os%20modelos%20dispon%C3%ADveis%20de%20camisetas%20com%20pre%C3%A7o%20de%20atacado.%20Pode%20me%20enviar%20as%20op%C3%A7%C3%B5es%3F";
 
 /* ── Social proof data ── */
 const socialNames = [
@@ -64,8 +67,19 @@ const steps = [
 ];
 
 export default function OportunidadePage() {
+  const isMobile = useIsMobile();
+
   /* ── Urgency counter ── */
-  const [vagas] = useState(() => Math.floor(Math.random() * 13) + 7); // 7–19
+  const [vagas] = useState(() => Math.floor(Math.random() * 13) + 7);
+
+  /* ── Active visitors counter ── */
+  const [activeVisitors, setActiveVisitors] = useState(() => Math.floor(Math.random() * 16) + 8); // 8–23
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveVisitors(Math.floor(Math.random() * 16) + 8);
+    }, 20000);
+    return () => clearInterval(interval);
+  }, []);
 
   /* ── Social proof popup ── */
   const [socialVisible, setSocialVisible] = useState(false);
@@ -91,10 +105,14 @@ export default function OportunidadePage() {
     return () => clearTimeout(t);
   }, []);
 
-  /* ── Micro popup after 40s ── */
+  /* ── Micro popup after 25s (once per session) ── */
   const [microPopup, setMicroPopup] = useState(false);
   useEffect(() => {
-    const t = setTimeout(() => setMicroPopup(true), 40000);
+    if (sessionStorage.getItem("sf_oport_popup_shown")) return;
+    const t = setTimeout(() => {
+      setMicroPopup(true);
+      sessionStorage.setItem("sf_oport_popup_shown", "1");
+    }, 25000);
     return () => clearTimeout(t);
   }, []);
 
@@ -106,6 +124,11 @@ export default function OportunidadePage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(99,102,241,0.08),transparent_50%)]" />
 
         <div className="container relative z-10 py-12 md:py-20 lg:py-28 max-w-4xl mx-auto px-4 text-center">
+          {/* 1 — Recovery message */}
+          <p className="text-xs md:text-sm text-white/60 font-medium tracking-wide mb-4 uppercase">
+            Antes de sair, veja isso 👇
+          </p>
+
           <span className="inline-block bg-[#25D366]/10 text-[#25D366] text-[11px] font-bold uppercase tracking-[0.25em] px-4 py-1.5 rounded-full mb-6 border border-[#25D366]/20">
             Oportunidade exclusiva
           </span>
@@ -130,6 +153,17 @@ export default function OportunidadePage() {
           <WhatsAppCTA pulse={ctaPulse} className="w-full sm:w-auto">
             QUERO COMPRAR CAMISAS COM PREÇO DE ATACADO
           </WhatsAppCTA>
+
+          {/* 2 — Microcopy */}
+          <p className="text-xs text-white/40 mt-3">
+            Receba no WhatsApp os modelos disponíveis no atacado agora.
+          </p>
+
+          {/* 3 — Active visitors */}
+          <div className="flex items-center justify-center gap-1.5 mt-5 text-white/50 text-xs">
+            <Eye className="h-3.5 w-3.5" />
+            <span><strong className="text-white/70">{activeVisitors}</strong> pessoas estão vendo esta oportunidade agora</span>
+          </div>
         </div>
       </section>
 
@@ -172,7 +206,7 @@ export default function OportunidadePage() {
           Quanto você pode ganhar
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           <div className="rounded-2xl border border-border bg-card p-6 text-center shadow-sm">
             <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-semibold mb-2">
               Preço de atacado
@@ -193,9 +227,38 @@ export default function OportunidadePage() {
           </div>
         </div>
 
-        <p className="text-sm text-muted-foreground text-center">
+        <p className="text-sm text-muted-foreground text-center mb-8">
           Revendedores conseguem recuperar o investimento já nos primeiros pedidos.
         </p>
+
+        {/* 4 — Exemplo prático de revenda */}
+        <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm max-w-md mx-auto">
+          <div className="flex items-center gap-2 mb-4">
+            <ShoppingBag className="h-5 w-5 text-[#25D366]" />
+            <h3 className="font-display text-base font-bold text-foreground">Exemplo de revenda</h3>
+          </div>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Compra de 20 camisetas</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Custo total:</span>
+              <span className="font-bold text-foreground">R$399,80</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Revenda média:</span>
+              <span className="font-bold text-foreground">R$59</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Faturamento possível:</span>
+              <span className="font-bold text-foreground">R$1.180</span>
+            </div>
+            <div className="border-t border-border pt-2 mt-2 flex justify-between">
+              <span className="font-bold text-foreground">Lucro aproximado:</span>
+              <span className="font-extrabold text-[#25D366] text-base">R$780</span>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* ═══ ESCASSEZ ═══ */}
@@ -206,10 +269,10 @@ export default function OportunidadePage() {
             ⚠️ ATENÇÃO
           </h3>
           <p className="text-sm text-muted-foreground leading-relaxed mb-1">
-            Os modelos mais procurados esgotam rápido no atacado.
+            Alguns modelos de camisetas podem esgotar ainda hoje devido à alta procura no atacado.
           </p>
           <p className="text-sm font-semibold text-foreground">
-            Quem chama primeiro no WhatsApp recebe as opções disponíveis antes do estoque girar.
+            Quem chama primeiro no WhatsApp consegue ver as opções disponíveis antes do estoque girar.
           </p>
         </div>
       </section>
@@ -228,6 +291,9 @@ export default function OportunidadePage() {
         <WhatsAppCTA pulse={ctaPulse} className="w-full sm:w-auto text-center">
           QUERO COMPRAR CAMISAS COM PREÇO DE ATACADO
         </WhatsAppCTA>
+        <p className="text-xs text-muted-foreground mt-3">
+          Receba no WhatsApp os modelos disponíveis no atacado agora.
+        </p>
       </section>
 
       {/* ═══ COMO FUNCIONA ═══ */}
@@ -254,7 +320,7 @@ export default function OportunidadePage() {
         <div className="flex items-center justify-center gap-3 mb-2">
           <Users className="h-5 w-5 text-[#25D366]" />
           <span className="font-display text-xl md:text-2xl font-extrabold text-foreground">
-            Mais de 120 revendedores já compram conosco
+            Mais de 120 revendedores já compram camisetas conosco para revenda.
           </span>
         </div>
         <p className="text-muted-foreground text-sm">
@@ -268,13 +334,13 @@ export default function OportunidadePage() {
           Seu próximo pedido pode começar hoje.
         </h2>
         <p className="text-sm text-muted-foreground leading-relaxed max-w-xl mx-auto">
-          Quanto antes você entrar em contato, maiores as chances de pegar os melhores modelos disponíveis no estoque.
+          Clique no WhatsApp e receba agora os modelos disponíveis no atacado.
         </p>
       </section>
 
       {/* ═══ CTA FINAL ═══ */}
       <section className="bg-gradient-to-br from-[#0a0f1e] via-[#111827] to-[#0f172a] text-white">
-        <div className="container py-14 md:py-20 max-w-2xl mx-auto px-4 text-center">
+        <div className={`container py-14 md:py-20 max-w-2xl mx-auto px-4 text-center ${isMobile ? "pb-28" : ""}`}>
           <Truck className="h-9 w-9 text-[#25D366] mx-auto mb-4" />
           <h2 className="font-display text-2xl md:text-3xl font-extrabold mb-6 leading-tight">
             Fale com nosso atendente agora
@@ -284,25 +350,42 @@ export default function OportunidadePage() {
             Resposta em menos de 5 minutos
           </p>
           <WhatsAppCTA pulse={ctaPulse}>
-            FALAR COM ATENDENTE NO WHATSAPP
+            QUERO VER OS MODELOS DE ATACADO
           </WhatsAppCTA>
         </div>
       </section>
 
-      {/* ═══ BOTÃO FLUTUANTE WHATSAPP ═══ */}
-      <a
-        href={WA_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-4 right-4 z-50 inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-bold text-sm px-5 py-3 rounded-full shadow-lg hover:scale-105 transition-all"
-      >
-        <MessageCircle className="h-5 w-5" />
-        Comprar no atacado
-      </a>
+      {/* ═══ BOTÃO FLUTUANTE WHATSAPP (desktop) ═══ */}
+      {!isMobile && (
+        <a
+          href={WA_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="fixed bottom-4 right-4 z-50 inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-bold text-sm px-5 py-3 rounded-full shadow-lg hover:scale-105 transition-all"
+        >
+          <MessageCircle className="h-5 w-5" />
+          Comprar no atacado
+        </a>
+      )}
+
+      {/* ═══ BARRA FIXA MOBILE ═══ */}
+      {isMobile && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t border-border p-3">
+          <a
+            href={WA_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#1ebe5d] text-white font-extrabold text-sm py-4 rounded-xl shadow-lg transition-all"
+          >
+            <MessageCircle className="h-5 w-5" />
+            VER MODELOS DE ATACADO NO WHATSAPP
+          </a>
+        </div>
+      )}
 
       {/* ═══ SOCIAL PROOF POPUP ═══ */}
       {socialVisible && (
-        <div className="fixed bottom-20 left-4 z-50 max-w-xs bg-card rounded-lg shadow-lg border p-3 animate-in slide-in-from-left-5 duration-300">
+        <div className={`fixed ${isMobile ? "bottom-20" : "bottom-20"} left-4 z-50 max-w-xs bg-card rounded-lg shadow-lg border p-3 animate-in slide-in-from-left-5 duration-300`}>
           <div className="flex items-start gap-3">
             <div className="h-9 w-9 rounded-full bg-[#25D366] flex items-center justify-center flex-shrink-0">
               <span className="text-xs font-bold text-white">{socialItem.name.charAt(0)}</span>
@@ -319,7 +402,7 @@ export default function OportunidadePage() {
         </div>
       )}
 
-      {/* ═══ MICRO POPUP (40s) ═══ */}
+      {/* ═══ MICRO POPUP (25s, once per session) ═══ */}
       {microPopup && (
         <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[60] max-w-sm w-[90vw] bg-card rounded-2xl shadow-2xl border p-6 text-center animate-in zoom-in-95 duration-300">
           <button
@@ -330,10 +413,10 @@ export default function OportunidadePage() {
           </button>
           <HelpCircle className="h-8 w-8 text-[#25D366] mx-auto mb-3" />
           <p className="font-display text-lg font-bold text-foreground mb-1">
-            Precisa de ajuda para começar?
+            Ainda quer ver os modelos de camisetas com preço de atacado?
           </p>
           <p className="text-sm text-muted-foreground mb-4">
-            Fale com um atendente agora.
+            Receba o catálogo direto no WhatsApp.
           </p>
           <a
             href={WA_URL}
@@ -342,7 +425,7 @@ export default function OportunidadePage() {
             className="inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-bold text-sm px-6 py-3 rounded-xl transition-all hover:scale-[1.03]"
           >
             <MessageCircle className="h-5 w-5" />
-            Abrir WhatsApp
+            Receber catálogo no WhatsApp
           </a>
         </div>
       )}
