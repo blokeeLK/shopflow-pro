@@ -450,7 +450,7 @@ export default function OportunidadePage() {
             href={WA_URL}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={() => trackClickWhatsApp({ phone: "553791000090", page: "/oportunidade", context: "oportunidade", is_wholesale: true })}
+            onClick={() => trackClickWhatsApp({ phone: "553791000090", page: "/oportunidade", context: "oportunidade", position: "oportunidade_popup", is_wholesale: true, intent_level: "strong_lead", button_text: "Receber catálogo no WhatsApp", message_type: "catalog" })}
             className="inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-bold text-sm px-6 py-3 rounded-xl transition-all hover:scale-[1.03]"
           >
             <MessageCircle className="h-5 w-5" />

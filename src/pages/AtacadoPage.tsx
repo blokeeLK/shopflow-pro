@@ -7,18 +7,28 @@ const whatsappUrl =
   "https://wa.me/553791000090?text=Ol%C3%A1!%20Vim%20pelo%20site%20e%20quero%20comprar%20no%20ATACADO%20a%20partir%20de%208%20pe%C3%A7as.%20Gostaria%20de%20ver%20os%20modelos%20dispon%C3%ADveis%20e%20os%20pre%C3%A7os%20exclusivos.";
 
 function WhatsAppCTA({ children, className = "", ctaPosition = "unknown" }: { children: React.ReactNode; className?: string; ctaPosition?: string }) {
+  const buttonText = typeof children === "string" ? children : "WhatsApp CTA";
+  const prefilledMsg = "Olá! Vim pelo site e quero comprar no ATACADO a partir de 8 peças. Gostaria de ver os modelos disponíveis e os preços exclusivos.";
   const handleClick = () => {
-    trackClickWhatsApp({
+    trackWhatsAppWholesaleIntent({
       phone: "553791000090",
       page: "/atacado",
       context: "wholesale",
+      position: (ctaPosition as any) || "wholesale_page",
       is_wholesale: true,
+      intent_level: "strong_lead",
       message_text: "atacado 8 peças",
+      prefilled_message: prefilledMsg,
+      message_type: "wholesale",
+      button_text: buttonText,
+      wholesale_cta_type: "contact_seller",
+      wholesale_entry_page: "/atacado",
     });
     trackWholesaleCTA({
       page: "/atacado",
-      cta_text: typeof children === "string" ? children : "WhatsApp CTA",
+      cta_text: buttonText,
       cta_position: ctaPosition,
+      wholesale_cta_type: "contact_seller",
     });
   };
   return (
