@@ -188,6 +188,9 @@ export function trackBuyNow(product: TrackingProduct) {
     price: product.price,
     currency: "BRL",
     ...getScorePayload(),
+  }, {
+    dedupId: `bn_${product.id}`,
+    dedupWindowMs: 5000,
   });
 }
 
