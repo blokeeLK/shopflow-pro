@@ -83,7 +83,7 @@ export function HeroCarousel() {
               style={{ opacity: i === selectedIndex ? 1 : 0.4 }}
             >
               {slide.link ? (
-                <Link to={slide.link}>
+                <Link to={slide.link} onClick={() => trackBannerClick({ banner_id: slide.id, banner_type: "hero", link: slide.link || "", position: i })}>
                   <SlideImage slide={slide} />
                 </Link>
               ) : (
