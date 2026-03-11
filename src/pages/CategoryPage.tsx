@@ -17,6 +17,13 @@ export default function CategoryPage() {
   const sizeFilter = searchParams.get("tamanho")?.toUpperCase() || "";
   const category = categories.find((c) => c.slug === slug);
 
+  // Track category view
+  useEffect(() => {
+    if (category) {
+      trackViewCategory({ name: category.name, slug: category.slug });
+    }
+  }, [category?.slug]);
+
   // Available sizes in this category
   const availableSizes = useMemo(() => {
     const sizes = new Set<string>();
