@@ -40,6 +40,7 @@ import AdminPromotions from "./pages/admin/AdminPromotions";
 import FaqPage from "./pages/FaqPage";
 import AtacadoPage from "./pages/AtacadoPage";
 import CatalogoPage from "./pages/CatalogoPage";
+import OportunidadePage from "./pages/OportunidadePage";
 
 const queryClient = new QueryClient();
 
@@ -67,6 +68,7 @@ const App = () => (
                 <Route path="/faq" element={<FaqPage />} />
                 <Route path="/atacado" element={<AtacadoPage />} />
                 <Route path="/catalogo" element={<CatalogoPage />} />
+                <Route path="/oportunidade" element={<OportunidadePage />} />
               </Route>
               <Route element={<AdminLayout />}>
                 <Route path="/admin" element={<AdminDashboard />} />
