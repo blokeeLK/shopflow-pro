@@ -35,12 +35,27 @@ const socialNames = [
   { name: "Camila", city: "Porto Alegre", action: "está escolhendo modelos para revenda" },
 ];
 
-function WhatsAppCTA({ children, className = "", pulse = false }: { children: React.ReactNode; className?: string; pulse?: boolean }) {
+function WhatsAppCTA({ children, className = "", pulse = false, ctaPosition = "unknown" }: { children: React.ReactNode; className?: string; pulse?: boolean; ctaPosition?: string }) {
+  const handleClick = () => {
+    trackClickWhatsApp({
+      phone: "553791000090",
+      page: "/oportunidade",
+      context: "oportunidade",
+      is_wholesale: true,
+      message_text: "modelos atacado",
+    });
+    trackWholesaleLead({
+      page: "/oportunidade",
+      cta_text: typeof children === "string" ? children : "WhatsApp CTA",
+      cta_position: ctaPosition,
+    });
+  };
   return (
     <a
       href={WA_URL}
       target="_blank"
       rel="noopener noreferrer"
+      onClick={handleClick}
       className={`inline-flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-extrabold text-base md:text-lg px-8 py-4 md:px-10 md:py-5 rounded-2xl transition-all duration-300 hover:scale-[1.04] hover:shadow-[0_8px_30px_rgba(37,211,102,0.4)] shadow-lg ${pulse ? "animate-[pulse_2s_ease-in-out_infinite]" : ""} ${className}`}
     >
       <MessageCircle className="h-6 w-6" />
