@@ -1,7 +1,8 @@
 import { useParams, useSearchParams } from "react-router-dom";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { ProductCard } from "@/components/ProductCard";
 import { useProducts, useCategories, DbProduct, getProductPrice } from "@/hooks/useSupabaseData";
+import { trackViewCategory } from "@/lib/tracking";
 
 type SortOption = "price-asc" | "price-desc" | "best-sellers";
 const SIZES = ["P", "M", "G", "GG"] as const;
