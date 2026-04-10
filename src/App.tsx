@@ -55,6 +55,7 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/atacado" element={<AtacadoPage />} />
+              <Route path="/atacado-teste" element={<AtacadoPage />} />
               <Route element={<StoreLayout />}>
                 <Route path="/" element={<Index />} />
                 <Route path="/produto/:slug" element={<ProductPage />} />
