@@ -54,6 +54,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
+              <Route path="/atacado" element={<AtacadoPage />} />
               <Route element={<StoreLayout />}>
                 <Route path="/" element={<Index />} />
                 <Route path="/produto/:slug" element={<ProductPage />} />
@@ -68,7 +69,6 @@ const App = () => (
                 <Route path="/faq" element={<FaqPage />} />
                 <Route path="/catalogo" element={<CatalogoPage />} />
               </Route>
-              <Route path="/atacado" element={<AtacadoPage />} />
               <Route path="/oportunidade" element={<OportunidadePage />} />
               <Route element={<AdminLayout />}>
                 <Route path="/admin" element={<AdminDashboard />} />
