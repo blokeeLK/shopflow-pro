@@ -2,7 +2,31 @@ import { useEffect } from "react";
 
 const AtacadoPage = () => {
   useEffect(() => {
-    // Tracking for WhatsApp clicks (from the original script)
+    // Load UTMify Scripts
+    if (!document.getElementById("utmify-scripts")) {
+      const container = document.createElement("div");
+      container.id = "utmify-scripts";
+      
+      const script1 = document.createElement("script");
+      script1.src = "https://cdn.utmify.com.br/scripts/utms/latest.js";
+      script1.async = true;
+      script1.setAttribute("data-utmify-prevent-xcod-sck", "");
+      script1.setAttribute("data-utmify-prevent-subids", "");
+      
+      const script2 = document.createElement("script");
+      script2.src = "https://cdn.utmify.com.br/scripts/pixel/pixel.js";
+      script2.async = true;
+      
+      const script3 = document.createElement("script");
+      script3.text = `window.utmify_pixel_id = "69add314ca90986027a3c6c5";`;
+      
+      container.appendChild(script1);
+      container.appendChild(script2);
+      container.appendChild(script3);
+      document.head.appendChild(container);
+    }
+
+    // Tracking for WhatsApp clicks
     const handleWhatsAppClick = () => {
       // @ts-ignore
       if (window.utmify_event) {
@@ -116,13 +140,20 @@ const AtacadoPage = () => {
           font-size: 15px;
           box-shadow: 0 10px 30px rgba(42,214,107,0.25);
           text-decoration: none;
+          transform: translateZ(0) scale(1);
           transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+          will-change: transform;
         }
 
         .btn:hover {
           transform: scale(1.06);
           box-shadow: 0 18px 42px rgba(42,214,107,0.34);
           filter: brightness(1.03);
+        }
+
+        .btn:active {
+          transform: scale(1.03);
+          box-shadow: 0 12px 28px rgba(42,214,107,0.28);
         }
 
         .section {
@@ -183,6 +214,13 @@ const AtacadoPage = () => {
           margin-bottom: 24px;
         }
 
+        footer {
+          text-align: center;
+          padding: 30px 0;
+          color: #7f8a9a;
+          font-size: 13px;
+        }
+
         @media(max-width: 768px){
           .proof {
             justify-content: flex-start;
@@ -239,7 +277,7 @@ const AtacadoPage = () => {
         </a>
       </section>
 
-      <footer style={{ textAlign: "center", padding: "30px 0", color: "#7f8a9a", fontSize: "13px" }}>
+      <footer>
         © {new Date().getFullYear()} Atacado ShopFlow - Todos os direitos reservados
       </footer>
     </div>
@@ -247,3 +285,4 @@ const AtacadoPage = () => {
 };
 
 export default AtacadoPage;
+
