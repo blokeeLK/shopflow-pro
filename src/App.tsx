@@ -39,6 +39,7 @@ import AdminPromotions from "./pages/admin/AdminPromotions";
 
 import FaqPage from "./pages/FaqPage";
 import AtacadoPage from "./pages/AtacadoPage";
+import AtacadoOficial from "./pages/AtacadoOficial";
 import CatalogoPage from "./pages/CatalogoPage";
 import OportunidadePage from "./pages/OportunidadePage";
 
@@ -67,6 +68,7 @@ const App = () => (
                 <Route path="/checkout" element={<CheckoutPage />} />
                 <Route path="/faq" element={<FaqPage />} />
                 <Route path="/atacado" element={<AtacadoPage />} />
+                <Route path="/atacadooficial" element={<AtacadoOficial />} />
                 <Route path="/catalogo" element={<CatalogoPage />} />
               </Route>
               <Route path="/oportunidade" element={<OportunidadePage />} />
