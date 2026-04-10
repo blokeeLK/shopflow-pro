@@ -61,7 +61,9 @@ const AtacadoPage = () => {
     };
   }, []);
 
-  const whatsappLink = "https://wa.me/553791000090?text=Quero%20saber%20mais%20informac%C3%B5es%20sobre%20o%20atacado%20de%20camisas%20!";
+  const whatsappNumber = "553791000090";
+  const whatsappLink1 = `https://wa.me/${whatsappNumber}?text=Ol%C3%A1%2C+quero+comprar+no+atacado`;
+  const whatsappLink2 = `https://wa.me/${whatsappNumber}?text=Quero+comprar+no+atacado`;
 
   return (
     <div className="atacado-page" style={{ 
@@ -85,6 +87,8 @@ const AtacadoPage = () => {
           --max: 980px;
         }
 
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         .top-highlight {
           width: 100%;
           background: linear-gradient(90deg, #16a34a 0%, #2ad66b 50%, #16a34a 100%);
@@ -102,6 +106,8 @@ const AtacadoPage = () => {
           width: min(calc(100% - 32px), 980px);
           margin: 0 auto;
         }
+
+        a { text-decoration: none; }
 
         .hero {
           text-align: center;
@@ -199,6 +205,18 @@ const AtacadoPage = () => {
           justify-content: center;
         }
 
+        .bubble {
+          background: rgba(255,255,255,0.05);
+          padding: 10px;
+          border-radius: 10px;
+          font-size: 13px;
+          margin-bottom: 8px;
+        }
+
+        .bubble.green {
+          background: rgba(42,214,107,0.15);
+        }
+
         .cta {
           text-align: center;
           padding: 70px 0;
@@ -241,7 +259,7 @@ const AtacadoPage = () => {
         <h1>A qualidade que seu cliente procura está aqui</h1>
         <p>Entre em contato agora para ver catálogo atualizado e comprar direto no atacado.</p>
 
-        <a className="btn" href={whatsappLink} target="_blank" rel="noopener noreferrer">
+        <a className="btn" href={whatsappLink1} target="_blank" rel="noopener noreferrer">
           Falar no WhatsApp
         </a>
       </section>
@@ -272,7 +290,7 @@ const AtacadoPage = () => {
         <h2>Garanta seu pedido no atacado</h2>
         <p>Compra rápida direto pelo WhatsApp</p>
 
-        <a className="btn" href={whatsappLink} target="_blank" rel="noopener noreferrer">
+        <a className="btn" href={whatsappLink2} target="_blank" rel="noopener noreferrer">
           Comprar agora
         </a>
       </section>
