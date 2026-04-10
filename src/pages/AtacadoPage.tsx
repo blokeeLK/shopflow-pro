@@ -26,6 +26,17 @@ const AtacadoPage = () => {
       document.head.appendChild(container);
     }
 
+    // Tracking PageView/OpenWholesalePage events
+    const initTracking = () => {
+      // @ts-ignore
+      if (window.utmify_event) {
+        // @ts-ignore
+        window.utmify_event("PageView", { page: window.location.pathname });
+        // @ts-ignore
+        window.utmify_event("OpenWholesalePage", {});
+      }
+    };
+
     // Tracking for WhatsApp clicks
     const handleWhatsAppClick = () => {
       // @ts-ignore
@@ -39,19 +50,13 @@ const AtacadoPage = () => {
       }
     };
 
+    // Initial check
+    initTracking();
+
     const btns = document.querySelectorAll('a[href*="wa.me"]');
     btns.forEach((btn) => {
       btn.addEventListener("click", handleWhatsAppClick);
     });
-
-    // Tracking PageView/OpenWholesalePage events
-    // @ts-ignore
-    if (window.utmify_event) {
-      // @ts-ignore
-      window.utmify_event("PageView", { page: window.location.pathname });
-      // @ts-ignore
-      window.utmify_event("OpenWholesalePage", {});
-    }
 
     // Cleanup
     return () => {
@@ -67,7 +72,7 @@ const AtacadoPage = () => {
 
   return (
     <div className="atacado-page" style={{ 
-      backgroundColor: "#05070b", 
+      background: "linear-gradient(180deg, #05070b 0%, #07101a 100%)", 
       color: "#ffffff", 
       minHeight: "100vh",
       fontFamily: "Inter, Arial, sans-serif",
@@ -205,18 +210,6 @@ const AtacadoPage = () => {
           justify-content: center;
         }
 
-        .bubble {
-          background: rgba(255,255,255,0.05);
-          padding: 10px;
-          border-radius: 10px;
-          font-size: 13px;
-          margin-bottom: 8px;
-        }
-
-        .bubble.green {
-          background: rgba(42,214,107,0.15);
-        }
-
         .cta {
           text-align: center;
           padding: 70px 0;
@@ -230,13 +223,6 @@ const AtacadoPage = () => {
         .cta p {
           color: #aab4c4;
           margin-bottom: 24px;
-        }
-
-        footer {
-          text-align: center;
-          padding: 30px 0;
-          color: #7f8a9a;
-          font-size: 13px;
         }
 
         @media(max-width: 768px){
@@ -294,13 +280,10 @@ const AtacadoPage = () => {
           Comprar agora
         </a>
       </section>
-
-      <footer>
-        © {new Date().getFullYear()} Atacado ShopFlow - Todos os direitos reservados
-      </footer>
     </div>
   );
 };
 
 export default AtacadoPage;
+
 
