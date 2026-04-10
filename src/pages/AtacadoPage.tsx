@@ -1,325 +1,249 @@
-import { MessageCircle, Package, Palette, Ruler, TrendingUp, AlertTriangle, Clock, CheckCircle2, Truck, Users, Zap, DollarSign, ShoppingBag, Sparkles } from "lucide-react";
-import { FadeInSection } from "@/components/FadeInSection";
-import { useExitIntent } from "@/hooks/useExitIntent";
-import { trackWhatsAppWholesaleIntent, trackWholesaleCTA } from "@/lib/tracking";
+import { useEffect } from "react";
 
-const whatsappUrl =
-  "https://wa.me/553791000090?text=Ol%C3%A1!%20Vim%20pelo%20site%20e%20quero%20comprar%20no%20ATACADO%20a%20partir%20de%208%20pe%C3%A7as.%20Gostaria%20de%20ver%20os%20modelos%20dispon%C3%ADveis%20e%20os%20pre%C3%A7os%20exclusivos.";
+const AtacadoPage = () => {
+  useEffect(() => {
+    // Tracking for WhatsApp clicks (from the original script)
+    const handleWhatsAppClick = () => {
+      // @ts-ignore
+      if (window.utmify_event) {
+        // @ts-ignore
+        window.utmify_event("ClickWhatsApp", { position: "landing" });
+        // @ts-ignore
+        window.utmify_event("WhatsAppWholesaleIntent", { source: "landing" });
+        // @ts-ignore
+        window.utmify_event("Lead", { type: "whatsapp" });
+      }
+    };
 
-function WhatsAppCTA({ children, className = "", ctaPosition = "unknown" }: { children: React.ReactNode; className?: string; ctaPosition?: string }) {
-  const buttonText = typeof children === "string" ? children : "WhatsApp CTA";
-  const prefilledMsg = "Olá! Vim pelo site e quero comprar no ATACADO a partir de 8 peças. Gostaria de ver os modelos disponíveis e os preços exclusivos.";
-  const handleClick = () => {
-    trackWhatsAppWholesaleIntent({
-      phone: "553791000090",
-      page: "/atacado",
-      context: "wholesale",
-      position: (ctaPosition as any) || "wholesale_page",
-      is_wholesale: true,
-      intent_level: "strong_lead",
-      message_text: "atacado 8 peças",
-      prefilled_message: prefilledMsg,
-      message_type: "wholesale",
-      button_text: buttonText,
-      wholesale_cta_type: "contact_seller",
-      wholesale_entry_page: "/atacado",
+    const btns = document.querySelectorAll('a[href*="wa.me"]');
+    btns.forEach((btn) => {
+      btn.addEventListener("click", handleWhatsAppClick);
     });
-    trackWholesaleCTA({
-      page: "/atacado",
-      cta_text: buttonText,
-      cta_position: ctaPosition,
-      wholesale_cta_type: "contact_seller",
-    });
-  };
+
+    // Tracking PageView/OpenWholesalePage events
+    // @ts-ignore
+    if (window.utmify_event) {
+      // @ts-ignore
+      window.utmify_event("PageView", { page: window.location.pathname });
+      // @ts-ignore
+      window.utmify_event("OpenWholesalePage", {});
+    }
+
+    // Cleanup
+    return () => {
+      btns.forEach((btn) => {
+        btn.removeEventListener("click", handleWhatsAppClick);
+      });
+    };
+  }, []);
+
+  const whatsappLink = "https://wa.me/553791000090?text=Quero%20saber%20mais%20informac%C3%B5es%20sobre%20o%20atacado%20de%20camisas%20!";
+
   return (
-    <a
-      href={whatsappUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      onClick={handleClick}
-      className={`inline-flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-extrabold text-base md:text-lg px-8 py-4 md:px-10 md:py-5 rounded-2xl transition-all duration-300 hover:scale-[1.04] hover:shadow-[0_8px_30px_rgba(37,211,102,0.4)] shadow-lg ${className}`}
-    >
-      <MessageCircle className="h-6 w-6" />
-      {children}
-    </a>
-  );
-}
+    <div className="atacado-page" style={{ 
+      backgroundColor: "#05070b", 
+      color: "#ffffff", 
+      minHeight: "100vh",
+      fontFamily: "Inter, Arial, sans-serif",
+      lineHeight: "1.5"
+    }}>
+      <style>{`
+        :root {
+          --bg: #05070b;
+          --bg-soft: #0b1020;
+          --panel: #0d1422;
+          --text: #ffffff;
+          --muted: #aab4c4;
+          --green: #2ad66b;
+          --green-dark: #1da553;
+          --line: rgba(255,255,255,0.06);
+          --radius: 14px;
+          --max: 980px;
+        }
 
-const proofs = [
-  "Pedido mínimo de apenas 8 peças",
-  "Misture cores e modelos",
-  "Enviamos para todo Brasil",
-  "Alta margem de revenda",
-];
+        .top-highlight {
+          width: 100%;
+          background: linear-gradient(90deg, #16a34a 0%, #2ad66b 50%, #16a34a 100%);
+          color: #04120a;
+          text-align: center;
+          font-size: 14px;
+          font-weight: 800;
+          letter-spacing: .08em;
+          text-transform: uppercase;
+          padding: 12px 16px;
+          box-shadow: 0 10px 30px rgba(42,214,107,0.18);
+        }
 
+        .container {
+          width: min(calc(100% - 32px), 980px);
+          margin: 0 auto;
+        }
 
-const trustCards = [
-  { icon: Package, title: "Pedido mínimo baixo", desc: "Comece no atacado com apenas 8 peças." },
-  { icon: Palette, title: "Modelos variados", desc: "Misture cores e estampas no mesmo pedido." },
-  { icon: Ruler, title: "Tamanhos livres", desc: "P, M, G e GG disponíveis." },
-  { icon: TrendingUp, title: "Alta margem de lucro", desc: "Revenda com ótimo lucro." },
-];
+        .hero {
+          text-align: center;
+          padding: 72px 0 50px;
+        }
 
-const steps = [
-  { num: "1", text: "Clique no botão do WhatsApp" },
-  { num: "2", text: "Receba fotos dos modelos disponíveis" },
-  { num: "3", text: "Escolha tamanhos e cores" },
-  { num: "4", text: "Finalize seu pedido" },
-];
+        .logo {
+          font-size: 28px;
+          font-weight: 800;
+          letter-spacing: .05em;
+          margin-bottom: 20px;
+        }
 
-export default function AtacadoPage() {
-  useExitIntent();
-  return (
-    <div className="min-h-screen bg-background">
-      {/* ── HERO + PROFIT — ABOVE THE FOLD ── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#0f1629] via-[#1a1a2e] to-[#16213e] text-white">
-        {/* Decorative elements */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(37,211,102,0.12),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(99,102,241,0.1),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(37,211,102,0.04),transparent_70%)]" />
+        .hero h1 {
+          font-size: clamp(28px, 4vw, 44px);
+          font-weight: 800;
+          margin-bottom: 14px;
+        }
 
-        <div className="container relative z-10 py-10 md:py-16 lg:py-20 max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 items-start">
+        .hero p {
+          color: #aab4c4;
+          max-width: 520px;
+          margin: 0 auto 28px;
+          font-size: 16px;
+        }
 
-            {/* ── LEFT COLUMN — OFFER & CTA (3/5) ── */}
-            <div className="lg:col-span-3 flex flex-col">
-              <FadeInSection>
-                <span className="inline-block bg-[#25D366]/10 text-[#25D366] text-[11px] font-bold uppercase tracking-[0.25em] px-4 py-1.5 rounded-full mb-6 border border-[#25D366]/20">
-                  Atacado exclusivo
-                </span>
-              </FadeInSection>
+        .btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 14px 26px;
+          border-radius: 14px;
+          background: linear-gradient(180deg, #2ad66b 0%, #1da553 100%);
+          color: #04120a;
+          font-weight: 700;
+          font-size: 15px;
+          box-shadow: 0 10px 30px rgba(42,214,107,0.25);
+          text-decoration: none;
+          transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+        }
 
-              <FadeInSection delay={80}>
-                <h1 className="font-display text-3xl sm:text-4xl md:text-5xl xl:text-[3.4rem] font-extrabold leading-[1.08] mb-4 tracking-tight">
-                  ATACADO DIRETO
-                  <br />
-                  <span className="bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">DA FÁBRICA</span>
-                </h1>
-                <p className="text-lg md:text-2xl text-white/70 font-semibold mb-5">
-                  Camisas fio 30.1 com preço especial
-                </p>
-              </FadeInSection>
+        .btn:hover {
+          transform: scale(1.06);
+          box-shadow: 0 18px 42px rgba(42,214,107,0.34);
+          filter: brightness(1.03);
+        }
 
-              <FadeInSection delay={140}>
-                <p className="text-base md:text-lg text-white/80 leading-relaxed mb-1.5">
-                  Compre a partir de <strong className="text-[#25D366]">8 peças</strong> e pague preço de atacado real.
-                </p>
-                <p className="text-sm md:text-base text-white/60 mb-5">
-                  Ideal para <strong className="text-white">Revendedores</strong> · <strong className="text-white">Lojistas</strong> · <strong className="text-white">Quem quer comprar barato</strong>
-                </p>
-              </FadeInSection>
+        .section {
+          padding: 50px 0;
+          text-align: center;
+        }
 
-              <FadeInSection delay={200}>
-                <div className="flex flex-col sm:flex-row flex-wrap gap-x-5 gap-y-1.5 mb-6">
-                  {proofs.map((p) => (
-                    <span key={p} className="inline-flex items-center gap-2 text-[13px] text-white/75">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-[#25D366] flex-shrink-0" />
-                      {p}
-                    </span>
-                  ))}
-                </div>
-              </FadeInSection>
+        .section h2 {
+          font-size: 22px;
+          margin-bottom: 8px;
+        }
 
-              <FadeInSection delay={260}>
-                <p className="text-[11px] text-white/40 mb-3 flex items-center gap-1.5">
-                  <Zap className="h-3 w-3" />
-                  Atendimento rápido pelo WhatsApp · Tempo médio de resposta: menos de 5 min
-                </p>
-                <WhatsAppCTA className="w-full sm:w-auto text-center" ctaPosition="hero">
-                  FALAR COM ATENDENTE NO WHATSAPP
-                </WhatsAppCTA>
-              </FadeInSection>
-            </div>
+        .section p {
+          color: #aab4c4;
+          margin-bottom: 20px;
+          font-size: 15px;
+        }
 
-            {/* ── RIGHT COLUMN — PROFIT CARDS (2/5) ── */}
-            <div className="lg:col-span-2 flex flex-col">
-              <FadeInSection delay={100}>
-                <h2 className="font-display text-lg md:text-xl font-bold text-white mb-5 flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-[#25D366]" />
-                  Quanto você pode ganhar
-                </h2>
-              </FadeInSection>
+        .proof {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 20px;
+          overflow-x: auto;
+          scroll-snap-type: x mandatory;
+          padding: 10px 0 16px;
+        }
 
-              <div className="flex flex-col gap-3">
-                {/* Card 1 — Preço de Atacado */}
-                <FadeInSection delay={160}>
-                  <div className="relative rounded-2xl border border-white/10 bg-white p-5 md:p-6 flex items-center gap-4 hover:shadow-lg hover:shadow-[#25D366]/10 transition-all duration-300">
-                    <div className="flex-shrink-0 rounded-xl bg-[#25D366]/15 p-3">
-                      <ShoppingBag className="h-5 w-5 text-[#25D366]" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[11px] uppercase tracking-widest text-gray-500 font-semibold mb-1">Preço de atacado</p>
-                      <p className="font-display text-3xl md:text-4xl font-extrabold text-[#25D366] leading-none">APENAS R$19,99</p>
-                      <p className="text-xs text-gray-500 mt-1">por peça</p>
-                      <p className="text-[11px] text-gray-400 mt-0.5 italic">Preço direto da fábrica</p>
-                    </div>
-                  </div>
-                </FadeInSection>
+        .proof::-webkit-scrollbar {
+          height: 6px;
+        }
 
-                {/* Card 2 — Revenda Média */}
-                <FadeInSection delay={240}>
-                  <div className="relative rounded-2xl border border-white/10 bg-white p-5 md:p-6 flex items-center gap-4 hover:shadow-lg hover:shadow-[#25D366]/10 transition-all duration-300">
-                    <div className="flex-shrink-0 rounded-xl bg-[#25D366]/15 p-3">
-                      <TrendingUp className="h-5 w-5 text-[#25D366]" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[11px] uppercase tracking-widest text-gray-500 font-semibold mb-1">Revenda média</p>
-                      <p className="font-display text-2xl md:text-3xl font-extrabold text-[#25D366] leading-none">R$59 a R$79</p>
-                      <p className="text-xs text-gray-400 mt-0.5">no varejo</p>
-                    </div>
-                  </div>
-                </FadeInSection>
+        .proof::-webkit-scrollbar-thumb {
+          background: rgba(255,255,255,0.2);
+          border-radius: 10px;
+        }
 
-                {/* Card 3 — Lucro na Revenda */}
-                <FadeInSection delay={320}>
-                  <div className="relative rounded-2xl border-2 border-[#25D366]/30 bg-white p-5 md:p-6 flex items-center gap-4 hover:shadow-lg hover:shadow-[#25D366]/20 transition-all duration-300 shadow-sm shadow-[#25D366]/10">
-                    <div className="flex-shrink-0 rounded-xl bg-[#25D366]/20 p-3">
-                      <DollarSign className="h-6 w-6 text-[#25D366]" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[11px] uppercase tracking-widest text-gray-500 font-semibold mb-1">💰 Lucro na revenda</p>
-                      <p className="font-display text-3xl md:text-4xl font-extrabold text-[#22c55e] leading-none">GANHE ATÉ R$50</p>
-                      <p className="text-xs text-gray-500 mt-1">de lucro por peça</p>
-                    </div>
-                  </div>
-                </FadeInSection>
-              </div>
+        .proof-card {
+          flex: 0 0 auto;
+          scroll-snap-align: center;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
 
-              <FadeInSection delay={420}>
-                <p className="text-sm md:text-base text-white font-bold mt-4 leading-relaxed">
-                  Comece com apenas 8 peças e pague preço direto da fábrica.
-                </p>
-              </FadeInSection>
+        .cta {
+          text-align: center;
+          padding: 70px 0;
+        }
 
-              <FadeInSection delay={460}>
-                <div className="flex items-center gap-2 mt-3 text-amber-400">
-                  <AlertTriangle className="h-4 w-4 flex-shrink-0" />
-                  <p className="text-sm font-bold">
-                    Modelos mais procurados esgotam rápido no atacado.
-                  </p>
-                </div>
-              </FadeInSection>
-            </div>
+        .cta h2 {
+          font-size: 26px;
+          margin-bottom: 12px;
+        }
+
+        .cta p {
+          color: #aab4c4;
+          margin-bottom: 24px;
+        }
+
+        @media(max-width: 768px){
+          .proof {
+            justify-content: flex-start;
+          }
+        }
+      `}</style>
+
+      <div className="top-highlight">Vendas somente no atacado</div>
+
+      <section className="hero container">
+        <div className="logo">
+          <img 
+            src="https://iyhshxhvnmgcylxnnlrs.supabase.co/storage/v1/object/public/site-assets/logo/site-logo-1772585641158.png" 
+            alt="Atacado ShopFlow" 
+            style={{ maxWidth: "180px", margin: "0 auto" }} 
+          />
+        </div>
+        <h1>A qualidade que seu cliente procura está aqui</h1>
+        <p>Entre em contato agora para ver catálogo atualizado e comprar direto no atacado.</p>
+
+        <a className="btn" href={whatsappLink} target="_blank" rel="noopener noreferrer">
+          Falar no WhatsApp
+        </a>
+      </section>
+
+      <section className="section container">
+        <h2>O que nossos clientes falam</h2>
+
+        <div className="proof">
+          <div className="proof-card">
+            <img src="https://i.ibb.co/d4KrmjKj/REMODELE-ESSA-CIONVERSA-202604100921.jpg" style={{ width: "180px", height: "320px", objectFit: "cover", borderRadius: "8px" }} alt="Feedback 1" />
+          </div>
+
+          <div className="proof-card">
+            <img src="https://i.ibb.co/RG0DVhjt/Coloque-foto-agradecendo-202604100927.jpg" style={{ width: "180px", height: "320px", objectFit: "cover", borderRadius: "8px" }} alt="Feedback 2" />
+          </div>
+          
+          <div className="proof-card">
+            <img src="https://i.ibb.co/1Gs5LRLk/Whats-App-Image-2026-04-10-at-09-41-27.jpg" style={{ width: "180px", height: "320px", objectFit: "cover", borderRadius: "8px" }} alt="Feedback 3" />
+          </div>
+          
+          <div className="proof-card">
+            <img src="https://i.ibb.co/5hP23RLP/retire-pedidos-no-202604100950.jpg" style={{ width: "180px", height: "320px", objectFit: "cover", borderRadius: "8px" }} alt="Feedback 4" />
           </div>
         </div>
       </section>
 
-      {/* ── TRUST CARDS ── */}
-      <section className="container py-14 md:py-20 max-w-5xl mx-auto px-4">
-        <FadeInSection>
-          <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground text-center mb-10">
-            Por que comprar conosco?
-          </h2>
-        </FadeInSection>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
-          {trustCards.map((c, i) => (
-            <FadeInSection key={c.title} delay={i * 80}>
-              <div className="flex items-start gap-4 rounded-2xl border border-border bg-card p-5 md:p-6 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex-shrink-0 rounded-xl bg-[#25D366]/10 p-3">
-                  <c.icon className="h-5 w-5 text-[#25D366]" />
-                </div>
-                <div>
-                  <h3 className="font-display font-bold text-foreground text-sm mb-0.5">{c.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{c.desc}</p>
-                </div>
-              </div>
-            </FadeInSection>
-          ))}
-        </div>
+      <section className="cta container">
+        <h2>Garanta seu pedido no atacado</h2>
+        <p>Compra rápida direto pelo WhatsApp</p>
+
+        <a className="btn" href={whatsappLink} target="_blank" rel="noopener noreferrer">
+          Comprar agora
+        </a>
       </section>
 
-      {/* ── SCARCITY ── */}
-      <section className="container py-10 md:py-14 max-w-2xl mx-auto px-4">
-        <FadeInSection>
-          <div className="rounded-2xl border-2 border-amber-400/30 bg-amber-50/80 dark:bg-amber-950/20 p-6 md:p-8 text-center">
-            <AlertTriangle className="h-7 w-7 text-amber-500 mx-auto mb-3" />
-            <h3 className="font-display text-lg md:text-xl font-extrabold text-foreground mb-2">
-              ⚠️ ESTOQUE LIMITADO
-            </h3>
-            <p className="text-sm text-muted-foreground leading-relaxed mb-1">
-              Os modelos mais procurados acabam rápido.
-            </p>
-            <p className="text-sm font-semibold text-foreground">
-              Quem compra primeiro escolhe os melhores modelos.
-            </p>
-          </div>
-        </FadeInSection>
-      </section>
-
-      {/* ── HOW IT WORKS ── */}
-      <section className="bg-secondary/40">
-        <div className="container py-14 md:py-20 max-w-3xl mx-auto px-4">
-          <FadeInSection>
-            <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground text-center mb-10">
-              Como comprar no atacado
-            </h2>
-          </FadeInSection>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5 mb-8">
-            {steps.map((s, i) => (
-              <FadeInSection key={s.num} delay={i * 80}>
-                <div className="flex items-start gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm">
-                  <span className="flex-shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-[#25D366]/15 text-[#25D366] font-extrabold text-base">
-                    {s.num}
-                  </span>
-                  <p className="text-sm text-foreground font-medium leading-relaxed pt-1">{s.text}</p>
-                </div>
-              </FadeInSection>
-            ))}
-          </div>
-
-          <FadeInSection delay={350}>
-            <p className="text-center text-muted-foreground font-semibold text-sm">Simples e rápido.</p>
-          </FadeInSection>
-        </div>
-      </section>
-
-      {/* ── SOCIAL PROOF ── */}
-      <section className="container py-12 md:py-16 max-w-2xl mx-auto px-4 text-center">
-        <FadeInSection>
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <Users className="h-5 w-5 text-[#25D366]" />
-            <span className="font-display text-xl md:text-2xl font-extrabold text-foreground">+120 revendedores</span>
-          </div>
-          <p className="text-muted-foreground text-sm">
-            já compram conosco. Modelos que vendem rápido no varejo.
-          </p>
-        </FadeInSection>
-      </section>
-
-      {/* ── FINAL CTA ── */}
-      <section className="bg-gradient-to-br from-[#0a0f1e] via-[#111827] to-[#0f172a] text-white">
-        <div className="container py-14 md:py-24 max-w-2xl mx-auto px-4 text-center">
-          <FadeInSection>
-            <Truck className="h-9 w-9 text-[#25D366] mx-auto mb-4" />
-            <h2 className="font-display text-2xl md:text-3xl font-extrabold mb-3 leading-tight">
-              Garanta seu pedido<br />no atacado agora
-            </h2>
-            <p className="text-white/60 mb-6 text-sm">
-              Fale com nosso time e receba:
-            </p>
-          </FadeInSection>
-
-          <FadeInSection delay={100}>
-            <div className="flex flex-col items-center gap-1.5 mb-8">
-              {["Catálogo atualizado", "Tabela de preços", "Modelos disponíveis"].map((t) => (
-                <span key={t} className="inline-flex items-center gap-2 text-sm text-white/75">
-                  <CheckCircle2 className="h-4 w-4 text-[#25D366]" />
-                  {t}
-                </span>
-              ))}
-            </div>
-          </FadeInSection>
-
-          <FadeInSection delay={200}>
-            <p className="text-[11px] text-white/35 mb-3 flex items-center justify-center gap-1.5">
-              <Clock className="h-3 w-3" />
-              Resposta em menos de 5 minutos
-            </p>
-            <WhatsAppCTA ctaPosition="final_cta">QUERO COMPRAR NO ATACADO</WhatsAppCTA>
-          </FadeInSection>
-        </div>
-      </section>
+      <footer style={{ textAlign: "center", padding: "30px 0", color: "#7f8a9a", fontSize: "13px" }}>
+        © {new Date().getFullYear()} Atacado ShopFlow - Todos os direitos reservados
+      </footer>
     </div>
   );
-}
+};
+
+export default AtacadoPage;
