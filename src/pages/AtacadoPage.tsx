@@ -275,8 +275,8 @@ export default function AtacadoPage() {
         .videos-grid {
           display: grid;
           grid-template-columns: 1fr 1fr 1fr;
-          gap: 12px;
-          max-width: 1100px;
+          gap: 8px;
+          max-width: 720px;
           margin: 0 auto;
         }
 
@@ -309,14 +309,8 @@ export default function AtacadoPage() {
           }
 
           .videos-grid {
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-          }
-
-          .videos-grid .video-card:last-child {
-            grid-column: 1 / -1;
-            max-width: 50%;
-            margin: 0 auto;
+            grid-template-columns: 1fr;
+            gap: 18px;
           }
 
           .social-proof-videos {
