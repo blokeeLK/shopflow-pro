@@ -1,100 +1,82 @@
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
+
+declare global {
+  interface Window {
+    utmify_pixel_id?: string;
+    utmify_event?: (event: string, data: Record<string, string>) => void;
+  }
+}
+
+const WHATSAPP_NUMBER = "5500000000000";
+const WHATSAPP_LINK_HERO = `https://wa.me/${WHATSAPP_NUMBER}?text=Ol%C3%A1%2C+quero+comprar+no+atacado`;
+const WHATSAPP_LINK_CTA = `https://wa.me/${WHATSAPP_NUMBER}?text=Quero+comprar+no+atacado`;
 
 const AtacadoPage = () => {
+  // Load UTMify pixel scripts
   useEffect(() => {
-    // Load UTMify Scripts
-    if (!document.getElementById("utmify-scripts")) {
-      const container = document.createElement("div");
-      container.id = "utmify-scripts";
-      
-      const script1 = document.createElement("script");
-      script1.src = "https://cdn.utmify.com.br/scripts/utms/latest.js";
-      script1.async = true;
-      script1.setAttribute("data-utmify-prevent-xcod-sck", "");
-      script1.setAttribute("data-utmify-prevent-subids", "");
-      
-      const script2 = document.createElement("script");
-      script2.src = "https://cdn.utmify.com.br/scripts/pixel/pixel.js";
-      script2.async = true;
-      
-      const script3 = document.createElement("script");
-      script3.text = `window.utmify_pixel_id = "69add314ca90986027a3c6c5";`;
-      
-      container.appendChild(script1);
-      container.appendChild(script2);
-      container.appendChild(script3);
-      document.head.appendChild(container);
-    }
+    if (document.getElementById("utmify-pixel-container")) return;
 
-    // Tracking PageView/OpenWholesalePage events
-    const initTracking = () => {
-      // @ts-ignore
-      if (window.utmify_event) {
-        // @ts-ignore
-        window.utmify_event("PageView", { page: window.location.pathname });
-        // @ts-ignore
-        window.utmify_event("OpenWholesalePage", {});
-      }
-    };
+    const container = document.createElement("div");
+    container.id = "utmify-pixel-container";
 
-    // Tracking for WhatsApp clicks
-    const handleWhatsAppClick = () => {
-      // @ts-ignore
-      if (window.utmify_event) {
-        // @ts-ignore
-        window.utmify_event("ClickWhatsApp", { position: "landing" });
-        // @ts-ignore
-        window.utmify_event("WhatsAppWholesaleIntent", { source: "landing" });
-        // @ts-ignore
-        window.utmify_event("Lead", { type: "whatsapp" });
-      }
-    };
+    const scriptUtms = document.createElement("script");
+    scriptUtms.src = "https://cdn.utmify.com.br/scripts/utms/latest.js";
+    scriptUtms.async = true;
+    scriptUtms.setAttribute("data-utmify-prevent-xcod-sck", "");
+    scriptUtms.setAttribute("data-utmify-prevent-subids", "");
 
-    // Initial check
-    initTracking();
+    const scriptPixel = document.createElement("script");
+    scriptPixel.src = "https://cdn.utmify.com.br/scripts/pixel/pixel.js";
+    scriptPixel.async = true;
 
-    const btns = document.querySelectorAll('a[href*="wa.me"]');
-    btns.forEach((btn) => {
-      btn.addEventListener("click", handleWhatsAppClick);
-    });
+    container.appendChild(scriptUtms);
+    container.appendChild(scriptPixel);
+    document.head.appendChild(container);
 
-    // Cleanup
+    window.utmify_pixel_id = "69add314ca90986027a3c6c5";
+
     return () => {
-      btns.forEach((btn) => {
-        btn.removeEventListener("click", handleWhatsAppClick);
-      });
+      const el = document.getElementById("utmify-pixel-container");
+      if (el) el.remove();
     };
   }, []);
 
-  const whatsappNumber = "553791000090";
-  const whatsappLink1 = `https://wa.me/${whatsappNumber}?text=Ol%C3%A1%2C+quero+comprar+no+atacado`;
-  const whatsappLink2 = `https://wa.me/${whatsappNumber}?text=Quero+comprar+no+atacado`;
+  // Fire page-level tracking events
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (window.utmify_event) {
+        window.utmify_event("PageView", { page: window.location.pathname });
+        window.utmify_event("OpenWholesalePage", {});
+      }
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // WhatsApp click tracking handler
+  const handleWhatsAppClick = useCallback(() => {
+    if (window.utmify_event) {
+      window.utmify_event("ClickWhatsApp", { position: "landing" });
+      window.utmify_event("WhatsAppWholesaleIntent", { source: "landing" });
+      window.utmify_event("Lead", { type: "whatsapp" });
+    }
+  }, []);
 
   return (
-    <div className="atacado-page" style={{ 
-      background: "linear-gradient(180deg, #05070b 0%, #07101a 100%)", 
-      color: "#ffffff", 
-      minHeight: "100vh",
-      fontFamily: "Inter, Arial, sans-serif",
-      lineHeight: "1.5"
-    }}>
+    <div
+      className="atacado-landing"
+      style={{
+        background: "linear-gradient(180deg, #05070b 0%, #07101a 100%)",
+        color: "#ffffff",
+        minHeight: "100vh",
+        fontFamily: "Inter, Arial, sans-serif",
+        lineHeight: 1.5,
+      }}
+    >
       <style>{`
-        :root {
-          --bg: #05070b;
-          --bg-soft: #0b1020;
-          --panel: #0d1422;
-          --text: #ffffff;
-          --muted: #aab4c4;
-          --green: #2ad66b;
-          --green-dark: #1da553;
-          --line: rgba(255,255,255,0.06);
-          --radius: 14px;
-          --max: 980px;
-        }
+        .atacado-landing * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        .top-highlight {
+        .atacado-landing .atc-top-highlight {
           width: 100%;
           background: linear-gradient(90deg, #16a34a 0%, #2ad66b 50%, #16a34a 100%);
           color: #04120a;
@@ -107,39 +89,39 @@ const AtacadoPage = () => {
           box-shadow: 0 10px 30px rgba(42,214,107,0.18);
         }
 
-        .container {
+        .atacado-landing .atc-container {
           width: min(calc(100% - 32px), 980px);
           margin: 0 auto;
         }
 
-        a { text-decoration: none; }
+        .atacado-landing a { text-decoration: none; }
 
-        .hero {
+        .atacado-landing .atc-hero {
           text-align: center;
           padding: 72px 0 50px;
         }
 
-        .logo {
+        .atacado-landing .atc-logo {
           font-size: 28px;
           font-weight: 800;
           letter-spacing: .05em;
           margin-bottom: 20px;
         }
 
-        .hero h1 {
+        .atacado-landing .atc-hero h1 {
           font-size: clamp(28px, 4vw, 44px);
           font-weight: 800;
           margin-bottom: 14px;
         }
 
-        .hero p {
+        .atacado-landing .atc-hero p {
           color: #aab4c4;
           max-width: 520px;
           margin: 0 auto 28px;
           font-size: 16px;
         }
 
-        .btn {
+        .atacado-landing .atc-btn {
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -156,34 +138,34 @@ const AtacadoPage = () => {
           will-change: transform;
         }
 
-        .btn:hover {
+        .atacado-landing .atc-btn:hover {
           transform: scale(1.06);
           box-shadow: 0 18px 42px rgba(42,214,107,0.34);
           filter: brightness(1.03);
         }
 
-        .btn:active {
+        .atacado-landing .atc-btn:active {
           transform: scale(1.03);
           box-shadow: 0 12px 28px rgba(42,214,107,0.28);
         }
 
-        .section {
+        .atacado-landing .atc-section {
           padding: 50px 0;
           text-align: center;
         }
 
-        .section h2 {
+        .atacado-landing .atc-section h2 {
           font-size: 22px;
           margin-bottom: 8px;
         }
 
-        .section p {
+        .atacado-landing .atc-section p {
           color: #aab4c4;
           margin-bottom: 20px;
           font-size: 15px;
         }
 
-        .proof {
+        .atacado-landing .atc-proof {
           display: flex;
           justify-content: center;
           align-items: center;
@@ -193,16 +175,16 @@ const AtacadoPage = () => {
           padding: 10px 0 16px;
         }
 
-        .proof::-webkit-scrollbar {
+        .atacado-landing .atc-proof::-webkit-scrollbar {
           height: 6px;
         }
 
-        .proof::-webkit-scrollbar-thumb {
+        .atacado-landing .atc-proof::-webkit-scrollbar-thumb {
           background: rgba(255,255,255,0.2);
           border-radius: 10px;
         }
 
-        .proof-card {
+        .atacado-landing .atc-proof-card {
           flex: 0 0 auto;
           scroll-snap-align: center;
           display: flex;
@@ -210,73 +192,105 @@ const AtacadoPage = () => {
           justify-content: center;
         }
 
-        .cta {
+        .atacado-landing .atc-cta {
           text-align: center;
           padding: 70px 0;
         }
 
-        .cta h2 {
+        .atacado-landing .atc-cta h2 {
           font-size: 26px;
           margin-bottom: 12px;
         }
 
-        .cta p {
+        .atacado-landing .atc-cta p {
           color: #aab4c4;
           margin-bottom: 24px;
         }
 
-        @media(max-width: 768px){
-          .proof {
+        @media (max-width: 768px) {
+          .atacado-landing .atc-proof {
             justify-content: flex-start;
           }
         }
       `}</style>
 
-      <div className="top-highlight">Vendas somente no atacado</div>
+      {/* TOP BAR */}
+      <div className="atc-top-highlight">Vendas somente no atacado</div>
 
-      <section className="hero container">
-        <div className="logo">
-          <img 
-            src="https://iyhshxhvnmgcylxnnlrs.supabase.co/storage/v1/object/public/site-assets/logo/site-logo-1772585641158.png" 
-            alt="Atacado ShopFlow" 
-            style={{ maxWidth: "180px", margin: "0 auto" }} 
+      {/* HERO */}
+      <section className="atc-hero atc-container">
+        <div className="atc-logo">
+          <img
+            src="https://iyhshxhvnmgcylxnnlrs.supabase.co/storage/v1/object/public/site-assets/logo/site-logo-1772585641158.png"
+            alt="Atacado ShopFlow"
+            style={{ maxWidth: "180px", margin: "0 auto", display: "block" }}
           />
         </div>
         <h1>A qualidade que seu cliente procura está aqui</h1>
         <p>Entre em contato agora para ver catálogo atualizado e comprar direto no atacado.</p>
 
-        <a className="btn" href={whatsappLink1} target="_blank" rel="noopener noreferrer">
+        <a
+          className="atc-btn"
+          href={WHATSAPP_LINK_HERO}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={handleWhatsAppClick}
+        >
           Falar no WhatsApp
         </a>
       </section>
 
-      <section className="section container">
+      {/* SOCIAL PROOF */}
+      <section className="atc-section atc-container">
         <h2>O que nossos clientes falam</h2>
 
-        <div className="proof">
-          <div className="proof-card">
-            <img src="https://i.ibb.co/d4KrmjKj/REMODELE-ESSA-CIONVERSA-202604100921.jpg" style={{ width: "180px", height: "320px", objectFit: "cover", borderRadius: "8px" }} alt="Feedback 1" />
+        <div className="atc-proof">
+          <div className="atc-proof-card">
+            <img
+              src="https://i.ibb.co/d4KrmjKj/REMODELE-ESSA-CIONVERSA-202604100921.jpg"
+              alt="Feedback cliente 1"
+              style={{ width: "180px", height: "320px", objectFit: "cover", borderRadius: "8px" }}
+            />
           </div>
 
-          <div className="proof-card">
-            <img src="https://i.ibb.co/RG0DVhjt/Coloque-foto-agradecendo-202604100927.jpg" style={{ width: "180px", height: "320px", objectFit: "cover", borderRadius: "8px" }} alt="Feedback 2" />
+          <div className="atc-proof-card">
+            <img
+              src="https://i.ibb.co/RG0DVhjt/Coloque-foto-agradecendo-202604100927.jpg"
+              alt="Feedback cliente 2"
+              style={{ width: "180px", height: "320px", objectFit: "cover", borderRadius: "8px" }}
+            />
           </div>
-          
-          <div className="proof-card">
-            <img src="https://i.ibb.co/1Gs5LRLk/Whats-App-Image-2026-04-10-at-09-41-27.jpg" style={{ width: "180px", height: "320px", objectFit: "cover", borderRadius: "8px" }} alt="Feedback 3" />
+
+          <div className="atc-proof-card">
+            <img
+              src="https://i.ibb.co/1Gs5LRLk/Whats-App-Image-2026-04-10-at-09-41-27.jpg"
+              alt="Feedback cliente 3"
+              style={{ width: "180px", height: "320px", objectFit: "cover", borderRadius: "8px" }}
+            />
           </div>
-          
-          <div className="proof-card">
-            <img src="https://i.ibb.co/5hP23RLP/retire-pedidos-no-202604100950.jpg" style={{ width: "180px", height: "320px", objectFit: "cover", borderRadius: "8px" }} alt="Feedback 4" />
+
+          <div className="atc-proof-card">
+            <img
+              src="https://i.ibb.co/5hP23RLP/retire-pedidos-no-202604100950.jpg"
+              alt="Feedback cliente 4"
+              style={{ width: "180px", height: "320px", objectFit: "cover", borderRadius: "8px" }}
+            />
           </div>
         </div>
       </section>
 
-      <section className="cta container">
+      {/* CTA FINAL */}
+      <section className="atc-cta atc-container">
         <h2>Garanta seu pedido no atacado</h2>
         <p>Compra rápida direto pelo WhatsApp</p>
 
-        <a className="btn" href={whatsappLink2} target="_blank" rel="noopener noreferrer">
+        <a
+          className="atc-btn"
+          href={WHATSAPP_LINK_CTA}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={handleWhatsAppClick}
+        >
           Comprar agora
         </a>
       </section>
@@ -285,5 +299,3 @@ const AtacadoPage = () => {
 };
 
 export default AtacadoPage;
-
-
