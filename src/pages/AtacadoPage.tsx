@@ -1,4 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+
+const PROOF_IMAGES = [
+  { src: "https://i.ibb.co/p6XyfSF4/Cliente-agradecendo-Shopflow-202604102234.jpg", alt: "Comprovante 1" },
+  { src: "https://i.ibb.co/RG0DVhjt/Coloque-foto-agradecendo-202604100927.jpg", alt: "Comprovante 2" },
+  { src: "https://i.ibb.co/1Gs5LRLk/Whats-App-Image-2026-04-10-at-09-41-27.jpg", alt: "Comprovante 3" },
+  { src: "https://i.ibb.co/5hP23RLP/retire-pedidos-no-202604100950.jpg", alt: "Comprovante 4" },
+];
 
 declare global {
   interface Window {
@@ -198,27 +205,31 @@ export default function AtacadoPage() {
         }
 
         .proof {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          gap: 20px;
-          overflow-x: auto;
-          scroll-snap-type: x mandatory;
+          overflow: hidden;
           padding: 10px 0 16px;
+          position: relative;
+          mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+          -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
         }
 
-        .proof::-webkit-scrollbar {
-          height: 6px;
+        .proof-track {
+          display: flex;
+          gap: 20px;
+          width: max-content;
+          animation: proof-scroll 30s linear infinite;
         }
 
-        .proof::-webkit-scrollbar-thumb {
-          background: rgba(255,255,255,0.2);
-          border-radius: 10px;
+        .proof-track:hover {
+          animation-play-state: paused;
+        }
+
+        @keyframes proof-scroll {
+          0%   { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
         }
 
         .proof-card {
           flex: 0 0 auto;
-          scroll-snap-align: center;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -240,8 +251,8 @@ export default function AtacadoPage() {
         }
 
         @media (max-width: 768px) {
-          .proof {
-            justify-content: flex-start;
+          .proof-track {
+            animation-duration: 20s;
           }
         }
       `}</style>
@@ -278,56 +289,22 @@ export default function AtacadoPage() {
           <h2>O que nossos clientes falam</h2>
 
           <div className="proof">
-            <div className="proof-card">
-              <img
-                src="https://i.ibb.co/d4KrmjKj/REMODELE-ESSA-CIONVERSA-202604100921.jpg"
-                alt="Comprovante 1"
-                style={{
-                  width: "180px",
-                  height: "320px",
-                  objectFit: "cover",
-                  borderRadius: "8px",
-                }}
-              />
-            </div>
-
-            <div className="proof-card">
-              <img
-                src="https://i.ibb.co/RG0DVhjt/Coloque-foto-agradecendo-202604100927.jpg"
-                alt="Comprovante 2"
-                style={{
-                  width: "180px",
-                  height: "320px",
-                  objectFit: "cover",
-                  borderRadius: "8px",
-                }}
-              />
-            </div>
-
-            <div className="proof-card">
-              <img
-                src="https://i.ibb.co/1Gs5LRLk/Whats-App-Image-2026-04-10-at-09-41-27.jpg"
-                alt="Comprovante 3"
-                style={{
-                  width: "180px",
-                  height: "320px",
-                  objectFit: "cover",
-                  borderRadius: "8px",
-                }}
-              />
-            </div>
-
-            <div className="proof-card">
-              <img
-                src="https://i.ibb.co/5hP23RLP/retire-pedidos-no-202604100950.jpg"
-                alt="Comprovante 4"
-                style={{
-                  width: "180px",
-                  height: "320px",
-                  objectFit: "cover",
-                  borderRadius: "8px",
-                }}
-              />
+            <div className="proof-track">
+              {/* Original set + duplicated set for seamless loop */}
+              {[...PROOF_IMAGES, ...PROOF_IMAGES].map((img, i) => (
+                <div className="proof-card" key={i}>
+                  <img
+                    src={img.src}
+                    alt={img.alt}
+                    style={{
+                      width: "180px",
+                      height: "320px",
+                      objectFit: "cover",
+                      borderRadius: "8px",
+                    }}
+                  />
+                </div>
+              ))}
             </div>
           </div>
         </section>
