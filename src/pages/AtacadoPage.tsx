@@ -276,7 +276,7 @@ export default function AtacadoPage() {
           display: grid;
           grid-template-columns: 1fr 1fr 1fr;
           gap: 8px;
-          max-width: 720px;
+          max-width: 960px;
           margin: 0 auto;
         }
 
