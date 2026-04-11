@@ -55,7 +55,6 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/atacado" element={<AtacadoPage />} />
-              <Route path="/atacado-teste" element={<AtacadoPage />} />
               <Route element={<StoreLayout />}>
                 <Route path="/" element={<Index />} />
                 <Route path="/produto/:slug" element={<ProductPage />} />
@@ -69,8 +68,8 @@ const App = () => (
                 <Route path="/checkout" element={<CheckoutPage />} />
                 <Route path="/faq" element={<FaqPage />} />
                 <Route path="/catalogo" element={<CatalogoPage />} />
+                <Route path="/oportunidade" element={<OportunidadePage />} />
               </Route>
-              <Route path="/oportunidade" element={<OportunidadePage />} />
               <Route element={<AdminLayout />}>
                 <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/admin/produtos" element={<AdminProducts />} />
