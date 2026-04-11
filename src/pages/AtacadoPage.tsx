@@ -281,17 +281,10 @@ export default function AtacadoPage() {
         }
 
         .video-card {
-          background: var(--panel);
+          background: transparent;
           border: none;
-          border-radius: var(--radius);
+          border-radius: 10px;
           overflow: hidden;
-          box-shadow: 0 8px 32px rgba(0,0,0,0.35);
-          transition: transform .22s ease, box-shadow .22s ease;
-        }
-
-        .video-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 16px 48px rgba(42,214,107,0.12), 0 8px 32px rgba(0,0,0,0.45);
         }
 
         .video-wrapper {
