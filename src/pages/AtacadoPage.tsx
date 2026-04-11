@@ -250,9 +250,77 @@ export default function AtacadoPage() {
           margin-bottom: 24px;
         }
 
+        /* Social proof videos section */
+        .social-proof-videos {
+          text-align: center;
+          padding: 60px 0 10px;
+        }
+
+        .social-proof-videos h2 {
+          font-size: clamp(20px, 3vw, 26px);
+          font-weight: 800;
+          margin-bottom: 10px;
+          line-height: 1.35;
+        }
+
+        .social-proof-videos .subtitle {
+          color: var(--muted);
+          font-size: 15px;
+          max-width: 520px;
+          margin: 0 auto 36px;
+          line-height: 1.6;
+        }
+
+        .videos-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 24px;
+          max-width: 900px;
+          margin: 0 auto;
+        }
+
+        .video-card {
+          background: var(--panel);
+          border: 1px solid var(--line);
+          border-radius: var(--radius);
+          overflow: hidden;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+          transition: transform .22s ease, box-shadow .22s ease;
+        }
+
+        .video-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 16px 48px rgba(42,214,107,0.12), 0 8px 32px rgba(0,0,0,0.45);
+        }
+
+        .video-wrapper {
+          position: relative;
+          padding-bottom: 56.25%;
+          height: 0;
+          overflow: hidden;
+        }
+
+        .video-wrapper iframe {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          border: 0;
+        }
+
         @media (max-width: 768px) {
           .proof-track {
             animation-duration: 20s;
+          }
+
+          .videos-grid {
+            grid-template-columns: 1fr;
+            gap: 18px;
+          }
+
+          .social-proof-videos {
+            padding: 44px 0 10px;
           }
         }
       `}</style>
@@ -283,6 +351,38 @@ export default function AtacadoPage() {
           >
             Falar no WhatsApp
           </a>
+        </section>
+
+        {/* Social proof videos */}
+        <section className="social-proof-videos container">
+          <h2>Veja resultados reais de clientes que compraram no atacado com a gente 👇</h2>
+          <p className="subtitle">
+            Qualidade, entrega e lucro comprovado por quem já trabalha com a ShopFlow.
+          </p>
+
+          <div className="videos-grid">
+            <div className="video-card">
+              <div className="video-wrapper">
+                <iframe
+                  src="https://player.vimeo.com/video/1182207294?h=b5d9fde4a7"
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  allowFullScreen
+                  title="Depoimento cliente 1"
+                />
+              </div>
+            </div>
+
+            <div className="video-card">
+              <div className="video-wrapper">
+                <iframe
+                  src="https://player.vimeo.com/video/1182207868"
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  allowFullScreen
+                  title="Depoimento cliente 2"
+                />
+              </div>
+            </div>
+          </div>
         </section>
 
         <section className="section container">
