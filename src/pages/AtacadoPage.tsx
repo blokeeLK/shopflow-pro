@@ -7,6 +7,10 @@ declare global {
   }
 }
 
+const WHATSAPP_NUMBER = "553791000090";
+const WHATSAPP_MESSAGE = "Olá, gostaria de saber mais informações sobre o atacado de camisas !";
+const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
+
 export default function AtacadoPage() {
   useEffect(() => {
     window.utmify_pixel_id = "69add314ca90986027a3c6c5";
@@ -262,7 +266,7 @@ export default function AtacadoPage() {
 
           <a
             className="btn"
-            href="https://wa.me/5500000000000?text=Ol%C3%A1%2C+quero+comprar+no+atacado"
+            href={WHATSAPP_LINK}
             target="_blank"
             rel="noreferrer"
           >
@@ -334,7 +338,7 @@ export default function AtacadoPage() {
 
           <a
             className="btn"
-            href="https://wa.me/5500000000000?text=Quero+comprar+no+atacado"
+            href={WHATSAPP_LINK}
             target="_blank"
             rel="noreferrer"
           >

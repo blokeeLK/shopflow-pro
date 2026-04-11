@@ -8,8 +8,8 @@ export function WholesaleCTA() {
   const isEnabled = settings?.wholesale_block_enabled !== "false";
   if (!isEnabled) return null;
 
-  const phone = settings?.whatsapp_number || "5511999999999";
-  const prefilledMsg = "Olá, vim pelo site e tenho interesse em comprar no atacado para revenda. Poderia me enviar as informações e tabela de preços?";
+  const phone = settings?.whatsapp_number || "553791000090";
+  const prefilledMsg = "Olá, gostaria de saber mais informações sobre o atacado de camisas !";
   const message = encodeURIComponent(prefilledMsg);
   const whatsappUrl = `https://wa.me/${phone}?text=${message}`;
 

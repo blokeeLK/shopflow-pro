@@ -20,8 +20,9 @@ import {
   ShoppingBag,
 } from "lucide-react";
 
+const WA_MSG = "Olá, gostaria de saber mais informações sobre o atacado de camisas !";
 const WA_URL =
-  "https://wa.me/553791000090?text=Ol%C3%A1%2C%20vim%20pelo%20site%20e%20quero%20receber%20os%20modelos%20dispon%C3%ADveis%20de%20camisetas%20com%20pre%C3%A7o%20de%20atacado.%20Pode%20me%20enviar%20as%20op%C3%A7%C3%B5es%3F";
+  `https://wa.me/553791000090?text=${encodeURIComponent(WA_MSG)}`;
 
 /* ── Social proof data ── */
 const socialNames = [
@@ -37,7 +38,7 @@ const socialNames = [
 
 function WhatsAppCTA({ children, className = "", pulse = false, ctaPosition = "unknown" }: { children: React.ReactNode; className?: string; pulse?: boolean; ctaPosition?: string }) {
   const buttonText = typeof children === "string" ? children : "WhatsApp CTA";
-  const prefilledMsg = "Olá, vim pelo site e quero receber os modelos disponíveis de camisetas com preço de atacado. Pode me enviar as opções?";
+  const prefilledMsg = WA_MSG;
   const handleClick = () => {
     trackWhatsAppWholesaleIntent({
       phone: "553791000090",
