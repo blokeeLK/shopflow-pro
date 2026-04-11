@@ -261,10 +261,11 @@ export default function AtacadoPage() {
           font-weight: 800;
           margin-bottom: 10px;
           line-height: 1.35;
+          color: #ffffff;
         }
 
         .social-proof-videos .subtitle {
-          color: var(--muted);
+          color: #ffffff;
           font-size: 15px;
           max-width: 520px;
           margin: 0 auto 36px;
@@ -273,15 +274,15 @@ export default function AtacadoPage() {
 
         .videos-grid {
           display: grid;
-          grid-template-columns: 1fr 1fr;
+          grid-template-columns: 1fr 1fr 1fr;
           gap: 24px;
-          max-width: 900px;
+          max-width: 1100px;
           margin: 0 auto;
         }
 
         .video-card {
           background: var(--panel);
-          border: 1px solid var(--line);
+          border: none;
           border-radius: var(--radius);
           overflow: hidden;
           box-shadow: 0 8px 32px rgba(0,0,0,0.35);
@@ -379,6 +380,18 @@ export default function AtacadoPage() {
                   allow="autoplay; fullscreen; picture-in-picture"
                   allowFullScreen
                   title="Depoimento cliente 2"
+                />
+              </div>
+            </div>
+
+            <div className="video-card">
+              <div className="video-wrapper">
+                <iframe
+                  src="https://player.vimeo.com/video/1182208752?badge=0&autopause=0&player_id=0&app_id=58479"
+                  allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allowFullScreen
+                  title="Depoimento cliente 3"
                 />
               </div>
             </div>
