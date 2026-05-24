@@ -413,6 +413,7 @@ export default function AtacadoPage() {
             href={WHATSAPP_LINK}
             target="_blank"
             rel="noreferrer"
+            onClick={() => window.fbq?.("track", "CompleteRegistration", { content_name: "atacado_whatsapp" })}
           >
             Comprar agora
           </a>
