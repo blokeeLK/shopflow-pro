@@ -192,12 +192,24 @@
     }
 
   </style>
-  <!-- UTMIFY PIXEL -->
-  <script async src="https://cdn.utmify.com.br/scripts/utms/latest.js" data-utmify-prevent-xcod-sck data-utmify-prevent-subids></script>
-  <script async src="https://cdn.utmify.com.br/scripts/pixel/pixel.js"></script>
+  <!-- Meta Pixel Code -->
   <script>
-    window.utmify_pixel_id = "69add314ca90986027a3c6c5";
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '1552926625784575');
+    fbq('track', 'PageView');
   </script>
+  <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=1552926625784575&ev=PageView&noscript=1"
+  /></noscript>
+  <!-- End Meta Pixel Code -->
+  <script async defer src="https://cdn.utmify.com.br/scripts/utms/latest.js" data-utmify-prevent-xcod-sck data-utmify-prevent-subids></script>
 
 </head>
 <body>
@@ -247,21 +259,13 @@
 
 
 <script>
-  // INIT EVENTS BASE
-  document.addEventListener("DOMContentLoaded", function() {
-    if (window.utmify_event) {
-      window.utmify_event("PageView", { page: window.location.pathname });
-      window.utmify_event("OpenWholesalePage", {});
-    }
-  });
-
   // TRACK CLIQUES WHATSAPP
   document.querySelectorAll('a[href*="wa.me"]').forEach(function(btn){
     btn.addEventListener('click', function(){
-      if (window.utmify_event) {
-        window.utmify_event("ClickWhatsApp", { position: "landing" });
-        window.utmify_event("WhatsAppWholesaleIntent", { source: "landing" });
-        window.utmify_event("Lead", { type: "whatsapp" });
+      if (window.fbq) {
+        fbq('trackCustom', 'ClickWhatsApp', { position: 'landing' });
+        fbq('trackCustom', 'WhatsAppWholesaleIntent', { source: 'landing' });
+        fbq('track', 'Lead', { type: 'whatsapp' });
       }
     });
   });

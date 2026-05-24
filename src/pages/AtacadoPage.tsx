@@ -9,10 +9,12 @@ const PROOF_IMAGES = [
 
 declare global {
   interface Window {
-    utmify_pixel_id?: string;
-    utmify_event?: (eventName: string, payload?: Record<string, unknown>) => void;
+    fbq?: (...args: any[]) => void;
+    _fbq?: (...args: any[]) => void;
   }
 }
+
+const META_PIXEL_ID = "1552926625784575";
 
 const WHATSAPP_NUMBER = "553791000090";
 const WHATSAPP_MESSAGE = "Olá, gostaria de saber mais informações sobre o atacado de camisas !";
@@ -20,20 +22,26 @@ const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponen
 
 export default function AtacadoPage() {
   useEffect(() => {
-    window.utmify_pixel_id = "69add314ca90986027a3c6c5";
+    // Meta Pixel bootstrap
+    if (!window.fbq) {
+      const n: any = function (...args: any[]) {
+        n.callMethod ? n.callMethod.apply(n, args) : n.queue.push(args);
+      };
+      if (!window._fbq) window._fbq = n;
+      n.push = n; n.loaded = true; n.version = "2.0"; n.queue = [];
+      window.fbq = n;
+      const fbScript = document.createElement("script");
+      fbScript.async = true;
+      fbScript.src = "https://connect.facebook.net/en_US/fbevents.js";
+      document.head.appendChild(fbScript);
+    }
+    window.fbq!("init", META_PIXEL_ID);
+    window.fbq!("track", "PageView");
+    window.fbq!("trackCustom", "OpenWholesalePage");
 
-    const existingUtmScript = document.querySelector(
-      'script[src="https://cdn.utmify.com.br/scripts/utms/latest.js"]'
-    );
-    const existingPixelScript = document.querySelector(
-      'script[src="https://cdn.utmify.com.br/scripts/pixel/pixel.js"]'
-    );
-
-    let utmScript: HTMLScriptElement | null = null;
-    let pixelScript: HTMLScriptElement | null = null;
-
-    if (!existingUtmScript) {
-      utmScript = document.createElement("script");
+    // UTMify UTM capture
+    if (!document.querySelector('script[src*="utms/latest.js"]')) {
+      const utmScript = document.createElement("script");
       utmScript.async = true;
       utmScript.src = "https://cdn.utmify.com.br/scripts/utms/latest.js";
       utmScript.setAttribute("data-utmify-prevent-xcod-sck", "");
@@ -41,28 +49,10 @@ export default function AtacadoPage() {
       document.head.appendChild(utmScript);
     }
 
-    if (!existingPixelScript) {
-      pixelScript = document.createElement("script");
-      pixelScript.async = true;
-      pixelScript.src = "https://cdn.utmify.com.br/scripts/pixel/pixel.js";
-      document.head.appendChild(pixelScript);
-    }
-
-    const fireInitialEvents = () => {
-      if (window.utmify_event) {
-        window.utmify_event("PageView", { page: window.location.pathname });
-        window.utmify_event("OpenWholesalePage", {});
-      }
-    };
-
-    const timeout = setTimeout(fireInitialEvents, 1200);
-
     const handleWhatsappClick = () => {
-      if (window.utmify_event) {
-        window.utmify_event("ClickWhatsApp", { position: "landing" });
-        window.utmify_event("WhatsAppWholesaleIntent", { source: "landing" });
-        window.utmify_event("Lead", { type: "whatsapp" });
-      }
+      window.fbq?.("trackCustom", "ClickWhatsApp", { position: "landing" });
+      window.fbq?.("trackCustom", "WhatsAppWholesaleIntent", { source: "landing" });
+      window.fbq?.("track", "Lead", { type: "whatsapp" });
     };
 
     const buttons = Array.from(
@@ -72,7 +62,6 @@ export default function AtacadoPage() {
     buttons.forEach((btn) => btn.addEventListener("click", handleWhatsappClick));
 
     return () => {
-      clearTimeout(timeout);
       buttons.forEach((btn) =>
         btn.removeEventListener("click", handleWhatsappClick)
       );
