@@ -245,11 +245,11 @@
 
     <div class="proof">
       <div class="proof-card">
-        <img src="https://i.ibb.co/d4KrmjKj/REMODELE-ESSA-CIONVERSA-202604100921.jpg" style="width:180px; height:320px; object-fit:cover; border-radius:8px;">
+        <img src="/images/foto1.jpeg" style="width:180px; height:320px; object-fit:cover; border-radius:8px;">
       </div>
 
       <div class="proof-card">
-        <img src="https://i.ibb.co/RG0DVhjt/Coloque-foto-agradecendo-202604100927.jpg" style="width:180px; height:320px; object-fit:cover; border-radius:8px;">
+        <img src="/images/foto2.jpeg" style="width:180px; height:320px; object-fit:cover; border-radius:8px;">
       </div>
           <div class="proof-card">
         <img src="https://i.ibb.co/1Gs5LRLk/Whats-App-Image-2026-04-10-at-09-41-27.jpg" style="width:180px; height:320px; object-fit:cover; border-radius:8px;">
@@ -266,8 +266,8 @@
     <p>Compra rápida direto pelo WhatsApp</p>
 
     <div class="btn-group">
-      <a class="btn btn-wide" href="https://wa.me/553791000090?text=Ol%C3%A1%2C%20Guilherme!%20Quero%20saber%20mais%20informa%C3%A7%C3%B5es%20sobre%20o%20atacado." target="_blank" onclick="if(window.fbq){fbq('track','CompleteRegistration',{content_name:'atacado_whatsapp'})}">Vendedor Guilherme</a>
-      <a class="btn btn-wide" href="https://wa.me/5537991339503?text=Ol%C3%A1%2C%20Junio!%20Quero%20saber%20mais%20informa%C3%A7%C3%B5es%20sobre%20o%20atacado." target="_blank" onclick="if(window.fbq){fbq('track','CompleteRegistration',{content_name:'atacado_whatsapp'})}">Vendedor Junio</a>
+      <a class="btn btn-wide" href="https://wa.me/553791000090?text=Ol%C3%A1%2C%20Guilherme!%20Quero%20saber%20mais%20informa%C3%A7%C3%B5es%20sobre%20o%20atacado." target="_blank">Vendedor Guilherme</a>
+      <a class="btn btn-wide" href="https://wa.me/5537991339503?text=Ol%C3%A1%2C%20Junio!%20Quero%20saber%20mais%20informa%C3%A7%C3%B5es%20sobre%20o%20atacado." target="_blank">Vendedor Junio</a>
     </div>
   </section>
 
@@ -276,14 +276,16 @@
 
 
 <script>
-  // TRACK CLIQUES WHATSAPP
-  document.querySelectorAll('a[href*="wa.me"]').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      if (window.fbq) {
-        fbq('trackCustom', 'ClickWhatsApp', { position: 'landing' });
-        fbq('trackCustom', 'WhatsAppWholesaleIntent', { source: 'landing' });
-        fbq('track', 'Lead', { type: 'whatsapp' });
-      }
+  function _eid(name) {
+    return name + '_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+  }
+
+  document.querySelectorAll('a[href*="wa.me"]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      if (!window.fbq) return;
+      fbq('trackCustom', 'ClickWhatsApp',          { position: 'landing' }, { eventID: _eid('ClickWhatsApp') });
+      fbq('trackCustom', 'WhatsAppWholesaleIntent', { source: 'landing' },  { eventID: _eid('WhatsAppWholesaleIntent') });
+      fbq('track',       'Lead',                   { type: 'whatsapp' },    { eventID: _eid('Lead') });
     });
   });
 </script>

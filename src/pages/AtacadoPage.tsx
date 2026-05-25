@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
 
 const PROOF_IMAGES = [
-  { src: "https://i.ibb.co/p6XyfSF4/Cliente-agradecendo-Shopflow-202604102234.jpg", alt: "Comprovante 1" },
-  { src: "https://i.ibb.co/RG0DVhjt/Coloque-foto-agradecendo-202604100927.jpg", alt: "Comprovante 2" },
+  { src: "/images/foto1.jpeg", alt: "Comprovante 1" },
+  { src: "/images/foto2.jpeg", alt: "Comprovante 2" },
   { src: "https://i.ibb.co/1Gs5LRLk/Whats-App-Image-2026-04-10-at-09-41-27.jpg", alt: "Comprovante 3" },
   { src: "https://i.ibb.co/5hP23RLP/retire-pedidos-no-202604100950.jpg", alt: "Comprovante 4" },
 ];
