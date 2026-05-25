@@ -3,7 +3,6 @@ import { useEffect, useRef } from "react";
 const PROOF_IMAGES = [
   { src: "/images/foto2.jpeg", alt: "Comprovante 1" },
   { src: "https://i.ibb.co/1Gs5LRLk/Whats-App-Image-2026-04-10-at-09-41-27.jpg", alt: "Comprovante 3" },
-  { src: "https://i.ibb.co/5hP23RLP/retire-pedidos-no-202604100950.jpg", alt: "Comprovante 4" },
 ];
 
 declare global {
