@@ -9,7 +9,7 @@ export function WholesaleCTA() {
   if (!isEnabled) return null;
 
   const phone = settings?.whatsapp_number || "553791000090";
-  const prefilledMsg = "Olá, gostaria de saber mais informações sobre o atacado de camisas !";
+  const prefilledMsg = "Olá, gostaria de saber mais informações sobre o atacado de camisas!";
   const message = encodeURIComponent(prefilledMsg);
   const whatsappUrl = `https://wa.me/${phone}?text=${message}`;
 

@@ -20,7 +20,7 @@ import {
   ShoppingBag,
 } from "lucide-react";
 
-const WA_MSG = "Olá, gostaria de saber mais informações sobre o atacado de camisas !";
+const WA_MSG = "Olá, gostaria de saber mais informações sobre o atacado de camisas!";
 const WA_URL =
   `https://wa.me/553791000090?text=${encodeURIComponent(WA_MSG)}`;
 

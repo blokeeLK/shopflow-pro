@@ -5,7 +5,7 @@ import { trackClickWhatsApp } from "@/lib/tracking";
 export function WhatsAppButton() {
   const { data: settings } = useSiteSettings();
   const phone = settings?.whatsapp_number || "553791000090";
-  const defaultMessage = "Olá, gostaria de saber mais informações sobre o atacado de camisas !";
+  const defaultMessage = "Olá, gostaria de saber mais informações sobre o atacado de camisas!";
   const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(defaultMessage)}`;
 
   const handleClick = () => {

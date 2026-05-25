@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 const PROOF_IMAGES = [
   { src: "https://i.ibb.co/p6XyfSF4/Cliente-agradecendo-Shopflow-202604102234.jpg", alt: "Comprovante 1" },
@@ -16,29 +16,11 @@ declare global {
 
 const META_PIXEL_ID = "1552926625784575";
 
-const WA_GUILHERME = "https://wa.me/553791000090?text=ola%20guilherme%20quero%20saber%20mais%20informacoes%20sobre%20o%20atacado";
-const WA_JUNIO = "https://wa.me/5537991339503?text=ola%20junio%20quero%20saber%20mais%20informacoes%20sobre%20o%20atacado.";
+const WA_GUILHERME = "https://wa.me/553791000090?text=Ol%C3%A1%2C%20Guilherme!%20Quero%20saber%20mais%20informa%C3%A7%C3%B5es%20sobre%20o%20atacado.";
+const WA_JUNIO = "https://wa.me/5537991339503?text=Ol%C3%A1%2C%20Junio!%20Quero%20saber%20mais%20informa%C3%A7%C3%B5es%20sobre%20o%20atacado.";
 
-const VIDEOS = [
-  {
-    src: "https://player.vimeo.com/video/1182207294?h=b5d9fde4a7",
-    title: "Depoimento cliente 1",
-  },
-  {
-    src: "https://player.vimeo.com/video/1182207868",
-    title: "Depoimento cliente 2",
-  },
-  {
-    src: "https://player.vimeo.com/video/1182208752?badge=0&autopause=0&player_id=0&app_id=58479",
-    title: "Depoimento cliente 3",
-    extra: { referrerPolicy: "strict-origin-when-cross-origin" as const, allow: "autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" },
-  },
-];
 
 export default function AtacadoPage() {
-  const [videoIndex, setVideoIndex] = useState(0);
-  const prev = () => setVideoIndex((i) => (i - 1 + VIDEOS.length) % VIDEOS.length);
-  const next = () => setVideoIndex((i) => (i + 1) % VIDEOS.length);
   useEffect(() => {
     // Meta Pixel bootstrap
     if (!window.fbq) {
@@ -257,112 +239,6 @@ export default function AtacadoPage() {
           margin-bottom: 24px;
         }
 
-        /* Social proof videos section */
-        .social-proof-videos {
-          text-align: center;
-          padding: 60px 0 10px;
-        }
-
-        .social-proof-videos h2 {
-          font-size: clamp(20px, 3vw, 26px);
-          font-weight: 800;
-          margin-bottom: 10px;
-          line-height: 1.35;
-          color: #ffffff;
-        }
-
-        .social-proof-videos .subtitle {
-          color: #ffffff;
-          font-size: 15px;
-          max-width: 520px;
-          margin: 0 auto 28px;
-          line-height: 1.6;
-        }
-
-        /* Carousel */
-        .video-carousel {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 16px;
-        }
-
-        .carousel-arrow {
-          flex: 0 0 auto;
-          width: 52px;
-          height: 52px;
-          border-radius: 50%;
-          background: rgba(255,255,255,0.08);
-          border: 1px solid rgba(255,255,255,0.14);
-          color: #fff;
-          font-size: 22px;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: background .18s, transform .18s;
-          user-select: none;
-        }
-
-        .carousel-arrow:hover {
-          background: rgba(42,214,107,0.18);
-          transform: scale(1.08);
-        }
-
-        .carousel-arrow:active {
-          transform: scale(0.96);
-        }
-
-        .carousel-main {
-          flex: 1;
-          max-width: 620px;
-          min-width: 0;
-        }
-
-        .carousel-hint {
-          font-size: 13px;
-          color: #aab4c4;
-          margin-bottom: 12px;
-          letter-spacing: .02em;
-        }
-
-        .video-wrapper {
-          position: relative;
-          padding-bottom: 56.25%;
-          height: 0;
-          overflow: hidden;
-          border-radius: 12px;
-          background: #0b1020;
-        }
-
-        .video-wrapper iframe {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          border: 0;
-        }
-
-        .carousel-dots {
-          display: flex;
-          justify-content: center;
-          gap: 8px;
-          margin-top: 16px;
-        }
-
-        .carousel-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background: rgba(255,255,255,0.2);
-          transition: background .2s;
-        }
-
-        .carousel-dot.active {
-          background: #2ad66b;
-        }
-
         /* WhatsApp button group */
         .btn-group {
           display: flex;
@@ -381,19 +257,6 @@ export default function AtacadoPage() {
             animation-duration: 20s;
           }
 
-          .social-proof-videos {
-            padding: 44px 0 10px;
-          }
-
-          .carousel-arrow {
-            width: 44px;
-            height: 44px;
-            font-size: 18px;
-          }
-
-          .carousel-main {
-            max-width: 100%;
-          }
         }
       `}</style>
 
@@ -422,42 +285,6 @@ export default function AtacadoPage() {
             <a className="btn btn-wide" href={WA_JUNIO} target="_blank" rel="noreferrer">
               Vendedor Junio
             </a>
-          </div>
-        </section>
-
-        {/* Social proof videos */}
-        <section className="social-proof-videos container">
-          <h2>Veja resultados reais de clientes que compraram no atacado com a gente 👇</h2>
-          <p className="subtitle">
-            Qualidade, entrega e lucro comprovado por quem já trabalha com a ShopFlow.
-          </p>
-
-          <div className="video-carousel">
-            <button className="carousel-arrow" onClick={prev} aria-label="Anterior">&#8592;</button>
-
-            <div className="carousel-main">
-              <p className="carousel-hint">Clique para assistir o depoimento</p>
-              <div className="video-wrapper">
-                {VIDEOS.map((v, i) => (
-                  <iframe
-                    key={v.src}
-                    src={v.src}
-                    allow={v.extra?.allow ?? "autoplay; fullscreen; picture-in-picture"}
-                    referrerPolicy={v.extra?.referrerPolicy}
-                    allowFullScreen
-                    title={v.title}
-                    style={{ display: i === videoIndex ? "block" : "none" }}
-                  />
-                ))}
-              </div>
-              <div className="carousel-dots">
-                {VIDEOS.map((_, i) => (
-                  <div key={i} className={`carousel-dot${i === videoIndex ? " active" : ""}`} />
-                ))}
-              </div>
-            </div>
-
-            <button className="carousel-arrow" onClick={next} aria-label="Próximo">&#8594;</button>
           </div>
         </section>
 
