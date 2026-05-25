@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const PROOF_IMAGES = [
   { src: "https://i.ibb.co/p6XyfSF4/Cliente-agradecendo-Shopflow-202604102234.jpg", alt: "Comprovante 1" },
@@ -16,11 +16,29 @@ declare global {
 
 const META_PIXEL_ID = "1552926625784575";
 
-const WHATSAPP_NUMBER = "553791000090";
-const WHATSAPP_MESSAGE = "Olá, gostaria de saber mais informações sobre o atacado de camisas !";
-const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
+const WA_GUILHERME = "https://wa.me/553791000090?text=ola%20guilherme%20quero%20saber%20mais%20informacoes%20sobre%20o%20atacado";
+const WA_JUNIO = "https://wa.me/5537991339503?text=ola%20junio%20quero%20saber%20mais%20informacoes%20sobre%20o%20atacado.";
+
+const VIDEOS = [
+  {
+    src: "https://player.vimeo.com/video/1182207294?h=b5d9fde4a7",
+    title: "Depoimento cliente 1",
+  },
+  {
+    src: "https://player.vimeo.com/video/1182207868",
+    title: "Depoimento cliente 2",
+  },
+  {
+    src: "https://player.vimeo.com/video/1182208752?badge=0&autopause=0&player_id=0&app_id=58479",
+    title: "Depoimento cliente 3",
+    extra: { referrerPolicy: "strict-origin-when-cross-origin" as const, allow: "autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" },
+  },
+];
 
 export default function AtacadoPage() {
+  const [videoIndex, setVideoIndex] = useState(0);
+  const prev = () => setVideoIndex((i) => (i - 1 + VIDEOS.length) % VIDEOS.length);
+  const next = () => setVideoIndex((i) => (i + 1) % VIDEOS.length);
   useEffect(() => {
     // Meta Pixel bootstrap
     if (!window.fbq) {
@@ -257,23 +275,55 @@ export default function AtacadoPage() {
           color: #ffffff;
           font-size: 15px;
           max-width: 520px;
-          margin: 0 auto 36px;
+          margin: 0 auto 28px;
           line-height: 1.6;
         }
 
-        .videos-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr 1fr;
-          gap: 8px;
-          max-width: 960px;
-          margin: 0 auto;
+        /* Carousel */
+        .video-carousel {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 16px;
         }
 
-        .video-card {
-          background: transparent;
-          border: none;
-          border-radius: 10px;
-          overflow: hidden;
+        .carousel-arrow {
+          flex: 0 0 auto;
+          width: 52px;
+          height: 52px;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.08);
+          border: 1px solid rgba(255,255,255,0.14);
+          color: #fff;
+          font-size: 22px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: background .18s, transform .18s;
+          user-select: none;
+        }
+
+        .carousel-arrow:hover {
+          background: rgba(42,214,107,0.18);
+          transform: scale(1.08);
+        }
+
+        .carousel-arrow:active {
+          transform: scale(0.96);
+        }
+
+        .carousel-main {
+          flex: 1;
+          max-width: 620px;
+          min-width: 0;
+        }
+
+        .carousel-hint {
+          font-size: 13px;
+          color: #aab4c4;
+          margin-bottom: 12px;
+          letter-spacing: .02em;
         }
 
         .video-wrapper {
@@ -281,6 +331,8 @@ export default function AtacadoPage() {
           padding-bottom: 56.25%;
           height: 0;
           overflow: hidden;
+          border-radius: 12px;
+          background: #0b1020;
         }
 
         .video-wrapper iframe {
@@ -292,18 +344,55 @@ export default function AtacadoPage() {
           border: 0;
         }
 
+        .carousel-dots {
+          display: flex;
+          justify-content: center;
+          gap: 8px;
+          margin-top: 16px;
+        }
+
+        .carousel-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.2);
+          transition: background .2s;
+        }
+
+        .carousel-dot.active {
+          background: #2ad66b;
+        }
+
+        /* WhatsApp button group */
+        .btn-group {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 14px;
+        }
+
+        .btn-wide {
+          width: 100%;
+          max-width: 320px;
+        }
+
         @media (max-width: 768px) {
           .proof-track {
             animation-duration: 20s;
           }
 
-          .videos-grid {
-            grid-template-columns: 1fr;
-            gap: 18px;
-          }
-
           .social-proof-videos {
             padding: 44px 0 10px;
+          }
+
+          .carousel-arrow {
+            width: 44px;
+            height: 44px;
+            font-size: 18px;
+          }
+
+          .carousel-main {
+            max-width: 100%;
           }
         }
       `}</style>
@@ -326,14 +415,14 @@ export default function AtacadoPage() {
             no atacado.
           </p>
 
-          <a
-            className="btn"
-            href={WHATSAPP_LINK}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Falar no WhatsApp
-          </a>
+          <div className="btn-group">
+            <a className="btn btn-wide" href={WA_GUILHERME} target="_blank" rel="noreferrer">
+              Vendedor Guilherme
+            </a>
+            <a className="btn btn-wide" href={WA_JUNIO} target="_blank" rel="noreferrer">
+              Vendedor Junio
+            </a>
+          </div>
         </section>
 
         {/* Social proof videos */}
@@ -343,40 +432,32 @@ export default function AtacadoPage() {
             Qualidade, entrega e lucro comprovado por quem já trabalha com a ShopFlow.
           </p>
 
-          <div className="videos-grid">
-            <div className="video-card">
+          <div className="video-carousel">
+            <button className="carousel-arrow" onClick={prev} aria-label="Anterior">&#8592;</button>
+
+            <div className="carousel-main">
+              <p className="carousel-hint">Clique para assistir o depoimento</p>
               <div className="video-wrapper">
-                <iframe
-                  src="https://player.vimeo.com/video/1182207294?h=b5d9fde4a7"
-                  allow="autoplay; fullscreen; picture-in-picture"
-                  allowFullScreen
-                  title="Depoimento cliente 1"
-                />
+                {VIDEOS.map((v, i) => (
+                  <iframe
+                    key={v.src}
+                    src={v.src}
+                    allow={v.extra?.allow ?? "autoplay; fullscreen; picture-in-picture"}
+                    referrerPolicy={v.extra?.referrerPolicy}
+                    allowFullScreen
+                    title={v.title}
+                    style={{ display: i === videoIndex ? "block" : "none" }}
+                  />
+                ))}
+              </div>
+              <div className="carousel-dots">
+                {VIDEOS.map((_, i) => (
+                  <div key={i} className={`carousel-dot${i === videoIndex ? " active" : ""}`} />
+                ))}
               </div>
             </div>
 
-            <div className="video-card">
-              <div className="video-wrapper">
-                <iframe
-                  src="https://player.vimeo.com/video/1182207868"
-                  allow="autoplay; fullscreen; picture-in-picture"
-                  allowFullScreen
-                  title="Depoimento cliente 2"
-                />
-              </div>
-            </div>
-
-            <div className="video-card">
-              <div className="video-wrapper">
-                <iframe
-                  src="https://player.vimeo.com/video/1182208752?badge=0&autopause=0&player_id=0&app_id=58479"
-                  allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-                  referrerPolicy="strict-origin-when-cross-origin"
-                  allowFullScreen
-                  title="Depoimento cliente 3"
-                />
-              </div>
-            </div>
+            <button className="carousel-arrow" onClick={next} aria-label="Próximo">&#8594;</button>
           </div>
         </section>
 
@@ -408,15 +489,26 @@ export default function AtacadoPage() {
           <h2>Garanta seu pedido no atacado</h2>
           <p>Compra rápida direto pelo WhatsApp</p>
 
-          <a
-            className="btn"
-            href={WHATSAPP_LINK}
-            target="_blank"
-            rel="noreferrer"
-            onClick={() => window.fbq?.("track", "CompleteRegistration", { content_name: "atacado_whatsapp" })}
-          >
-            Comprar agora
-          </a>
+          <div className="btn-group">
+            <a
+              className="btn btn-wide"
+              href={WA_GUILHERME}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => window.fbq?.("track", "CompleteRegistration", { content_name: "atacado_whatsapp" })}
+            >
+              Vendedor Guilherme
+            </a>
+            <a
+              className="btn btn-wide"
+              href={WA_JUNIO}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => window.fbq?.("track", "CompleteRegistration", { content_name: "atacado_whatsapp" })}
+            >
+              Vendedor Junio
+            </a>
+          </div>
         </section>
       </div>
     </>
