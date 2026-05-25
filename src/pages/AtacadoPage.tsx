@@ -1,8 +1,7 @@
 import { useEffect, useRef } from "react";
 
 const PROOF_IMAGES = [
-  { src: "/images/foto1.jpeg", alt: "Comprovante 1" },
-  { src: "/images/foto2.jpeg", alt: "Comprovante 2" },
+  { src: "/images/foto2.jpeg", alt: "Comprovante 1" },
   { src: "https://i.ibb.co/1Gs5LRLk/Whats-App-Image-2026-04-10-at-09-41-27.jpg", alt: "Comprovante 3" },
   { src: "https://i.ibb.co/5hP23RLP/retire-pedidos-no-202604100950.jpg", alt: "Comprovante 4" },
 ];
@@ -274,8 +273,7 @@ export default function AtacadoPage() {
 
           <h1>A qualidade que seu cliente procura está aqui</h1>
           <p>
-            Entre em contato agora para ver catálogo atualizado e comprar direto
-            no atacado.
+            Fale com nosso vendedor e agende sua compra por video chamada!
           </p>
 
           <div className="btn-group">
@@ -289,7 +287,7 @@ export default function AtacadoPage() {
         </section>
 
         <section className="section container">
-          <h2>O que nossos clientes falam</h2>
+          <h2>Veja aqui oque nossos clientes falam</h2>
 
           <div className="proof">
             <div className="proof-track">
