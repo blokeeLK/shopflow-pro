@@ -48,9 +48,10 @@ export default function AtacadoPage() {
     }
 
     const handleWhatsappClick = () => {
-      window.fbq?.("trackCustom", "ClickWhatsApp", { position: "landing" });
-      window.fbq?.("trackCustom", "WhatsAppWholesaleIntent", { source: "landing" });
-      window.fbq?.("track", "Lead", { type: "whatsapp" });
+      const eid = (n: string) => n + "_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
+      window.fbq?.("trackCustom", "ClickWhatsApp",          { position: "landing" }, { eventID: eid("ClickWhatsApp") });
+      window.fbq?.("trackCustom", "WhatsAppWholesaleIntent", { source: "landing" },  { eventID: eid("WhatsAppWholesaleIntent") });
+      window.fbq?.("track",       "Contact",                 {},                       { eventID: eid("Contact") });
     };
 
     const buttons = Array.from(
