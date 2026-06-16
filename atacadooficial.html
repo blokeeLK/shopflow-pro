@@ -283,7 +283,24 @@
       if (!window.fbq) return;
       fbq('trackCustom', 'ClickWhatsApp',          { position: 'landing' }, { eventID: _eid('ClickWhatsApp') });
       fbq('trackCustom', 'WhatsAppWholesaleIntent', { source: 'landing' },  { eventID: _eid('WhatsAppWholesaleIntent') });
-      fbq('track',       'Contact',                {},                       { eventID: _eid('Contact') });
+      
+      var href = btn.getAttribute('href') || '';
+      var text = btn.textContent || '';
+      var seller = '';
+      if (href.indexOf('553791000090') !== -1 || text.indexOf('Guilherme') !== -1) {
+        seller = 'Guilherme';
+      } else if (href.indexOf('5537991339503') !== -1 || text.indexOf('Junio') !== -1) {
+        seller = 'Junio';
+      }
+
+      if (seller) {
+        fbq('track', 'Contact', {
+          content_name: 'WhatsApp Atacado',
+          content_category: 'Atacado de Camisas',
+          method: 'whatsapp',
+          seller: seller
+        }, { eventID: _eid('Contact') });
+      }
     });
   });
 </script>

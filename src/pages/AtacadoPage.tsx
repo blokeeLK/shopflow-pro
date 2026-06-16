@@ -19,6 +19,30 @@ const WA_JUNIO = "https://wa.me/5537991339503?text=Ol%C3%A1%2C%20Junio!%20Quero%
 
 
 export default function AtacadoPage() {
+  const eid = (n: string) => n + "_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
+
+  const handleGuilhermeClick = () => {
+    window.fbq?.("trackCustom", "ClickWhatsApp",          { position: "landing" }, { eventID: eid("ClickWhatsApp") });
+    window.fbq?.("trackCustom", "WhatsAppWholesaleIntent", { source: "landing" },  { eventID: eid("WhatsAppWholesaleIntent") });
+    window.fbq?.("track",       "Contact",                 {
+      content_name: "WhatsApp Atacado",
+      content_category: "Atacado de Camisas",
+      method: "whatsapp",
+      seller: "Guilherme"
+    }, { eventID: eid("Contact") });
+  };
+
+  const handleJunioClick = () => {
+    window.fbq?.("trackCustom", "ClickWhatsApp",          { position: "landing" }, { eventID: eid("ClickWhatsApp") });
+    window.fbq?.("trackCustom", "WhatsAppWholesaleIntent", { source: "landing" },  { eventID: eid("WhatsAppWholesaleIntent") });
+    window.fbq?.("track",       "Contact",                 {
+      content_name: "WhatsApp Atacado",
+      content_category: "Atacado de Camisas",
+      method: "whatsapp",
+      seller: "Junio"
+    }, { eventID: eid("Contact") });
+  };
+
   useEffect(() => {
     // Meta Pixel bootstrap
     if (!window.fbq) {
@@ -46,25 +70,6 @@ export default function AtacadoPage() {
       utmScript.setAttribute("data-utmify-prevent-subids", "");
       document.head.appendChild(utmScript);
     }
-
-    const handleWhatsappClick = () => {
-      const eid = (n: string) => n + "_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
-      window.fbq?.("trackCustom", "ClickWhatsApp",          { position: "landing" }, { eventID: eid("ClickWhatsApp") });
-      window.fbq?.("trackCustom", "WhatsAppWholesaleIntent", { source: "landing" },  { eventID: eid("WhatsAppWholesaleIntent") });
-      window.fbq?.("track",       "Contact",                 {},                       { eventID: eid("Contact") });
-    };
-
-    const buttons = Array.from(
-      document.querySelectorAll<HTMLAnchorElement>('a[href*="wa.me"]')
-    );
-
-    buttons.forEach((btn) => btn.addEventListener("click", handleWhatsappClick));
-
-    return () => {
-      buttons.forEach((btn) =>
-        btn.removeEventListener("click", handleWhatsappClick)
-      );
-    };
   }, []);
 
   return (
@@ -277,10 +282,10 @@ export default function AtacadoPage() {
           </p>
 
           <div className="btn-group">
-            <a className="btn btn-wide" href={WA_GUILHERME} target="_blank" rel="noreferrer">
+            <a className="btn btn-wide" href={WA_GUILHERME} target="_blank" rel="noreferrer" onClick={handleGuilhermeClick}>
               Vendedor Guilherme
             </a>
-            <a className="btn btn-wide" href={WA_JUNIO} target="_blank" rel="noreferrer">
+            <a className="btn btn-wide" href={WA_JUNIO} target="_blank" rel="noreferrer" onClick={handleJunioClick}>
               Vendedor Junio
             </a>
           </div>
@@ -320,7 +325,7 @@ export default function AtacadoPage() {
               href={WA_GUILHERME}
               target="_blank"
               rel="noreferrer"
-              onClick={() => window.fbq?.("track", "CompleteRegistration", { content_name: "atacado_whatsapp" })}
+              onClick={handleGuilhermeClick}
             >
               Vendedor Guilherme
             </a>
@@ -329,7 +334,7 @@ export default function AtacadoPage() {
               href={WA_JUNIO}
               target="_blank"
               rel="noreferrer"
-              onClick={() => window.fbq?.("track", "CompleteRegistration", { content_name: "atacado_whatsapp" })}
+              onClick={handleJunioClick}
             >
               Vendedor Junio
             </a>
