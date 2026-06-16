@@ -19,28 +19,22 @@ const WA_JUNIO = "https://wa.me/5537991339503?text=Ol%C3%A1%2C%20Junio!%20Quero%
 
 
 export default function AtacadoPage() {
-  const eid = (n: string) => n + "_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
-
   const handleGuilhermeClick = () => {
-    window.fbq?.("trackCustom", "ClickWhatsApp",          { position: "landing" }, { eventID: eid("ClickWhatsApp") });
-    window.fbq?.("trackCustom", "WhatsAppWholesaleIntent", { source: "landing" },  { eventID: eid("WhatsAppWholesaleIntent") });
-    window.fbq?.("track",       "Contact",                 {
+    window.fbq?.("track", "Contact", {
       content_name: "WhatsApp Atacado",
       content_category: "Atacado de Camisas",
       method: "whatsapp",
       seller: "Guilherme"
-    }, { eventID: eid("Contact") });
+    });
   };
 
   const handleJunioClick = () => {
-    window.fbq?.("trackCustom", "ClickWhatsApp",          { position: "landing" }, { eventID: eid("ClickWhatsApp") });
-    window.fbq?.("trackCustom", "WhatsAppWholesaleIntent", { source: "landing" },  { eventID: eid("WhatsAppWholesaleIntent") });
-    window.fbq?.("track",       "Contact",                 {
+    window.fbq?.("track", "Contact", {
       content_name: "WhatsApp Atacado",
       content_category: "Atacado de Camisas",
       method: "whatsapp",
       seller: "Junio"
-    }, { eventID: eid("Contact") });
+    });
   };
 
   useEffect(() => {
@@ -59,7 +53,10 @@ export default function AtacadoPage() {
     }
     window.fbq!("init", META_PIXEL_ID);
     window.fbq!("track", "PageView");
-    window.fbq!("trackCustom", "OpenWholesalePage");
+    window.fbq!("track", "ViewContent", {
+      content_name: "Página Atacado ShopFlow",
+      content_category: "Atacado de Camisas"
+    });
 
     // UTMify UTM capture
     if (!document.querySelector('script[src*="utms/latest.js"]')) {

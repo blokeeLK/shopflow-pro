@@ -4,8 +4,8 @@
   ],
   "redirects": [
     {
-      "source": "/",
-      "destination": "/atacado",
+      "source": "/atacado",
+      "destination": "/",
       "permanent": false
     }
   ],

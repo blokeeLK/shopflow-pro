@@ -216,9 +216,8 @@
     fbq('init', '1552926625784575');
     fbq('track', 'PageView');
     fbq('track', 'ViewContent', {
-      content_name: 'Pagina Atacado ShopFlow',
-      content_category: 'Atacado Camisas',
-      currency: 'BRL'
+      content_name: 'Página Atacado ShopFlow',
+      content_category: 'Atacado de Camisas'
     });
   </script>
   <noscript><img height="1" width="1" style="display:none"
@@ -274,15 +273,9 @@
 
 
 <script>
-  function _eid(name) {
-    return name + '_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
-  }
-
   document.querySelectorAll('a[href*="wa.me"]').forEach(function(btn) {
     btn.addEventListener('click', function() {
       if (!window.fbq) return;
-      fbq('trackCustom', 'ClickWhatsApp',          { position: 'landing' }, { eventID: _eid('ClickWhatsApp') });
-      fbq('trackCustom', 'WhatsAppWholesaleIntent', { source: 'landing' },  { eventID: _eid('WhatsAppWholesaleIntent') });
       
       var href = btn.getAttribute('href') || '';
       var text = btn.textContent || '';
@@ -299,7 +292,7 @@
           content_category: 'Atacado de Camisas',
           method: 'whatsapp',
           seller: seller
-        }, { eventID: _eid('Contact') });
+        });
       }
     });
   });

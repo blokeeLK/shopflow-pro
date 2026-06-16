@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { CartProvider } from "@/contexts/CartContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SecurityShield } from "@/components/SecurityShield";
@@ -54,9 +54,10 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route path="/atacado" element={<AtacadoPage />} />
+              <Route path="/" element={<AtacadoPage />} />
+              <Route path="/atacado" element={<Navigate to="/" replace />} />
               <Route element={<StoreLayout />}>
-                <Route path="/" element={<Index />} />
+                <Route path="/loja" element={<Index />} />
                 <Route path="/produto/:slug" element={<ProductPage />} />
                 <Route path="/categoria/:slug" element={<CategoryPage />} />
                 <Route path="/carrinho" element={<CartPage />} />
