@@ -31,35 +31,48 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        const mensagemWhatsApp = "O⁬⁭⁬⁭⁬⁭⁬⁭lá, Gabriela! Quero saber mais informações sobre o atacado.";
+        const mensagemGabriela = "O⁬⁭⁬⁭⁬⁭⁬⁭lá, Gabriela! Quero saber mais informações sobre o atacado.";
+        const mensagemGuilherme = "O⁬⁭⁬⁭⁬⁭⁬⁭lá, Guilherme! Quero saber mais informações sobre o atacado.";
+
+        function atualizarTextoWhatsApp(link, mensagem) {
+          if (!link || !link.href) return;
+
+          try {
+            const url = new URL(link.href);
+            url.searchParams.set("text", mensagem);
+            link.href = url.toString();
+          } catch (error) {
+            if (link.href.includes("?")) {
+              link.href = link.href.replace(/([?&])text=[^&]*/i, "$1text=" + encodeURIComponent(mensagem));
+            } else {
+              link.href = link.href + "?text=" + encodeURIComponent(mensagem);
+            }
+          }
+        }
 
         function atualizarPagina() {
-          const elementos = document.querySelectorAll("a, button, [role='button']");
+          const botoesVendedores = Array.from(document.querySelectorAll("a, button, [role='button']"))
+            .filter(function (elemento) {
+              const texto = elemento.textContent.trim();
+              return texto.includes("Vendedor") || texto.includes("Vendedora");
+            });
 
-          elementos.forEach(function (elemento) {
-            const texto = elemento.textContent.trim();
+          botoesVendedores.forEach(function (elemento, index) {
+            const posicaoNoBloco = index % 2;
 
-            if (texto === "Vendedor Guilherme") {
+            if (posicaoNoBloco === 0) {
               elemento.textContent = "Vendedora Gabriela";
+
+              if (elemento.tagName.toLowerCase() === "a") {
+                atualizarTextoWhatsApp(elemento, mensagemGabriela);
+              }
             }
 
-            if (texto === "Vendedor Junio" || texto === "Vendedor Junio") {
+            if (posicaoNoBloco === 1) {
               elemento.textContent = "Vendedor Guilherme";
-            }
-          });
 
-          const links = document.querySelectorAll("a[href*='whatsapp'], a[href*='wa.me']");
-
-          links.forEach(function (link) {
-            try {
-              const url = new URL(link.href);
-              url.searchParams.set("text", mensagemWhatsApp);
-              link.href = url.toString();
-            } catch (error) {
-              if (link.href.includes("?")) {
-                link.href = link.href.replace(/([?&])text=[^&]*/i, "$1text=" + encodeURIComponent(mensagemWhatsApp));
-              } else {
-                link.href = link.href + "?text=" + encodeURIComponent(mensagemWhatsApp);
+              if (elemento.tagName.toLowerCase() === "a") {
+                atualizarTextoWhatsApp(elemento, mensagemGuilherme);
               }
             }
           });
