@@ -160,7 +160,7 @@ export default function AtacadoPage() {
         }
 
         .hero p {
-          color: var(--muted);
+          color: #ffffff;
           max-width: 520px;
           margin: 0 auto 28px;
           font-size: 16px;
@@ -251,7 +251,7 @@ export default function AtacadoPage() {
         }
 
         .cta p {
-          color: var(--muted);
+          color: #ffffff;
           margin-bottom: 24px;
         }
 
@@ -314,7 +314,7 @@ export default function AtacadoPage() {
 
           <h1>A qualidade que seu cliente procura está aqui</h1>
           <p>
-            Fale com nosso vendedor e agende sua compra por video chamada!
+            Fale com um de nossos vendedores(a) no WHATSAPP e agende sua compra por videochamada!
           </p>
 
           <div className="btn-group">
