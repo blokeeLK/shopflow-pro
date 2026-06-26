@@ -1,5 +1,0 @@
-
-ALTER TABLE public.banners
-  ADD COLUMN IF NOT EXISTS position_x numeric NOT NULL DEFAULT 50,
-  ADD COLUMN IF NOT EXISTS position_y numeric NOT NULL DEFAULT 50,
-  ADD COLUMN IF NOT EXISTS zoom numeric NOT NULL DEFAULT 1;

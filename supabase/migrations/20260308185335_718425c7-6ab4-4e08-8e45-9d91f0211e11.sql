@@ -1,1 +1,0 @@
-ALTER TABLE public.products ADD COLUMN IF NOT EXISTS weekly_promotion boolean NOT NULL DEFAULT false;
