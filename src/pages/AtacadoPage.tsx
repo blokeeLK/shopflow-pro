@@ -38,6 +38,21 @@ export default function AtacadoPage() {
   };
 
   useEffect(() => {
+    // Preload critical images (sellers and testimonials) for fast display
+    const imagesToPreload = [
+      "https://i.ibb.co/jvwtYDFK/Whats-App-Image-2026-06-25-at-20-58-17.jpg",
+      "https://i.ibb.co/0VrbH8ZR/retire-a-menina-da-foto-202606252133.jpg",
+      "/images/foto2.jpeg",
+      "https://i.ibb.co/1Gs5LRLk/Whats-App-Image-2026-04-10-at-09-41-27.jpg"
+    ];
+    imagesToPreload.forEach((src) => {
+      const link = document.createElement("link");
+      link.rel = "preload";
+      link.as = "image";
+      link.href = src;
+      document.head.appendChild(link);
+    });
+
     // Meta Pixel bootstrap
     if (!window.fbq) {
       const n: any = function (...args: any[]) {
@@ -257,8 +272,8 @@ export default function AtacadoPage() {
         }
 
         .seller-photo {
-          width: 80px;
-          height: 80px;
+          width: 120px;
+          height: 120px;
           border-radius: 50%;
           object-fit: cover;
           border: 2px solid var(--green);
@@ -308,6 +323,8 @@ export default function AtacadoPage() {
                 src="https://i.ibb.co/jvwtYDFK/Whats-App-Image-2026-06-25-at-20-58-17.jpg"
                 alt="Vendedora Gabriela"
                 className="seller-photo"
+                loading="eager"
+                fetchPriority="high"
               />
               <a className="btn btn-wide" href={WA_GABRIELA} target="_blank" rel="noreferrer" onClick={handleGabrielaClick}>
                 Vendedora Gabriela
@@ -318,6 +335,8 @@ export default function AtacadoPage() {
                 src="https://i.ibb.co/0VrbH8ZR/retire-a-menina-da-foto-202606252133.jpg"
                 alt="Vendedor Guilherme"
                 className="seller-photo"
+                loading="eager"
+                fetchPriority="high"
               />
               <a className="btn btn-wide" href={WA_GUILHERME} target="_blank" rel="noreferrer" onClick={handleGuilhermeClick}>
                 Vendedor Guilherme
@@ -337,6 +356,8 @@ export default function AtacadoPage() {
                   <img
                     src={img.src}
                     alt={img.alt}
+                    loading="eager"
+                    fetchPriority="high"
                     style={{
                       width: "180px",
                       height: "320px",
@@ -360,6 +381,8 @@ export default function AtacadoPage() {
                 src="https://i.ibb.co/jvwtYDFK/Whats-App-Image-2026-06-25-at-20-58-17.jpg"
                 alt="Vendedora Gabriela"
                 className="seller-photo"
+                loading="eager"
+                fetchPriority="high"
               />
               <a
                 className="btn btn-wide"
@@ -376,6 +399,8 @@ export default function AtacadoPage() {
                 src="https://i.ibb.co/0VrbH8ZR/retire-a-menina-da-foto-202606252133.jpg"
                 alt="Vendedor Guilherme"
                 className="seller-photo"
+                loading="eager"
+                fetchPriority="high"
               />
               <a
                 className="btn btn-wide"
