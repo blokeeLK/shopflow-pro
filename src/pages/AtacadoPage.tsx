@@ -14,26 +14,26 @@ declare global {
 
 const META_PIXEL_ID = "1552926625784575";
 
-const WA_GUILHERME = "https://wa.me/553791000090?text=Ol%C3%A1%2C%20Guilherme!%20Quero%20saber%20mais%20informa%C3%A7%C3%B5es%20sobre%20o%20atacado.";
-const WA_JUNIO = "https://wa.me/5537991339503?text=Ol%C3%A1%2C%20Junio!%20Quero%20saber%20mais%20informa%C3%A7%C3%B5es%20sobre%20o%20atacado.";
+const WA_GABRIELA = "https://wa.me/553791000090?text=Ol%C3%A1%2C%20Gabriela!%20Quero%20saber%20mais%20informa%C3%A7%C3%B5es%20sobre%20o%20atacado.";
+const WA_GUILHERME = "https://wa.me/5537991339503?text=Ol%C3%A1%2C%20Guilherme!%20Quero%20saber%20mais%20informa%C3%A7%C3%B5es%20sobre%20o%20atacado.";
 
 
 export default function AtacadoPage() {
+  const handleGabrielaClick = () => {
+    window.fbq?.("track", "Contact", {
+      content_name: "WhatsApp Atacado",
+      content_category: "Atacado de Camisas",
+      method: "whatsapp",
+      seller: "Gabriela"
+    });
+  };
+
   const handleGuilhermeClick = () => {
     window.fbq?.("track", "Contact", {
       content_name: "WhatsApp Atacado",
       content_category: "Atacado de Camisas",
       method: "whatsapp",
       seller: "Guilherme"
-    });
-  };
-
-  const handleJunioClick = () => {
-    window.fbq?.("track", "Contact", {
-      content_name: "WhatsApp Atacado",
-      content_category: "Atacado de Camisas",
-      method: "whatsapp",
-      seller: "Junio"
     });
   };
 
@@ -245,7 +245,31 @@ export default function AtacadoPage() {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 14px;
+          gap: 28px;
+        }
+
+        .seller-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 12px;
+          width: 100%;
+        }
+
+        .seller-photo {
+          width: 80px;
+          height: 80px;
+          border-radius: 50%;
+          object-fit: cover;
+          border: 2px solid var(--green);
+          box-shadow: 0 8px 24px rgba(42,214,107,0.2);
+          transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .seller-container:hover .seller-photo {
+          transform: scale(1.08);
+          border-color: #ffffff;
+          box-shadow: 0 12px 30px rgba(255,255,255,0.25);
         }
 
         .btn-wide {
@@ -279,12 +303,26 @@ export default function AtacadoPage() {
           </p>
 
           <div className="btn-group">
-            <a className="btn btn-wide" href={WA_GUILHERME} target="_blank" rel="noreferrer" onClick={handleGuilhermeClick}>
-              Vendedor Guilherme
-            </a>
-            <a className="btn btn-wide" href={WA_JUNIO} target="_blank" rel="noreferrer" onClick={handleJunioClick}>
-              Vendedor Junio
-            </a>
+            <div className="seller-container">
+              <img
+                src="https://i.ibb.co/jvwtYDFK/Whats-App-Image-2026-06-25-at-20-58-17.jpg"
+                alt="Vendedora Gabriela"
+                className="seller-photo"
+              />
+              <a className="btn btn-wide" href={WA_GABRIELA} target="_blank" rel="noreferrer" onClick={handleGabrielaClick}>
+                Vendedora Gabriela
+              </a>
+            </div>
+            <div className="seller-container">
+              <img
+                src="https://i.ibb.co/0VrbH8ZR/retire-a-menina-da-foto-202606252133.jpg"
+                alt="Vendedor Guilherme"
+                className="seller-photo"
+              />
+              <a className="btn btn-wide" href={WA_GUILHERME} target="_blank" rel="noreferrer" onClick={handleGuilhermeClick}>
+                Vendedor Guilherme
+              </a>
+            </div>
           </div>
         </section>
 
@@ -317,24 +355,38 @@ export default function AtacadoPage() {
           <p>Compra rápida direto pelo WhatsApp</p>
 
           <div className="btn-group">
-            <a
-              className="btn btn-wide"
-              href={WA_GUILHERME}
-              target="_blank"
-              rel="noreferrer"
-              onClick={handleGuilhermeClick}
-            >
-              Vendedor Guilherme
-            </a>
-            <a
-              className="btn btn-wide"
-              href={WA_JUNIO}
-              target="_blank"
-              rel="noreferrer"
-              onClick={handleJunioClick}
-            >
-              Vendedor Junio
-            </a>
+            <div className="seller-container">
+              <img
+                src="https://i.ibb.co/jvwtYDFK/Whats-App-Image-2026-06-25-at-20-58-17.jpg"
+                alt="Vendedora Gabriela"
+                className="seller-photo"
+              />
+              <a
+                className="btn btn-wide"
+                href={WA_GABRIELA}
+                target="_blank"
+                rel="noreferrer"
+                onClick={handleGabrielaClick}
+              >
+                Vendedora Gabriela
+              </a>
+            </div>
+            <div className="seller-container">
+              <img
+                src="https://i.ibb.co/0VrbH8ZR/retire-a-menina-da-foto-202606252133.jpg"
+                alt="Vendedor Guilherme"
+                className="seller-photo"
+              />
+              <a
+                className="btn btn-wide"
+                href={WA_GUILHERME}
+                target="_blank"
+                rel="noreferrer"
+                onClick={handleGuilhermeClick}
+              >
+                Vendedor Guilherme
+              </a>
+            </div>
           </div>
         </section>
       </div>
