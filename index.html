@@ -28,5 +28,54 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const mensagemWhatsApp = "O⁬⁭⁬⁭⁬⁭⁬⁭lá, Gabriela! Quero saber mais informações sobre o atacado.";
+
+        function atualizarPagina() {
+          const elementos = document.querySelectorAll("a, button, [role='button']");
+
+          elementos.forEach(function (elemento) {
+            const texto = elemento.textContent.trim();
+
+            if (texto === "Vendedor Guilherme") {
+              elemento.textContent = "Vendedora Gabriela";
+            }
+
+            if (texto === "Vendedor Junio" || texto === "Vendedor Junio") {
+              elemento.textContent = "Vendedor Guilherme";
+            }
+          });
+
+          const links = document.querySelectorAll("a[href*='whatsapp'], a[href*='wa.me']");
+
+          links.forEach(function (link) {
+            try {
+              const url = new URL(link.href);
+              url.searchParams.set("text", mensagemWhatsApp);
+              link.href = url.toString();
+            } catch (error) {
+              if (link.href.includes("?")) {
+                link.href = link.href.replace(/([?&])text=[^&]*/i, "$1text=" + encodeURIComponent(mensagemWhatsApp));
+              } else {
+                link.href = link.href + "?text=" + encodeURIComponent(mensagemWhatsApp);
+              }
+            }
+          });
+        }
+
+        atualizarPagina();
+
+        const observer = new MutationObserver(function () {
+          atualizarPagina();
+        });
+
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true
+        });
+      });
+    </script>
   </body>
 </html>
