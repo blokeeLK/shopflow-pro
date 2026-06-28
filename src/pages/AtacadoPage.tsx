@@ -14,8 +14,8 @@ declare global {
 
 const META_PIXEL_ID = "1552926625784575";
 
-const WA_GABRIELA = "https://wa.me/553791000090?text=Ol%C3%A1%2C%20Gabriela!%20Quero%20saber%20mais%20informa%C3%A7%C3%B5es%20sobre%20o%20atacado.";
-const WA_GUILHERME = "https://wa.me/5537991339503?text=Ol%C3%A1%2C%20Guilherme!%20Quero%20saber%20mais%20informa%C3%A7%C3%B5es%20sobre%20o%20atacado.";
+const WA_GABRIELA = "https://wa.me/5537991339503?text=Ol%C3%A1%2C%20Gabriela!%20Quero%20saber%20mais%20informa%C3%A7%C3%B5es%20sobre%20o%20atacado.";
+const WA_GUILHERME = "https://wa.me/553791000090?text=Ol%C3%A1%2C%20Guilherme!%20Quero%20saber%20mais%20informa%C3%A7%C3%B5es%20sobre%20o%20atacado.";
 
 
 export default function AtacadoPage() {
