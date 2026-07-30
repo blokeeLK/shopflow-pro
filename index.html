@@ -80,18 +80,69 @@
       }, { capture: true });
     </script>
 
-    <!-- WhatsApp Contact Tracking -->
+    <!-- WhatsApp Contact Tracking and Message Rotation -->
     <script>
-      function trackWhatsAppContact() {
+      const SHOPFLOW_WHATSAPP = {
+        Gabriela: {
+          phone: '5537991339503',
+          messages: [
+            'Olá, Gabriela! Quero saber mais informações sobre o atacado da ShopFlow.',
+            'Oi, Gabriela! Gostaria de conhecer os modelos e valores disponíveis no atacado.',
+            'Olá, Gabriela! Tenho interesse em comprar para revenda. Pode me passar mais informações?',
+            'Oi, Gabriela! Quero montar meu pedido no atacado e gostaria de receber o catálogo.',
+            'Olá, Gabriela! Vi a ShopFlow e quero entender como funciona o pedido no atacado.',
+            'Oi, Gabriela! Gostaria de verificar os produtos disponíveis e agendar uma videochamada.'
+          ]
+        },
+        Guilherme: {
+          phone: '5537991373790',
+          messages: [
+            'Olá, Guilherme! Quero saber mais informações sobre o atacado da ShopFlow.',
+            'Oi, Guilherme! Gostaria de conhecer os modelos e valores disponíveis no atacado.',
+            'Olá, Guilherme! Tenho interesse em comprar para revenda. Pode me passar mais informações?',
+            'Oi, Guilherme! Quero montar meu pedido no atacado e gostaria de receber o catálogo.',
+            'Olá, Guilherme! Vi a ShopFlow e quero entender como funciona o pedido no atacado.',
+            'Oi, Guilherme! Gostaria de verificar os produtos disponíveis e agendar uma videochamada.'
+          ]
+        }
+      };
+
+      function getWhatsAppMessage(seller) {
+        const sellerData = SHOPFLOW_WHATSAPP[seller];
+        if (!sellerData || !sellerData.messages.length) return '';
+
+        const fortyMinuteSlot = Math.floor(Date.now() / (40 * 60 * 1000));
+        const sellerOffset = seller === 'Guilherme' ? 2 : 0;
+        const messageIndex = (fortyMinuteSlot + sellerOffset) % sellerData.messages.length;
+        return sellerData.messages[messageIndex];
+      }
+
+      function updateWhatsAppLinks() {
+        document.querySelectorAll('[data-whatsapp-seller]').forEach(function (link) {
+          const seller = link.getAttribute('data-whatsapp-seller');
+          const sellerData = SHOPFLOW_WHATSAPP[seller];
+          if (!sellerData) return;
+
+          const message = getWhatsAppMessage(seller);
+          link.href = 'https://wa.me/' + sellerData.phone + '?text=' + encodeURIComponent(message);
+        });
+      }
+
+      function trackWhatsAppContact(seller) {
         if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
           window.fbq('track', 'Contact', {
             content_name: 'WhatsApp Atacado',
             content_category: 'Atacado de Camisas',
             method: 'whatsapp',
-            seller: 'Gabriela'
+            seller: seller || 'Não informado'
           });
         }
       }
+
+      document.addEventListener('DOMContentLoaded', function () {
+        updateWhatsAppLinks();
+        window.setInterval(updateWhatsAppLinks, 60 * 1000);
+      });
     </script>
 
     <style>
@@ -636,10 +687,11 @@
             />
             <a
               class="btn btn-wide"
-              href="https://wa.me/5537991339503?text=Ol%C3%A1%2C%20Gabriela!%20Quero%20saber%20mais%20informa%C3%A7%C3%B5es%20sobre%20o%20atacado."
+              href="https://wa.me/5537991339503?text=Ol%C3%A1%2C%20Gabriela!%20Quero%20saber%20mais%20informa%C3%A7%C3%B5es%20sobre%20o%20atacado%20da%20ShopFlow."
+              data-whatsapp-seller="Gabriela"
               target="_blank"
               rel="noreferrer"
-              onclick="trackWhatsAppContact()"
+              onclick="trackWhatsAppContact('Gabriela')"
             >
               Vendedora Gabriela
             </a>
@@ -651,14 +703,16 @@
               alt="Vendedor Guilherme"
               class="seller-photo"
             />
-            <div
+            <a
               class="btn btn-wide"
-              role="status"
-              aria-label="Atendimento do vendedor Guilherme temporariamente indisponível"
-              style="pointer-events: none;"
+              href="https://wa.me/5537991373790?text=Ol%C3%A1%2C%20Guilherme!%20Quero%20saber%20mais%20informa%C3%A7%C3%B5es%20sobre%20o%20atacado%20da%20ShopFlow."
+              data-whatsapp-seller="Guilherme"
+              target="_blank"
+              rel="noreferrer"
+              onclick="trackWhatsAppContact('Guilherme')"
             >
-              O atendimento do vendedor Guilherme está temporariamente indisponível. Para agilizar, fale com a vendedora Gabriela.
-            </div>
+              Vendedor Guilherme
+            </a>
           </div>
         </div>
 
@@ -698,10 +752,11 @@
             />
             <a
               class="btn btn-wide"
-              href="https://wa.me/5537991339503?text=Ol%C3%A1%2C%20Gabriela!%20Quero%20saber%20mais%20informa%C3%A7%C3%B5es%20sobre%20o%20atacado."
+              href="https://wa.me/5537991339503?text=Ol%C3%A1%2C%20Gabriela!%20Quero%20saber%20mais%20informa%C3%A7%C3%B5es%20sobre%20o%20atacado%20da%20ShopFlow."
+              data-whatsapp-seller="Gabriela"
               target="_blank"
               rel="noreferrer"
-              onclick="trackWhatsAppContact()"
+              onclick="trackWhatsAppContact('Gabriela')"
             >
               Vendedora Gabriela
             </a>
@@ -713,14 +768,16 @@
               alt="Vendedor Guilherme"
               class="seller-photo"
             />
-            <div
+            <a
               class="btn btn-wide"
-              role="status"
-              aria-label="Atendimento do vendedor Guilherme temporariamente indisponível"
-              style="pointer-events: none;"
+              href="https://wa.me/5537991373790?text=Ol%C3%A1%2C%20Guilherme!%20Quero%20saber%20mais%20informa%C3%A7%C3%B5es%20sobre%20o%20atacado%20da%20ShopFlow."
+              data-whatsapp-seller="Guilherme"
+              target="_blank"
+              rel="noreferrer"
+              onclick="trackWhatsAppContact('Guilherme')"
             >
-              O atendimento do vendedor Guilherme está temporariamente indisponível. Para agilizar, fale com a vendedora Gabriela.
-            </div>
+              Vendedor Guilherme
+            </a>
           </div>
         </div>
       </section>
