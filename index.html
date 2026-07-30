@@ -49,10 +49,6 @@
         content_category: 'Atacado de Camisas'
       });
     </script>
-    <noscript>
-      <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1552926625784575&ev=PageView&noscript=1" />
-    </noscript>
-
     <!-- UTMify -->
     <script async src="https://cdn.utmify.com.br/scripts/utms/latest.js" data-utmify-prevent-xcod-sck data-utmify-prevent-subids></script>
 
@@ -84,15 +80,15 @@
       }, { capture: true });
     </script>
 
-    <!-- WhatsApp Click Tracking -->
+    <!-- WhatsApp Contact Tracking -->
     <script>
-      function trackWhatsAppClick(seller) {
-        if (window.fbq) {
+      function trackWhatsAppContact() {
+        if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
           window.fbq('track', 'Contact', {
             content_name: 'WhatsApp Atacado',
             content_category: 'Atacado de Camisas',
             method: 'whatsapp',
-            seller: seller
+            seller: 'Gabriela'
           });
         }
       }
@@ -356,6 +352,15 @@
 
   <!-- © ShopFlow - Todos os direitos reservados. Propriedade intelectual protegida. ID: SF-2024-XKWM9P -->
   <body>
+    <noscript>
+      <img
+        height="1"
+        width="1"
+        style="display:none"
+        src="https://www.facebook.com/tr?id=1552926625784575&ev=PageView&noscript=1"
+        alt=""
+      />
+    </noscript>
     <div class="atacado-page">
       <div class="top-highlight">Vendas somente no atacado</div>
 
@@ -385,7 +390,7 @@
               href="https://wa.me/5537991339503?text=Ol%C3%A1%2C%20Gabriela!%20Quero%20saber%20mais%20informa%C3%A7%C3%B5es%20sobre%20o%20atacado."
               target="_blank"
               rel="noreferrer"
-              onclick="trackWhatsAppClick('Gabriela')"
+              onclick="trackWhatsAppContact()"
             >
               Vendedora Gabriela
             </a>
@@ -476,7 +481,7 @@
               href="https://wa.me/5537991339503?text=Ol%C3%A1%2C%20Gabriela!%20Quero%20saber%20mais%20informa%C3%A7%C3%B5es%20sobre%20o%20atacado."
               target="_blank"
               rel="noreferrer"
-              onclick="trackWhatsAppClick('Gabriela')"
+              onclick="trackWhatsAppContact()"
             >
               Vendedora Gabriela
             </a>
