@@ -80,66 +80,8 @@
       }, { capture: true });
     </script>
 
-    <!-- WhatsApp Contact Tracking and Message Rotation -->
+    <!-- WhatsApp Contact Tracking -->
     <script>
-      const SHOPFLOW_WHATSAPP = {
-        João: {
-          phone: '5537991339503',
-          messages: [
-            'Olá, João! Quero saber mais informações sobre o atacado da ShopFlow.',
-            'Oi, João! Gostaria de conhecer os modelos e valores disponíveis no atacado.',
-            'Olá, João! Tenho interesse em comprar para revenda. Pode me passar mais informações?',
-            'Oi, João! Quero montar meu pedido no atacado e gostaria de receber o catálogo.',
-            'Olá, João! Vi a ShopFlow e quero entender como funciona o pedido no atacado.',
-            'Oi, João! Gostaria de verificar os produtos disponíveis e agendar uma videochamada.'
-          ]
-        },
-        Guilherme: {
-          phone: '553798341764',
-          messages: [
-            'Olá, Guilherme! Quero saber mais informações sobre o atacado da ShopFlow.',
-            'Oi, Guilherme! Gostaria de conhecer os modelos e valores disponíveis no atacado.',
-            'Olá, Guilherme! Tenho interesse em comprar para revenda. Pode me passar mais informações?',
-            'Oi, Guilherme! Quero montar meu pedido no atacado e gostaria de receber o catálogo.',
-            'Olá, Guilherme! Vi a ShopFlow e quero entender como funciona o pedido no atacado.',
-            'Oi, Guilherme! Gostaria de verificar os produtos disponíveis e agendar uma videochamada.'
-          ]
-        },
-        Júnio: {
-          phone: '5537991373790',
-          messages: [
-            'Olá, Júnio! Quero saber mais informações sobre o atacado da ShopFlow.',
-            'Oi, Júnio! Gostaria de conhecer os modelos e valores disponíveis no atacado.',
-            'Olá, Júnio! Tenho interesse em comprar para revenda. Pode me passar mais informações?',
-            'Oi, Júnio! Quero montar meu pedido no atacado e gostaria de receber o catálogo.',
-            'Olá, Júnio! Vi a ShopFlow e quero entender como funciona o pedido no atacado.',
-            'Oi, Júnio! Gostaria de verificar os produtos disponíveis e agendar uma videochamada.'
-          ]
-        }
-      };
-
-      function getWhatsAppMessage(seller) {
-        const sellerData = SHOPFLOW_WHATSAPP[seller];
-        if (!sellerData || !sellerData.messages.length) return '';
-
-        const fortyMinuteSlot = Math.floor(Date.now() / (40 * 60 * 1000));
-        const sellerOffsets = { João: 0, Guilherme: 2, Júnio: 4 };
-        const sellerOffset = sellerOffsets[seller] || 0;
-        const messageIndex = (fortyMinuteSlot + sellerOffset) % sellerData.messages.length;
-        return sellerData.messages[messageIndex];
-      }
-
-      function updateWhatsAppLinks() {
-        document.querySelectorAll('[data-whatsapp-seller]').forEach(function (link) {
-          const seller = link.getAttribute('data-whatsapp-seller');
-          const sellerData = SHOPFLOW_WHATSAPP[seller];
-          if (!sellerData) return;
-
-          const message = getWhatsAppMessage(seller);
-          link.href = 'https://wa.me/' + sellerData.phone + '?text=' + encodeURIComponent(message);
-        });
-      }
-
       function trackWhatsAppContact(seller) {
         if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
           window.fbq('track', 'Contact', {
@@ -150,11 +92,6 @@
           });
         }
       }
-
-      document.addEventListener('DOMContentLoaded', function () {
-        updateWhatsAppLinks();
-        window.setInterval(updateWhatsAppLinks, 60 * 1000);
-      });
     </script>
 
     <style>
@@ -694,7 +631,7 @@
           <div class="seller-container">
             <a
               class="btn btn-wide"
-              href="https://wa.me/5537991339503"
+              href="https://api.whatsapp.com/send/?phone=5537991339503&text=Ol%C3%A1%2C+Jo%C3%A3o%21+Quero+saber+mais+informa%C3%A7%C3%B5es+sobre+o+atacado+da+ShopFlow&type=phone_number&app_absent=0"
               data-whatsapp-seller="João"
               target="_blank"
               rel="noreferrer"
@@ -707,7 +644,7 @@
           <div class="seller-container">
             <a
               class="btn btn-wide"
-              href="https://wa.me/553798341764"
+              href="https://api.whatsapp.com/send/?phone=553798341764&text=Ol%C3%A1%2C+Guilherme%21+Tenho+interesse+em+comprar+para+revenda.+Pode+me+passar+mais+informa%C3%A7%C3%B5es%3F&type=phone_number&app_absent=0"
               data-whatsapp-seller="Guilherme"
               target="_blank"
               rel="noreferrer"
@@ -720,7 +657,7 @@
           <div class="seller-container">
             <a
               class="btn btn-wide"
-              href="https://wa.me/5537991373790"
+              href="https://api.whatsapp.com/send/?phone=5537991373790&text=Ol%C3%A1%2C+J%C3%BAnio%21+Vi+a+ShopFlow+e+quero+entender+como+funciona+o+pedido+no+atacado&type=phone_number&app_absent=0"
               data-whatsapp-seller="Júnio"
               target="_blank"
               rel="noreferrer"
@@ -762,7 +699,7 @@
           <div class="seller-container">
             <a
               class="btn btn-wide"
-              href="https://wa.me/5537991339503"
+              href="https://api.whatsapp.com/send/?phone=5537991339503&text=Ol%C3%A1%2C+Jo%C3%A3o%21+Quero+saber+mais+informa%C3%A7%C3%B5es+sobre+o+atacado+da+ShopFlow&type=phone_number&app_absent=0"
               data-whatsapp-seller="João"
               target="_blank"
               rel="noreferrer"
@@ -775,7 +712,7 @@
           <div class="seller-container">
             <a
               class="btn btn-wide"
-              href="https://wa.me/553798341764"
+              href="https://api.whatsapp.com/send/?phone=553798341764&text=Ol%C3%A1%2C+Guilherme%21+Tenho+interesse+em+comprar+para+revenda.+Pode+me+passar+mais+informa%C3%A7%C3%B5es%3F&type=phone_number&app_absent=0"
               data-whatsapp-seller="Guilherme"
               target="_blank"
               rel="noreferrer"
@@ -788,7 +725,7 @@
           <div class="seller-container">
             <a
               class="btn btn-wide"
-              href="https://wa.me/5537991373790"
+              href="https://api.whatsapp.com/send/?phone=5537991373790&text=Ol%C3%A1%2C+J%C3%BAnio%21+Vi+a+ShopFlow+e+quero+entender+como+funciona+o+pedido+no+atacado&type=phone_number&app_absent=0"
               data-whatsapp-seller="Júnio"
               target="_blank"
               rel="noreferrer"
