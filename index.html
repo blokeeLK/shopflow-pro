@@ -34,20 +34,27 @@
 
     <!-- Meta Pixel Code -->
     <script>
-      !function(f,b,e,v,n,t,s)
-      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-      n.queue=[];t=b.createElement(e);t.async=!0;
-      t.src=v;s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s)}(window, document,'script',
-      'https://connect.facebook.net/en_US/fbevents.js');
-      fbq('init', '1552926625784575');
-      fbq('track', 'PageView');
-      fbq('track', 'ViewContent', {
-        content_name: 'Página Atacado ShopFlow',
-        content_category: 'Atacado de Camisas'
-      });
+      window.SHOPFLOW_PIXEL_ID = '1552926625784575';
+
+      if (!window.SHOPFLOW_PIXEL_READY) {
+        window.SHOPFLOW_PIXEL_READY = true;
+
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+
+        fbq('init', window.SHOPFLOW_PIXEL_ID);
+        fbq('trackSingle', window.SHOPFLOW_PIXEL_ID, 'PageView');
+        fbq('track', 'ViewContent', {
+          content_name: 'Página Atacado ShopFlow',
+          content_category: 'Atacado de Camisas'
+        });
+      }
     </script>
     <!-- UTMify -->
     <script async src="https://cdn.utmify.com.br/scripts/utms/latest.js" data-utmify-prevent-xcod-sck data-utmify-prevent-subids></script>
