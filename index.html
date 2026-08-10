@@ -83,19 +83,19 @@
     <!-- WhatsApp Contact Tracking and Message Rotation -->
     <script>
       const SHOPFLOW_WHATSAPP = {
-        Vitória: {
+        João: {
           phone: '5537991339503',
           messages: [
-            'Olá, Vitória! Quero saber mais informações sobre o atacado da ShopFlow.',
-            'Oi, Vitória! Gostaria de conhecer os modelos e valores disponíveis no atacado.',
-            'Olá, Vitória! Tenho interesse em comprar para revenda. Pode me passar mais informações?',
-            'Oi, Vitória! Quero montar meu pedido no atacado e gostaria de receber o catálogo.',
-            'Olá, Vitória! Vi a ShopFlow e quero entender como funciona o pedido no atacado.',
-            'Oi, Vitória! Gostaria de verificar os produtos disponíveis e agendar uma videochamada.'
+            'Olá, João! Quero saber mais informações sobre o atacado da ShopFlow.',
+            'Oi, João! Gostaria de conhecer os modelos e valores disponíveis no atacado.',
+            'Olá, João! Tenho interesse em comprar para revenda. Pode me passar mais informações?',
+            'Oi, João! Quero montar meu pedido no atacado e gostaria de receber o catálogo.',
+            'Olá, João! Vi a ShopFlow e quero entender como funciona o pedido no atacado.',
+            'Oi, João! Gostaria de verificar os produtos disponíveis e agendar uma videochamada.'
           ]
         },
         Guilherme: {
-          phone: '5537991373790',
+          phone: '553798341764',
           messages: [
             'Olá, Guilherme! Quero saber mais informações sobre o atacado da ShopFlow.',
             'Oi, Guilherme! Gostaria de conhecer os modelos e valores disponíveis no atacado.',
@@ -103,6 +103,17 @@
             'Oi, Guilherme! Quero montar meu pedido no atacado e gostaria de receber o catálogo.',
             'Olá, Guilherme! Vi a ShopFlow e quero entender como funciona o pedido no atacado.',
             'Oi, Guilherme! Gostaria de verificar os produtos disponíveis e agendar uma videochamada.'
+          ]
+        },
+        Júnio: {
+          phone: '5537991373790',
+          messages: [
+            'Olá, Júnio! Quero saber mais informações sobre o atacado da ShopFlow.',
+            'Oi, Júnio! Gostaria de conhecer os modelos e valores disponíveis no atacado.',
+            'Olá, Júnio! Tenho interesse em comprar para revenda. Pode me passar mais informações?',
+            'Oi, Júnio! Quero montar meu pedido no atacado e gostaria de receber o catálogo.',
+            'Olá, Júnio! Vi a ShopFlow e quero entender como funciona o pedido no atacado.',
+            'Oi, Júnio! Gostaria de verificar os produtos disponíveis e agendar uma videochamada.'
           ]
         }
       };
@@ -112,7 +123,8 @@
         if (!sellerData || !sellerData.messages.length) return '';
 
         const fortyMinuteSlot = Math.floor(Date.now() / (40 * 60 * 1000));
-        const sellerOffset = seller === 'Guilherme' ? 2 : 0;
+        const sellerOffsets = { João: 0, Guilherme: 2, Júnio: 4 };
+        const sellerOffset = sellerOffsets[seller] || 0;
         const messageIndex = (fortyMinuteSlot + sellerOffset) % sellerData.messages.length;
         return sellerData.messages[messageIndex];
       }
@@ -680,38 +692,41 @@
 
         <div class="btn-group">
           <div class="seller-container">
-            <img
-              src="https://i.ibb.co/20Bs0Ffj/Whats-App-Image-2026-08-01-at-15-24-44.jpg"
-              alt="Vendedora Vitória"
-              class="seller-photo"
-            />
             <a
               class="btn btn-wide"
-              href="https://wa.me/5537991339503?text=Ol%C3%A1%2C%20Vitória!%20Quero%20saber%20mais%20informa%C3%A7%C3%B5es%20sobre%20o%20atacado%20da%20ShopFlow."
-              data-whatsapp-seller="Vitória"
+              href="https://wa.me/5537991339503"
+              data-whatsapp-seller="João"
               target="_blank"
               rel="noreferrer"
-              onclick="trackWhatsAppContact('Vitória')"
+              onclick="trackWhatsAppContact('João')"
             >
-              Vendedora Vitória
+              Vendedor João
             </a>
           </div>
 
           <div class="seller-container">
-            <img
-              src="https://i.ibb.co/0VrbH8ZR/retire-a-menina-da-foto-202606252133.jpg"
-              alt="Vendedor Guilherme"
-              class="seller-photo"
-            />
             <a
               class="btn btn-wide"
-              href="https://wa.me/5537991339503?text=Ol%C3%A1%2C%20Vit%C3%B3ria!%20O%20Guilherme%20est%C3%A1%20temporariamente%20indispon%C3%ADvel%20e%20preciso%20de%20atendimento."
-              data-whatsapp-seller="Vitória"
+              href="https://wa.me/553798341764"
+              data-whatsapp-seller="Guilherme"
               target="_blank"
               rel="noreferrer"
-              onclick="trackWhatsAppContact('Vitória')"
+              onclick="trackWhatsAppContact('Guilherme')"
             >
-              Guilherme temporariamente indisponível — entre em contato com a Vitória
+              Vendedor Guilherme
+            </a>
+          </div>
+
+          <div class="seller-container">
+            <a
+              class="btn btn-wide"
+              href="https://wa.me/5537991373790"
+              data-whatsapp-seller="Júnio"
+              target="_blank"
+              rel="noreferrer"
+              onclick="trackWhatsAppContact('Júnio')"
+            >
+              Vendedor Júnio
             </a>
           </div>
         </div>
@@ -745,38 +760,41 @@
 
         <div class="btn-group">
           <div class="seller-container">
-            <img
-              src="https://i.ibb.co/20Bs0Ffj/Whats-App-Image-2026-08-01-at-15-24-44.jpg"
-              alt="Vendedora Vitória"
-              class="seller-photo"
-            />
             <a
               class="btn btn-wide"
-              href="https://wa.me/5537991339503?text=Ol%C3%A1%2C%20Vitória!%20Quero%20saber%20mais%20informa%C3%A7%C3%B5es%20sobre%20o%20atacado%20da%20ShopFlow."
-              data-whatsapp-seller="Vitória"
+              href="https://wa.me/5537991339503"
+              data-whatsapp-seller="João"
               target="_blank"
               rel="noreferrer"
-              onclick="trackWhatsAppContact('Vitória')"
+              onclick="trackWhatsAppContact('João')"
             >
-              Vendedora Vitória
+              Vendedor João
             </a>
           </div>
 
           <div class="seller-container">
-            <img
-              src="https://i.ibb.co/0VrbH8ZR/retire-a-menina-da-foto-202606252133.jpg"
-              alt="Vendedor Guilherme"
-              class="seller-photo"
-            />
             <a
               class="btn btn-wide"
-              href="https://wa.me/5537991339503?text=Ol%C3%A1%2C%20Vit%C3%B3ria!%20O%20Guilherme%20est%C3%A1%20temporariamente%20indispon%C3%ADvel%20e%20preciso%20de%20atendimento."
-              data-whatsapp-seller="Vitória"
+              href="https://wa.me/553798341764"
+              data-whatsapp-seller="Guilherme"
               target="_blank"
               rel="noreferrer"
-              onclick="trackWhatsAppContact('Vitória')"
+              onclick="trackWhatsAppContact('Guilherme')"
             >
-              Guilherme temporariamente indisponível — entre em contato com a Vitória
+              Vendedor Guilherme
+            </a>
+          </div>
+
+          <div class="seller-container">
+            <a
+              class="btn btn-wide"
+              href="https://wa.me/5537991373790"
+              data-whatsapp-seller="Júnio"
+              target="_blank"
+              rel="noreferrer"
+              onclick="trackWhatsAppContact('Júnio')"
+            >
+              Vendedor Júnio
             </a>
           </div>
         </div>
