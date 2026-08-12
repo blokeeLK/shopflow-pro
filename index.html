@@ -87,7 +87,7 @@
       }, { capture: true });
     </script>
 
-    <!-- WhatsApp Contact Tracking -->
+    <!-- WhatsApp Contact Tracking + distribuição 50/50 -->
     <script>
       function trackWhatsAppContact(seller) {
         if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
@@ -98,6 +98,25 @@
             seller: seller || 'Não informado'
           });
         }
+      }
+
+      function distributeWhatsAppClick(link) {
+        var sellers = [
+          {
+            name: 'João',
+            url: 'https://api.whatsapp.com/send/?phone=5537991339503&text=Ol%C3%A1%2C+Jo%C3%A3o%21+Quero+saber+mais+informa%C3%A7%C3%B5es+sobre+o+atacado+da+ShopFlow&type=phone_number&app_absent=0'
+          },
+          {
+            name: 'Guilherme',
+            url: 'https://api.whatsapp.com/send/?phone=553798341764&text=Ol%C3%A1%2C+Guilherme%21+Tenho+interesse+em+comprar+para+revenda.+Pode+me+passar+mais+informa%C3%A7%C3%B5es%3F&type=phone_number&app_absent=0'
+          }
+        ];
+
+        var selectedSeller = sellers[Math.random() < 0.5 ? 0 : 1];
+        link.href = selectedSeller.url;
+        link.setAttribute('data-whatsapp-seller', selectedSeller.name);
+        trackWhatsAppContact(selectedSeller.name);
+        return true;
       }
     </script>
 
@@ -639,30 +658,15 @@
           <div class="seller-container">
             <a
               class="btn btn-wide"
-              href="https://api.whatsapp.com/send/?phone=5537991339503&text=Ol%C3%A1%2C+Jo%C3%A3o%21+Quero+saber+mais+informa%C3%A7%C3%B5es+sobre+o+atacado+da+ShopFlow&type=phone_number&app_absent=0"
-              data-whatsapp-seller="João"
-              target="_blank"
-              rel="noreferrer"
-              onclick="trackWhatsAppContact('João')"
-            >
-              Vendedor João
-            </a>
-          </div>
-
-          <div class="seller-container">
-            <a
-              class="btn btn-wide"
               href="https://api.whatsapp.com/send/?phone=553798341764&text=Ol%C3%A1%2C+Guilherme%21+Tenho+interesse+em+comprar+para+revenda.+Pode+me+passar+mais+informa%C3%A7%C3%B5es%3F&type=phone_number&app_absent=0"
               data-whatsapp-seller="Guilherme"
               target="_blank"
-              rel="noreferrer"
-              onclick="trackWhatsAppContact('Guilherme')"
+              rel="noopener noreferrer"
+              onclick="return distributeWhatsAppClick(this)"
             >
               Vendedor Guilherme
             </a>
           </div>
-
-          
         </div>
 
         <div class="instagram-box">
@@ -696,29 +700,15 @@
           <div class="seller-container">
             <a
               class="btn btn-wide"
-              href="https://api.whatsapp.com/send/?phone=5537991339503&text=Ol%C3%A1%2C+Jo%C3%A3o%21+Quero+saber+mais+informa%C3%A7%C3%B5es+sobre+o+atacado+da+ShopFlow&type=phone_number&app_absent=0"
-              data-whatsapp-seller="João"
-              target="_blank"
-              rel="noreferrer"
-              onclick="trackWhatsAppContact('João')"
-            >
-              Vendedor João
-            </a>
-          </div>
-
-          <div class="seller-container">
-            <a
-              class="btn btn-wide"
               href="https://api.whatsapp.com/send/?phone=553798341764&text=Ol%C3%A1%2C+Guilherme%21+Tenho+interesse+em+comprar+para+revenda.+Pode+me+passar+mais+informa%C3%A7%C3%B5es%3F&type=phone_number&app_absent=0"
               data-whatsapp-seller="Guilherme"
               target="_blank"
-              rel="noreferrer"
-              onclick="trackWhatsAppContact('Guilherme')"
+              rel="noopener noreferrer"
+              onclick="return distributeWhatsAppClick(this)"
             >
               Vendedor Guilherme
             </a>
           </div>
-
         </div>
       </section>
     </div>
