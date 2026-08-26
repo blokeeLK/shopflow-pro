@@ -229,18 +229,25 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
-        background: transparent;
-        color: var(--muted);
-        font-size: 14px;
-        font-weight: 600;
-        padding: 13px 24px;
+        background: linear-gradient(135deg, rgba(0,217,126,0.16), rgba(0,184,104,0.08));
+        color: var(--white);
+        font-size: 15px;
+        font-weight: 800;
+        padding: 15px 24px;
         border-radius: 50px;
-        border: 1px solid rgba(255,255,255,0.15);
+        border: 1px solid rgba(0,217,126,0.65);
         width: 100%;
-        transition: border-color .2s, color .2s, transform .15s;
+        box-shadow: 0 6px 24px rgba(0,217,126,0.16);
+        transition: border-color .2s, color .2s, background .2s, transform .15s, box-shadow .2s;
         cursor: pointer;
       }
-      .btn-secondary:hover { border-color: rgba(255,255,255,0.35); color: var(--white); transform: translateY(-1px); }
+      .btn-secondary:hover {
+        background: rgba(0,217,126,0.20);
+        border-color: var(--green);
+        color: var(--white);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(0,217,126,0.28);
+      }
 
       .wa-icon {
         width: 22px; height: 22px;
@@ -594,7 +601,7 @@
                 ESCOLHER MINHA MERCADORIA
               </a>
 <a class="btn-secondary" href="https://chat.whatsapp.com/CsNlcMek0KfHMeHCw8pm1t" id="btn-hero-group" rel="noopener noreferrer" target="_blank">
-<span class="group-icon">💬</span>
+<span class="group-icon">🔥</span>
                 Entrar no nosso grupo de ofertas
               </a>
 </div>
@@ -789,7 +796,7 @@
               FALAR COM VENDEDOR
             </a>
 <a class="btn-secondary" href="https://chat.whatsapp.com/CsNlcMek0KfHMeHCw8pm1t" id="btn-cta-group" rel="noopener noreferrer" target="_blank">
-<span class="group-icon">💬</span>
+<span class="group-icon">🔥</span>
               Entrar no nosso grupo de ofertas
             </a>
 </div>
