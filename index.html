@@ -5007,6 +5007,29 @@ function distributeWhatsAppClick(link) {
   return true;
 }
 </script>
+<!-- Bloqueio de atalhos de exibição de código -->
+<script>
+(function () {
+  'use strict';
+
+  function blockBrowserAction(event) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    event.returnValue = false;
+    return false;
+  }
+
+  window.addEventListener('contextmenu', blockBrowserAction, true);
+
+  window.addEventListener('keydown', function (event) {
+    var key = String(event.key || '').toLowerCase();
+
+    if ((event.ctrlKey || event.metaKey) && key === 'u') {
+      blockBrowserAction(event);
+    }
+  }, true);
+})();
+</script>
 </body></html>
 <!-- Page optimized by LiteSpeed Cache @2026-08-26 21:00:26 -->
 
